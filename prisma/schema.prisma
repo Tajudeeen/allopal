@@ -78,7 +78,7 @@ model Decision {
   category      String
   status        String   // ALLOWED | DENIED
   reason        String
-  checks        String   // JSON serialized record of 7 deterministic checks
+  checks        String   // JSON serialized record of deterministic checks
   paypalOrderId String?  // Real PayPal Order ID if captured, null if denied or uncaptured
   createdAt     DateTime @default(now())
 
@@ -108,4 +108,16 @@ model PayPalTransaction {
 
   @@index([mandateId])
   @@index([orderId])
+}
+
+model IdempotencyRecord {
+  key           String   @id // Idempotency key from client header or request hash
+  mandateId     String
+  cartId        String
+  status        String   // PROCESSING | COMPLETED | FAILED
+  responseBody  String   // Cached JSON response to return on identical replays
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([key])
 }

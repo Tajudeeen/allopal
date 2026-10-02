@@ -14,6 +14,7 @@ export async function seed() {
 
   // 1. Clean existing records in correct foreign key order atomically
   await prisma.$transaction([
+    prisma.idempotencyRecord.deleteMany(),
     prisma.payPalTransaction.deleteMany(),
     prisma.decision.deleteMany(),
     prisma.cartItem.deleteMany(),

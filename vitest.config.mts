@@ -7,5 +7,11 @@ export default defineConfig({
     environment: "node",
     globals: true,
     fileParallelism: false,
+    maxConcurrency: 1,
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
   },
 });

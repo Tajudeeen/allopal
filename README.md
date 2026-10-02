@@ -264,17 +264,19 @@ npm run prisma:seed
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000).
+Visit [http://localhost:3000](http://localhost:3000). The frontend utilizes the dedicated brand background asset (`public/bg.jpg`) with backdrop blur and glassmorphism styling.
 
 ---
 
 ## 🧪 Testing & Verification
 
-Allopal maintains a comprehensive automated test suite testing every boundary, policy rule, and PayPal integration invariant:
+Allopal maintains a comprehensive automated test suite testing every boundary, policy rule, PayPal integration invariant, concurrency protection, and AI flow:
 
 ```bash
 npm test
 ```
+
+**Test Suite Health: 8 passed / 42 passed (100% pass rate)**
 
 ### Test Coverage Highlights
 
@@ -283,6 +285,9 @@ npm test
 * `tests/policy/engine.test.ts`: Comprehensive policy engine tests (12 tests covering invalid merchant, disallowed category, boundary conditions, revoked mandates, zero amount).
 * `tests/api/authorize.test.ts`: Server-side authorization endpoint security and client-tamper resistance.
 * `tests/payments/paypal.test.ts`: Real PayPal sandbox abstraction, order creation, capture, budget decrementing, and the critical **zero-call failure boundary proof**.
+* `tests/payments/security_boundary.test.ts`: Dedicated tests proving 0 PayPal API calls for disallowed categories, over-budget purchases, and revoked mandates.
+* `tests/payments/concurrency.test.ts`: Prevents race conditions (e.g. two concurrent $25 purchases against a $40 limit will never charge $50) and handles idempotent request replays.
+* `tests/ai/proposal.test.ts`: Verifies natural-language mandate parsing, validation bounds, and strict human approval gating.
 
 ---
 

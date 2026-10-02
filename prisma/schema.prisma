@@ -12,3 +12,100 @@ model SystemHealth {
   status    String   @default("HEALTHY")
   checkedAt DateTime @default(now())
 }
+
+model Mandate {
+  id                String              @id @default(uuid())
+  name              String
+  weeklyLimit       Int                 // In integer cents ($40.00 = 4000)
+  spentAmount       Int      @default(0)// In integer cents
+  validFrom         DateTime
+  validUntil        DateTime
+  status            String   @default("ACTIVE") // ACTIVE | REVOKED | EXPIRED
+  allowedCategories String              // JSON array string: ["School Supplies"]
+  allowedMerchants  String              // JSON array string: ["Campus Books", "Paper & Pencil"]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  decisions         Decision[]
+  transactions      PayPalTransaction[]
+
+  @@index([status])
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  price       Int         // In integer cents ($18.00 = 1800)
+  merchant    String
+  category    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  cartItems   CartItem[]
+
+  @@index([merchant])
+  @@index([category])
+}
+
+model Cart {
+  id          String      @id @default(uuid())
+  merchant    String
+  totalAmount Int         // Server-computed authoritative total in integer cents
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       CartItem[]
+  decisions   Decision[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  price     Int      // Snapshot price in integer cents
+
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Decision {
+  id            String   @id @default(uuid())
+  mandateId     String
+  cartId        String
+  amount        Int      // Evaluated amount in integer cents
+  merchant      String
+  category      String
+  status        String   // ALLOWED | DENIED
+  reason        String
+  checks        String   // JSON serialized record of 7 deterministic checks
+  paypalOrderId String?  // Real PayPal Order ID if captured, null if denied or uncaptured
+  createdAt     DateTime @default(now())
+
+  mandate       Mandate  @relation(fields: [mandateId], references: [id])
+  cart          Cart     @relation(fields: [cartId], references: [id])
+  transaction   PayPalTransaction?
+
+  @@index([mandateId])
+  @@index([cartId])
+  @@index([status])
+}
+
+model PayPalTransaction {
+  id            String   @id @default(uuid())
+  orderId       String   @unique // PayPal Order ID
+  captureId     String?  @unique // PayPal Capture ID
+  mandateId     String
+  decisionId    String   @unique
+  amount        Int      // Integer cents
+  currency      String   @default("USD")
+  status        String   // CREATED | COMPLETED | FAILED
+  rawResponse   String?  // Sanitized raw PayPal JSON response for auditing
+  createdAt     DateTime @default(now())
+
+  mandate       Mandate  @relation(fields: [mandateId], references: [id])
+  decision      Decision @relation(fields: [decisionId], references: [id])
+
+  @@index([mandateId])
+  @@index([orderId])
+}

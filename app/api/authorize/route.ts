@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { evaluateMandate } from "@/lib/policy/engine";
 
+export const dynamic = "force-dynamic";
+
 const authorizeSchema = z.object({
   mandateId: z.string().min(1, "mandateId is required"),
   cartId: z.string().min(1, "cartId is required"),

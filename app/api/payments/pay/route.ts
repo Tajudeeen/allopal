@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { evaluateMandate } from "@/lib/policy/engine";
 import { payPalClient } from "@/lib/paypal/client";
 
+export const dynamic = "force-dynamic";
+
 const paySchema = z.object({
   mandateId: z.string().min(1, "mandateId is required"),
   cartId: z.string().min(1, "cartId is required"),

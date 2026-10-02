@@ -12,14 +12,16 @@ const prisma = new PrismaClient();
 export async function seed() {
   console.log("🌱 Resetting and seeding deterministic Allopal data...");
 
-  // 1. Clean existing records in correct foreign key order
-  await prisma.payPalTransaction.deleteMany();
-  await prisma.decision.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.mandate.deleteMany();
-  await prisma.systemHealth.deleteMany();
+  // 1. Clean existing records in correct foreign key order atomically
+  await prisma.$transaction([
+    prisma.payPalTransaction.deleteMany(),
+    prisma.decision.deleteMany(),
+    prisma.cartItem.deleteMany(),
+    prisma.cart.deleteMany(),
+    prisma.product.deleteMany(),
+    prisma.mandate.deleteMany(),
+    prisma.systemHealth.deleteMany(),
+  ]);
 
   // 2. Deterministic School Shopping Mandate
   // Limit: $40.00 (4000 cents), Duration: 7 days, School Supplies, Campus Books & Paper & Pencil

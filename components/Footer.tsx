@@ -69,7 +69,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
           {/* Brand Col */}
           <div className="flex flex-col lg:col-span-5 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/10 border border-white/20 flex items-center justify-center bg-white flex-none">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/10 border border-white/20 flex items-center justify-center flex-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo.png"

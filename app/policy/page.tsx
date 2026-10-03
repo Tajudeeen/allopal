@@ -57,7 +57,7 @@ export default function PolicyPage() {
                 <div className="flex items-start justify-between gap-3">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-[0.16em] text-slate-600">{cart.id}</span>
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold text-slate-700">
-                    {`${(cart.totalAmount / 100).toFixed(2)}`}
+                    {"$" + (cart.totalAmount / 100).toFixed(2)}
                   </span>
                 </div>
                 <h2 className="mt-5 text-base font-bold text-slate-950">{cart.items?.[0]?.product?.name || "Cart"}</h2>

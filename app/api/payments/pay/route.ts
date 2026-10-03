@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
   let reservationActive = false;
   let reservedMandateId: string | null = null;
   let reservedAmount = 0;
+  let paypalCalled = false;
+  let paypalOrderId: string | null = null;
 
   try {
     const rawBody = await req.json();
@@ -252,6 +254,8 @@ export async function POST(req: NextRequest) {
         returnUrl,
         cancelUrl,
       });
+      paypalCalled = true;
+      paypalOrderId = payPalOrder.id;
     } catch (payPalError) {
       if (reservationActive && reservedMandateId) {
         await prisma.mandate.update({

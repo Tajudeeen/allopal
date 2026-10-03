@@ -29,11 +29,6 @@
 body {
   color: var(--color-ink);
   background-color: var(--color-canvas);
-  background-image: url('/bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }

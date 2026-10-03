@@ -55,6 +55,11 @@ body {
 }
 
 .selo-page h1,
+.selo-page h2 {
+  color: #f8fafc !important;
+}
+
+.selo-page h1,
 .selo-page h2,
 .selo-page h3,
 .selo-page h4,

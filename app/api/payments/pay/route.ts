@@ -9,44 +9,99 @@ export const dynamic = "force-dynamic";
 const paySchema = z.object({
   mandateId: z.string().min(1, "mandateId is required"),
   cartId: z.string().min(1, "cartId is required"),
-  idempotencyKey: z.string().optional(),
+  idempotencyKey: z.string().min(8).max(200).optional(),
 });
 
+function responseFromPayload(payload: Record<string, unknown>, status = 200) {
+  return NextResponse.json(payload, { status });
+}
+
 export async function POST(req: NextRequest) {
+  let idempotencyKey: string | null = null;
+  let reservationActive = false;
+  let reservedMandateId: string | null = null;
+  let reservedAmount = 0;
+
   try {
     const rawBody = await req.json();
     const parsed = paySchema.safeParse(rawBody);
 
     if (!parsed.success) {
-      return NextResponse.json(
+      return responseFromPayload(
         {
           error: "INVALID_REQUEST",
           details: parsed.error.issues,
         },
-        { status: 400 }
+        400
       );
     }
 
     const { mandateId, cartId } = parsed.data;
     const headerKey = req.headers.get("Idempotency-Key");
-    const idempotencyKey = parsed.data.idempotencyKey || headerKey || null;
+    idempotencyKey = parsed.data.idempotencyKey || headerKey || null;
+    const operationId = idempotencyKey || crypto.randomUUID();
 
-    // 1. Idempotency Check: Return existing completed response if replayed
+    // Atomically claim the idempotency key before any external side effect.
     if (idempotencyKey) {
-      const existingRecord = await prisma.idempotencyRecord.findUnique({
-        where: { key: idempotencyKey },
-      });
-
-      if (existingRecord && existingRecord.status === "COMPLETED") {
-        const cachedJson = JSON.parse(existingRecord.responseBody);
-        return NextResponse.json({
-          ...cachedJson,
-          idempotentReplay: true,
+      try {
+        await prisma.idempotencyRecord.create({
+          data: {
+            key: idempotencyKey,
+            mandateId,
+            cartId,
+            status: "PROCESSING",
+            responseBody: "{}",
+          },
         });
+      } catch {
+        const existing = await prisma.idempotencyRecord.findUnique({
+          where: { key: idempotencyKey },
+        });
+
+        if (!existing) throw new Error("IDEMPOTENCY_CLAIM_FAILED");
+
+        if (existing.mandateId !== mandateId || existing.cartId !== cartId) {
+          return responseFromPayload(
+            {
+              error: "IDEMPOTENCY_KEY_REUSED",
+              message: "Idempotency key is already bound to a different payment request.",
+            },
+            409
+          );
+        }
+
+        if (existing.status === "COMPLETED") {
+          return responseFromPayload(
+            {
+              ...JSON.parse(existing.responseBody),
+              idempotentReplay: true,
+            },
+            200
+          );
+        }
+
+        if (existing.status === "PROCESSING") {
+          return responseFromPayload(
+            {
+              error: "PAYMENT_IN_PROGRESS",
+              message: "An identical payment request is already being processed.",
+            },
+            409
+          );
+        }
+
+        // FAILED keys are intentionally not reused. The client should generate a fresh key.
+        return responseFromPayload(
+          {
+            error: "IDEMPOTENCY_KEY_EXPIRED",
+            message: "This payment attempt failed. Retry with a new idempotency key.",
+          },
+          409
+        );
       }
     }
 
-    // 2. Authoritative lookup of Mandate and Cart
+    // Authoritative server-side lookup. Client-supplied amount/category/merchant are ignored.
     const mandate = await prisma.mandate.findUnique({
       where: { id: mandateId },
     });
@@ -62,12 +117,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 3. Pre-flight Deterministic Policy Engine Evaluation
     const decision = evaluateMandate(mandate, cart);
 
-    // 4. IF POLICY FAILS: Stop immediately, NEVER call PayPal
+    // Policy denial is terminal and has zero PayPal calls.
     if (decision.status !== "ALLOWED" || !mandate || !cart) {
       let deniedDecision = null;
+
       if (mandate && cart) {
         deniedDecision = await prisma.decision.create({
           data: {
@@ -79,117 +134,217 @@ export async function POST(req: NextRequest) {
             status: "DENIED",
             reason: decision.reason,
             checks: JSON.stringify(decision.checks),
-            paypalOrderId: null, // Zero-call invariant
+            paypalOrderId: null,
           },
         });
       }
 
-      return NextResponse.json(
-        {
-          status: "DENIED",
-          reason: decision.reason,
-          failedCheck: decision.failedCheck,
-          amount: decision.amount,
-          merchant: decision.merchant,
-          category: decision.category,
-          paypalCalled: false,
-          paypalOrderId: null,
-          decisionId: deniedDecision?.id ?? null,
-          remainingBudget: decision.remainingBudgetBefore,
-        },
-        { status: 403 }
-      );
+      const deniedPayload = {
+        status: "DENIED",
+        reason: decision.reason,
+        failedCheck: decision.failedCheck,
+        amount: decision.amount,
+        merchant: decision.merchant,
+        category: decision.category,
+        paypalCalled: false,
+        paypalOrderId: null,
+        decisionId: deniedDecision?.id ?? null,
+        remainingBudget: decision.remainingBudgetBefore,
+      };
+
+      if (idempotencyKey) {
+        await prisma.idempotencyRecord.update({
+          where: { key: idempotencyKey },
+          data: {
+            status: "COMPLETED",
+            responseBody: JSON.stringify(deniedPayload),
+          },
+        });
+      }
+
+      return responseFromPayload(deniedPayload, 403);
     }
 
-    // 5. CONCURRENCY-SAFE ATOMIC BUDGET RESERVATION
-    // Execute interactive transaction to inspect real-time spentAmount and reserve budget atomically
-    let reservationSuccess = false;
+    // Re-check the authoritative state inside a database transaction so a concurrent
+    // request cannot spend the same remaining budget twice.
     let freshRemaining = 0;
+    let reservationDecision = decision;
 
     await prisma.$transaction(async (tx) => {
       const freshMandate = await tx.mandate.findUniqueOrThrow({
         where: { id: mandate.id },
       });
 
+      reservationDecision = evaluateMandate(freshMandate, cart);
       freshRemaining = freshMandate.weeklyLimit - freshMandate.spentAmount;
 
-      if (cart.totalAmount <= freshRemaining && freshMandate.status === "ACTIVE") {
-        await tx.mandate.update({
-          where: { id: mandate.id },
-          data: {
-            spentAmount: { increment: cart.totalAmount },
-          },
-        });
-        reservationSuccess = true;
-      }
+      if (reservationDecision.status !== "ALLOWED") return;
+
+      await tx.mandate.update({
+        where: { id: freshMandate.id },
+        data: {
+          spentAmount: { increment: cart.totalAmount },
+        },
+      });
+
+      reservationActive = true;
+      reservedMandateId = freshMandate.id;
+      reservedAmount = cart.totalAmount;
     });
 
-    // If reservation failed, another concurrent transaction consumed the budget
-    if (!reservationSuccess) {
+    if (!reservationActive) {
       const deniedDecision = await prisma.decision.create({
         data: {
           mandateId: mandate.id,
           cartId: cart.id,
-          amount: decision.amount,
-          merchant: decision.merchant,
-          category: decision.category,
+          amount: reservationDecision.amount,
+          merchant: reservationDecision.merchant,
+          category: reservationDecision.category,
           status: "DENIED",
-          reason: `Concurrent transaction conflict: Purchase exceeds remaining mandate budget of $${(
-            freshRemaining / 100
-          ).toFixed(2)}.`,
-          checks: JSON.stringify({
-            ...decision.checks,
-            BUDGET_SUFFICIENT: {
-              passed: false,
-              message: "Budget consumed by competing concurrent transaction.",
-            },
-          }),
+          reason: reservationDecision.reason,
+          checks: JSON.stringify(reservationDecision.checks),
           paypalOrderId: null,
         },
       });
 
-      return NextResponse.json(
-        {
-          status: "DENIED",
-          reason: "Purchase exceeds remaining mandate budget.",
-          failedCheck: "BUDGET_SUFFICIENT",
-          amount: decision.amount,
-          merchant: decision.merchant,
-          category: decision.category,
-          paypalCalled: false,
-          paypalOrderId: null,
-          decisionId: deniedDecision.id,
-          remainingBudget: freshRemaining,
-        },
-        { status: 403 }
-      );
+      const deniedPayload = {
+        status: "DENIED",
+        reason: reservationDecision.reason,
+        failedCheck: reservationDecision.failedCheck,
+        amount: reservationDecision.amount,
+        merchant: reservationDecision.merchant,
+        category: reservationDecision.category,
+        paypalCalled: false,
+        paypalOrderId: null,
+        decisionId: deniedDecision.id,
+        remainingBudget: freshRemaining,
+      };
+
+      if (idempotencyKey) {
+        await prisma.idempotencyRecord.update({
+          where: { key: idempotencyKey },
+          data: {
+            status: "COMPLETED",
+            responseBody: JSON.stringify(deniedPayload),
+          },
+        });
+      }
+
+      return responseFromPayload(deniedPayload, 403);
     }
 
-    // 6. POLICY & BUDGET SECURED: Execute PayPal Create & Capture
-    let payPalOrder;
-    let payPalCapture;
+    const origin = new URL(req.url).origin;
+    const returnUrl = `${origin}/api/payments/paypal/return`;
+    const cancelUrl = `${origin}/api/payments/paypal/cancel`;
 
+    // PayPal's own idempotency key is distinct for create/capture operations.
+    const createRequestId = `${operationId}-create`;
+    const captureRequestId = `${operationId}-capture`;
+
+    let payPalOrder;
     try {
       payPalOrder = await payPalClient.createOrder({
         amountInCents: cart.totalAmount,
         currency: "USD",
         referenceId: cart.id,
         description: `Allopal mandate payment: ${mandate.name}`,
+        requestId: createRequestId,
+        returnUrl,
+        cancelUrl,
       });
-
-      payPalCapture = await payPalClient.captureOrder(payPalOrder.id);
     } catch (payPalError) {
-      // Rollback reserved budget on PayPal execution failure to fail closed safely
-      await prisma.mandate.update({
-        where: { id: mandate.id },
-        data: {
-          spentAmount: { decrement: cart.totalAmount },
-        },
-      });
+      if (reservationActive && reservedMandateId) {
+        await prisma.mandate.update({
+          where: { id: reservedMandateId },
+          data: { spentAmount: { decrement: reservedAmount } },
+        });
+        reservationActive = false;
+      }
       throw payPalError;
     }
 
-    // 7. Persist Allowed Decision and PayPal Transaction Record
+    // Live PayPal Checkout requires payer approval before capture.
+    if (payPalOrder.requiresPayerApproval) {
+      if (!payPalOrder.approvalUrl) {
+        throw new Error("PAYPAL_APPROVAL_URL_MISSING");
+      }
+
+      const pendingResult = await prisma.$transaction(async (tx) => {
+        const savedDecision = await tx.decision.create({
+          data: {
+            mandateId: mandate.id,
+            cartId: cart.id,
+            amount: decision.amount,
+            merchant: decision.merchant,
+            category: decision.category,
+            status: "ALLOWED",
+            reason: decision.reason,
+            checks: JSON.stringify(decision.checks),
+            paypalOrderId: payPalOrder.id,
+          },
+        });
+
+        await tx.payPalTransaction.create({
+          data: {
+            orderId: payPalOrder.id,
+            captureId: null,
+            mandateId: mandate.id,
+            decisionId: savedDecision.id,
+            amount: cart.totalAmount,
+            currency: "USD",
+            status: "CREATED",
+            rawResponse: JSON.stringify({
+              id: payPalOrder.id,
+              status: payPalOrder.status,
+              approvalUrl: payPalOrder.approvalUrl,
+            }),
+          },
+        });
+
+        return savedDecision;
+      });
+
+      reservationActive = false;
+
+      const pendingPayload = {
+        status: "PENDING_APPROVAL",
+        decisionId: pendingResult.id,
+        paypalCalled: true,
+        paypalOrderId: payPalOrder.id,
+        paypalCaptureId: null,
+        approvalUrl: payPalOrder.approvalUrl,
+        amount: cart.totalAmount,
+        remainingBudget: mandate.weeklyLimit - mandate.spentAmount,
+        checks: decision.checks,
+      };
+
+      if (idempotencyKey) {
+        await prisma.idempotencyRecord.update({
+          where: { key: idempotencyKey },
+          data: {
+            status: "COMPLETED",
+            responseBody: JSON.stringify(pendingPayload),
+          },
+        });
+      }
+
+      return responseFromPayload(pendingPayload, 200);
+    }
+
+    // Deterministic/mock mode can execute the complete create -> capture flow.
+    const payPalCapture = await payPalClient.captureOrder(payPalOrder.id, captureRequestId);
+
+    if (payPalCapture.status !== "COMPLETED") {
+      if (reservationActive && reservedMandateId) {
+        await prisma.mandate.update({
+          where: { id: reservedMandateId },
+          data: { spentAmount: { decrement: reservedAmount } },
+        });
+        reservationActive = false;
+      }
+      throw new Error(`PAYPAL_CAPTURE_NOT_COMPLETED: ${payPalCapture.status}`);
+    }
+
     const { savedDecision, refreshedMandate } = await prisma.$transaction(async (tx) => {
       const dec = await tx.decision.create({
         data: {
@@ -213,7 +368,7 @@ export async function POST(req: NextRequest) {
           decisionId: dec.id,
           amount: cart.totalAmount,
           currency: "USD",
-          status: payPalCapture.status,
+          status: "COMPLETED",
           rawResponse: JSON.stringify(payPalCapture.rawResponse || {}),
         },
       });
@@ -224,6 +379,8 @@ export async function POST(req: NextRequest) {
 
       return { savedDecision: dec, refreshedMandate: updated };
     });
+
+    reservationActive = false;
 
     const responsePayload = {
       status: "COMPLETED",
@@ -237,34 +394,55 @@ export async function POST(req: NextRequest) {
       checks: decision.checks,
     };
 
-    // 8. Save Idempotency Record if key was provided
     if (idempotencyKey) {
-      await prisma.idempotencyRecord.upsert({
+      await prisma.idempotencyRecord.update({
         where: { key: idempotencyKey },
-        create: {
-          key: idempotencyKey,
-          mandateId: mandate.id,
-          cartId: cart.id,
-          status: "COMPLETED",
-          responseBody: JSON.stringify(responsePayload),
-        },
-        update: {
+        data: {
           status: "COMPLETED",
           responseBody: JSON.stringify(responsePayload),
         },
       });
     }
 
-    return NextResponse.json(responsePayload);
+    return responseFromPayload(responsePayload, 200);
   } catch (error: unknown) {
+    if (reservationActive && reservedMandateId) {
+      try {
+        await prisma.mandate.update({
+          where: { id: reservedMandateId },
+          data: { spentAmount: { decrement: reservedAmount } },
+        });
+      } catch {
+        // Do not replace the original payment error with rollback noise.
+      }
+    }
+
+    if (idempotencyKey) {
+      try {
+        const message = error instanceof Error ? error.message : "Internal Payment Error";
+        await prisma.idempotencyRecord.update({
+          where: { key: idempotencyKey },
+          data: {
+            status: "FAILED",
+            responseBody: JSON.stringify({
+              error: "PAYMENT_EXECUTION_FAILED",
+              message,
+            }),
+          },
+        });
+      } catch {
+        // Idempotency persistence must never mask the original error.
+      }
+    }
+
     const message = error instanceof Error ? error.message : "Internal Payment Error";
-    return NextResponse.json(
+    return responseFromPayload(
       {
         error: "PAYMENT_EXECUTION_FAILED",
         message,
         paypalCalled: false,
       },
-      { status: 500 }
+      500
     );
   }
 }

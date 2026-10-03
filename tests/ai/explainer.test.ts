@@ -73,6 +73,8 @@ describe("Step 9: AI Payment Decision Explanations Specification", () => {
       merchant: "Campus Books",
       category: "School Supplies",
       remainingBudget: 4000,
+      paypalCalled: true,
+      paymentStatus: "COMPLETED",
     });
 
     expect(explanation.toLowerCase()).toContain("paypal");

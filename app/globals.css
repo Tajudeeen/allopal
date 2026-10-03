@@ -767,3 +767,8 @@ header nav button {
 .launch-card .text-[#5f626a] {
   color: #f8fafc !important;
 }
+
+
+.launch-logo-card::before {
+  display: none;
+}

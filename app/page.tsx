@@ -28,7 +28,7 @@ const screens = [
     href: "/console",
     label: "02 / agent console",
     title: "Run commerce",
-    body: "Pick a seeded cart, dry-run it through the policy engine, or cross the PayPal execution boundary with the real payment lifecycle.",
+    body: "Give an agent a natural-language shopping task. It selects a server-side cart, then the policy engine decides whether that action can cross into PayPal.",
     icon: Bot,
     stat: "Interactive payment runtime",
   },
@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <ProductShell>
       <div className="space-y-16">
-        <section className="grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
+        <section className="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-[0.16em] text-blue-700">
               <Activity className="h-3.5 w-3.5 text-emerald-500" />
@@ -66,17 +66,16 @@ export default function Home() {
             </span>
             <div className="space-y-4">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Spending authorization for PayPal agentic commerce
+                an authorization layer for AI agents using PayPal
               </p>
               <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-7xl">
-                let the agent shop.
+                agents can shop.
                 <span className="block font-serif italic font-normal text-[#1f4fe0]">
-                  keep the money under rules.
+                  they cannot rewrite the rules.
                 </span>
               </h1>
               <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                Allopal separates human intent, deterministic authorization, and PayPal execution.
-                The landing page is now the map. The actual product workflows live on their own screens.
+                Allopal sits between an AI agent and the PayPal payment boundary. The agent can discover and request a purchase, the deterministic policy engine decides whether the mandate allows it, and PayPal executes only after that decision.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -187,17 +186,17 @@ export default function Home() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-300">the invariant</p>
               <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
-                mandate passes → policy passes → PayPal can execute
+                AI proposes → policy authorizes → PayPal executes
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">
-                A denied request never crosses the PayPal boundary. A real PayPal order still waits for payer approval before capture.
+                The agent does not get payment authority. A denied request never crosses the PayPal boundary, while an approved PayPal order still waits for payer approval before capture.
               </p>
             </div>
             <div className="grid gap-2.5 sm:grid-cols-3">
               {[
-                ["01", "human mandate", "locked"],
-                ["02", "policy engine", "deterministic"],
-                ["03", "payment", "auditable"],
+                ["01", "AI agent", "proposes"],
+                ["02", "policy engine", "authorizes"],
+                ["03", "PayPal", "executes"],
               ].map(([n, title, value]) => (
                 <div key={n} className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <span className="text-[10px] font-mono text-slate-400">{n}</span>

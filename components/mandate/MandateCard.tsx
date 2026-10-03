@@ -77,8 +77,8 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
       />
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center space-x-3">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center space-x-3 min-w-0">
           <div
             className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-md flex-none ${
               isActive
@@ -93,7 +93,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center flex-wrap gap-2 min-w-0">
               <h2
                 className={`text-lg font-bold tracking-tight ${
                   isDark ? "text-white" : "text-slate-900"
@@ -294,7 +294,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
             : "border-slate-200 text-slate-500"
         }`}
       >
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center flex-wrap gap-1 min-w-0">
           <Calendar className="w-3.5 h-3.5 opacity-60" />
           <span>Valid through: {new Date(mandate.validUntil).toLocaleDateString()}</span>
         </div>

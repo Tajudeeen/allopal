@@ -75,7 +75,7 @@ export function AgentConsole({
 
   return (
     <div
-      className={`rounded-2xl p-6 border shadow-2xl transition-all backdrop-blur-2xl ${
+      className={`selo-card rounded-[26px] p-6 border shadow-2xl transition-all backdrop-blur-2xl ${
         isDark
           ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
@@ -124,7 +124,7 @@ export function AgentConsole({
             <button
               key={cart.id}
               onClick={() => setSelectedCartId(cart.id)}
-              className={`p-3 rounded-xl text-left border transition-all ${
+              className={`p-3 rounded-[18px] text-left border transition-all ${
                 isSelected
                   ? isDark
                     ? "bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/10"
@@ -177,7 +177,7 @@ export function AgentConsole({
       {/* Selected Cart Inspector */}
       {selectedCart && (
         <div
-          className={`p-4 rounded-xl border mb-5 ${
+          className={`p-4 rounded-[20px] border mb-5 bg-white/[0.015] ${
             isDark
               ? "bg-slate-950/60 border-slate-800/80"
               : "bg-slate-50 border-slate-200/80"
@@ -251,7 +251,7 @@ export function AgentConsole({
         <button
           onClick={() => selectedCart && onAuthorize(selectedCart.id)}
           disabled={loading || !mandateId}
-          className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl border text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 ${
+          className={`selo-button selo-button-secondary w-full disabled:opacity-50 ${
             isDark
               ? "bg-slate-800 hover:bg-slate-700 border-slate-700 text-white"
               : "bg-white hover:bg-slate-50 border-slate-300 text-slate-800"
@@ -264,7 +264,7 @@ export function AgentConsole({
         <button
           onClick={() => selectedCart && onExecutePayment(selectedCart.id)}
           disabled={loading || !mandateId}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#003087] via-[#0070BA] to-[#003087] hover:from-[#002766] hover:to-[#005ea6] text-white text-xs font-extrabold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          className="selo-button selo-button-paypal w-full disabled:opacity-50"
         >
           <span>Execute PayPal Payment</span>
           <ArrowRight className="w-4 h-4" />

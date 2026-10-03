@@ -29,8 +29,8 @@ When autonomous agents are empowered to shop or pay for goods on behalf of human
 ##  Core Invariant
 
 ```
-MANDATE PASSES (ALLOWED)  ──▶  CREATE PAYPAL ORDER  ──▶  CAPTURE PAYPAL ORDER
-MANDATE FAILS  (DENIED)   ──▶  NO PAYPAL CALL       ──▶  ZERO MONEY MOVEMENT
+MANDATE PASSES (ALLOWED)  ──▶  RESERVE BUDGET ──▶ CREATE PAYPAL ORDER ──▶ PAYER APPROVAL ──▶ CAPTURE
+MANDATE FAILS  (DENIED)   ──▶  NO PAYPAL CALL ──▶ ZERO MONEY MOVEMENT
 ```
 
 * **Zero-Bypass Policy**: Under no circumstances can client code or AI prompts trigger a PayPal transaction without satisfying an active, non-revoked mandate with sufficient remaining budget.
@@ -65,13 +65,15 @@ MANDATE FAILS  (DENIED)   ──▶  NO PAYPAL CALL       ──▶  ZERO MONEY 
         [Policy Check FAILS]            [Policy Check PASSES]
                  │                               │
                  ▼                               ▼
-       ┌───────────────────┐           ┌───────────────────┐
-       │ Persist Decision  │           │   PayPal Client   │
-       │ (DENIED audit log)│           │ (lib/paypal/client│
-       └─────────┬─────────┘           └─────────┬─────────┘
-                 │                               │ 1. Create Order
-                 ▼                               ▼ 2. Capture Order
-          Return 403 /                   ┌───────────────────┐
+       ┌───────────────────┐           ┌─────────────────────────┐
+       │ Persist Decision  │           │      PayPal Client       │
+       │ (DENIED audit log)│           │       (Orders API)       │
+       └─────────┬─────────┘           └────────────┬────────────┘
+                 │                                  │ 1. Create Order
+                 ▼                                  │ 2. Payer Approval
+          Return 403 /                              │ 3. Capture Order
+          Policy Denied                             ▼
+          (No PayPal call)                  ┌───────────────────┐
           Policy Denied                  │ Persist Decision  │
           (No PayPal call)               │ (COMPLETED + IDs) │
                                          │ Update Mandate    │
@@ -97,13 +99,13 @@ The policy engine (`lib/policy/engine.ts`) runs an ordered sequence of determini
 | Step | Check Name | Description | Failure Reason |
 |:---:|:---|:---|:---|
 | **1** | **Mandate Exists** | Verifies the referenced mandate exists in database | `Mandate not found` |
-| **2** | **Mandate Active** | Ensures mandate status is `ACTIVE` (not `PENDING` or `EXPIRED`) | `Mandate is not active` |
-| **3** | **Not Revoked** | Verifies status is not `REVOKED` | `Mandate has been revoked` |
-| **4** | **Time Window** | Checks current timestamp against `validFrom` and `validUntil` | `Mandate has expired or is not yet valid` |
-| **5** | **Merchant Allowed** | Verifies cart's merchant is in `allowedMerchants` | `Merchant '{merchant}' is not allowed by this mandate` |
-| **6** | **Category Allowed** | Verifies cart item categories are in `allowedCategories` | `Category '{category}' is not allowed by this mandate` |
-| **7** | **Amount Valid** | Cart total must be strictly positive (`> 0`) | `Invalid cart amount: must be greater than 0` |
-| **8** | **Budget Remaining** | `spentAmount + cartAmount <= totalLimit` | `Insufficient mandate budget: requires ${x}, only ${y} remaining` |
+| **2** | **Not Revoked** | Rejects an explicitly revoked mandate before any execution | `Mandate has been revoked by the account holder` |
+| **3** | **Mandate Active** | Requires `ACTIVE` status and a currently valid time window | `Mandate is expired, premature, or not ACTIVE` |
+| **4** | **Cart Exists** | Requires an existing cart with at least one item | `Cart is empty or does not exist` |
+| **5** | **Merchant Allowed** | Verifies the cart merchant and every product merchant are authorized | `Merchant is not permitted under this mandate` |
+| **6** | **Category Allowed** | Requires every cart item category to be authorized | `Category is not permitted under this mandate` |
+| **7** | **Amount Valid** | Requires a positive integer cents total and authoritative item-price reconciliation | `Invalid amount or authoritative price mismatch` |
+| **8** | **Budget Remaining** | Requires the purchase to fit inside remaining mandate budget | `Purchase exceeds remaining mandate budget` |
 
 ---
 

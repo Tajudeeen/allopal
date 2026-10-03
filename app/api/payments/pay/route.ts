@@ -444,7 +444,8 @@ export async function POST(req: NextRequest) {
       {
         error: "PAYMENT_EXECUTION_FAILED",
         message,
-        paypalCalled: false,
+        paypalCalled,
+        paypalOrderId,
       },
       500
     );

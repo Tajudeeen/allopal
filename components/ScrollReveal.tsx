@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef } from "react";
 
 interface ScrollRevealProps {
@@ -14,7 +15,12 @@ export function ScrollReveal({ children, className = "", delay = 0 }: ScrollReve
     const el = ref.current;
     if (!el) return;
 
-    if (!( "IntersectionObserver" in window)) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.classList.add("in");
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
       el.classList.add("in");
       return;
     }
@@ -22,13 +28,16 @@ export function ScrollReveal({ children, className = "", delay = 0 }: ScrollReve
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-            observer.unobserve(entry.target);
-          }
+          if (!entry.isIntersecting) return;
+
+          entry.target.classList.add("in");
+          observer.unobserve(entry.target);
         });
       },
-      { rootMargin: "0px 0px -80px 0px", threshold: 0.08 }
+      {
+        rootMargin: "0px 0px -12% 0px",
+        threshold: 0.06,
+      }
     );
 
     observer.observe(el);

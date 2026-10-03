@@ -70,7 +70,9 @@ export function LaunchExperience({ children }: LaunchExperienceProps) {
 
   return (
     <>
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
 
       {showSplash && (
         <div className="launch-surface fixed inset-0 z-[100] flex min-h-screen items-center justify-center overflow-hidden text-[#17181b]">

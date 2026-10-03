@@ -6,7 +6,7 @@
   --color-canvas: #f2f1ed;
   --color-ink: #17181b;
   --color-ink-soft: #3f4147;
-  --color-muted: #5f626a;
+  --color-muted: #51545b;
   --color-line: rgba(23, 24, 27, 0.14);
   --color-accent: #1f4fe0;
   --color-cta: #17181b;
@@ -919,4 +919,21 @@ header nav button {
 
 .launch-logo-card::before {
   display: none;
+}
+
+
+/* slightly deeper neutral text on light surfaces; dark-card overrides stay intentional */
+.text-slate-600,
+.text-gray-600 {
+  color: #4f5259 !important;
+}
+
+.text-slate-500,
+.text-gray-500 {
+  color: #5d6067 !important;
+}
+
+.text-slate-400,
+.text-gray-400 {
+  color: #6a6d74 !important;
 }

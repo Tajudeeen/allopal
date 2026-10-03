@@ -264,7 +264,11 @@ npm run prisma:seed
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000). The frontend utilizes the dedicated brand background asset (`public/bg.jpg`) with backdrop blur and glassmorphism styling.
+Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design language of [usereins.xyz](https://usereins.xyz/), featuring:
+* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with quick section anchors and modal triggers.
+* **Editorial Hero & Invariant Banner**: Bold typography, italic serif accents, and high-contrast formula presentation (`MANDATE PASSES → PAYPAL CAPTURE`).
+* **Desktop Console Stage**: MacOS-style application container (`allopal-runtime-v1 // paypal-sandbox // policy-gate`) framing the live Mandate and Agent Commerce simulators.
+* **Status Pipeline & Specification Cards**: Visual check chips (`ALLOWED`, `DENIED`, `RESERVED`) and gradient-accented security architecture cards.
 
 ---
 
@@ -276,7 +280,7 @@ Allopal maintains a comprehensive automated test suite testing every boundary, p
 npm test
 ```
 
-**Test Suite Health: 8 passed / 42 passed (100% pass rate)**
+**Test Suite Health: 10 passed / 48 passed (100% pass rate)**
 
 ### Test Coverage Highlights
 
@@ -288,6 +292,8 @@ npm test
 * `tests/payments/security_boundary.test.ts`: Dedicated tests proving 0 PayPal API calls for disallowed categories, over-budget purchases, and revoked mandates.
 * `tests/payments/concurrency.test.ts`: Prevents race conditions (e.g. two concurrent $25 purchases against a $40 limit will never charge $50) and handles idempotent request replays.
 * `tests/ai/proposal.test.ts`: Verifies natural-language mandate parsing, validation bounds, and strict human approval gating.
+* `tests/ai/explainer.test.ts`: Evaluates structured AI decision explanations for allowed and denied payment decisions.
+* `tests/e2e/allopal_full_flow.test.ts`: End-to-end specification test executing the canonical primary demo across Cases A, B, C, and D.
 
 ---
 

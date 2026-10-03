@@ -3,18 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 15, 23, 42;
-  --background-start-rgb: 248, 250, 252;
-  --background-end-rgb: 241, 245, 249;
+  --color-canvas: #f1f1f3;
+  --color-ink: #1c1c1f;
+  --color-ink-soft: #3a3a40;
+  --color-muted: #6b6b73;
+  --color-caption: #5f5f67;
+  --color-line: #d6d6dc;
+  --color-cta: #17171a;
+  --color-accent: #1f4fe0;
+  --color-accent-ink: #1736b8;
+  --color-accent-tint: #e8eefd;
+  --color-approved: #15803d;
+  --color-approved-tint: #e3f4e8;
+  --color-approved-ink: #0f5a2b;
+  --color-reserved: #6d4fd8;
+  --color-reserved-tint: #ede9fb;
+  --color-reserved-ink: #3f2a8c;
+  --color-denied: #c8201a;
+  --color-denied-tint: #fde4e2;
+  --color-denied-ink: #8a1511;
+  --glass: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(242, 242, 246, 0.78));
+  --glass-edge: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 20px 45px rgba(25, 25, 40, 0.07);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--color-ink);
+  background-color: var(--color-canvas);
+  background-image: url('/bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }

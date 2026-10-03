@@ -36,6 +36,7 @@ A human creates the mandate. The server evaluates every request. PayPal is only 
 - [Data model](#data-model)
 - [API](#api)
 - [AI mandate flow](#ai-mandate-flow)
+- [Agent action flow](#agent-action-flow)
 - [Tech stack](#tech-stack)
 - [Running it yourself](#running-it-yourself)
 - [Testing](#testing)
@@ -73,7 +74,7 @@ Allopal treats a PayPal purchase as a controlled execution path rather than lett
 5. **Cross the PayPal boundary.** Mock mode completes deterministically. Real mode creates an order and waits for payer approval before capture.
 6. **Record the result.** Decisions, provider transaction state, and budget effects remain inspectable in the ledger.
 
-AI can help structure intent or explain a decision. It never gets authority to move money.
+AI can structure a mandate proposal, choose a candidate cart for a shopping task, and explain a finalized decision. It never becomes the authorization authority.
 
 ---
 
@@ -276,7 +277,7 @@ The product is split into working screens so the landing page stays a map rather
 |:---|:---|:---|
 | Overview | <code>/</code> | Live runtime summary and product map |
 | Mandate | <code>/mandate</code> | Human-owned mandate, revocation, and AI draft/lock flow |
-| Agent Console | <code>/console</code> | Canonical cart selection, policy dry-run, and payment execution |
+| Agent Console | <code>/console</code> | AI agent task runner, canonical cart selection, policy dry-run, and PayPal payment execution |
 | Policy | <code>/policy</code> | Full eight-check inspection and execution boundary |
 | Ledger | <code>/ledger</code> | Decisions and PayPal transaction history |
 | Welcome | <code>/welcome</code> | First-time product introduction |
@@ -315,7 +316,7 @@ FIRST-RUN WALKTHROUGH MODAL ─────→ PRODUCT
 
 The splash and walkthrough share the product visual language:
 
-- the preserved public/bg.jpg asset remains the backdrop across the app shell and launch surfaces, with a restrained darker tonal wash so the image stays aligned behind the content instead of looking like a separate white underlay;
+- the preserved public/bg.jpg asset is the single backdrop across the app shell and launch surfaces, with no page-level underlay or wash;
 - launch surfaces use the same dark-gradient card treatment as the runtime;
 - the splash logo card has no ambient blue glow;
 - the first-run walkthrough is a modal with three short steps covering the human mandate, deterministic policy gate, and controlled PayPal execution;
@@ -438,6 +439,7 @@ Money is stored as integer cents. The authoritative schema is in [prisma/schema.
 | /api/state | GET | Shared live runtime state for the UI |
 | /api/authorize | POST | Dry-run deterministic policy evaluation |
 | /api/payments/pay | POST | Authoritative policy and PayPal payment execution |
+| /api/agent/act | POST | AI agent selects a catalog cart, then routes it through dry-run authorization or PayPal execution |
 | /api/payments/paypal/return | GET | Re-check mandate and capture an approved PayPal order |
 | /api/payments/paypal/cancel | GET | Cancel a pending PayPal flow and release reservation |
 | /api/mandates/propose | POST | Convert natural-language intent into a mandate proposal |
@@ -495,6 +497,38 @@ flowchart LR
 The proposal route structures intent. The lock route records explicit human approval. Payment authorization does not consume arbitrary AI output as an allow decision.
 
 ---
+
+## Agent action flow
+
+The console includes a real guarded agent path rather than using AI only for mandate drafting.
+
+~~~text
+Natural-language shopping task
+            ↓
+     AI agent selects
+  one server-side cart
+            ↓
+   deterministic policy
+      engine decides
+       ↙           ↘
+   DENIED         ALLOWED
+     ↓                ↓
+PayPal not called   PayPal execution
+                     ↓
+               payer approval
+                     ↓
+                 capture
+~~~
+
+The agent receives a server-authoritative catalog and can select a cart that is later denied by policy. Its selection is treated as untrusted input. The payment route reloads the mandate and cart from the database, evaluates the deterministic checks, reserves budget, and only then reaches PayPal.
+
+This creates the intended separation:
+
+- **AI agent:** understands the shopping request and proposes a concrete action.
+- **Allopal policy engine:** owns the authorization decision.
+- **PayPal:** owns the payment execution lifecycle.
+
+The /api/agent/act endpoint supports DRY_RUN and EXECUTE modes so the same agent path can be demonstrated without or with payment execution.
 
 ## Tech stack
 

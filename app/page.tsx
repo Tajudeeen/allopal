@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { MandateCard } from "@/components/mandate/MandateCard";
 import { AgentConsole } from "@/components/payment/AgentConsole";
@@ -27,6 +27,7 @@ export default function Home() {
   const [evaluation, setEvaluation] = useState<GateEvaluationState | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const paymentIdempotencyKeyRef = useRef<string | null>(null);
 
   const isDark = false;
 
@@ -111,10 +112,14 @@ export default function Home() {
     try {
       const res = await fetch("/api/authorize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           mandateId: mandate.id,
           cartId,
+          idempotencyKey,
         }),
       });
       const data = await res.json();
@@ -144,6 +149,11 @@ export default function Home() {
         console.error("Explanation error", err);
       }
 
+      if (data.status === "PENDING_APPROVAL" && data.approvalUrl) {
+        window.location.assign(data.approvalUrl);
+        return;
+      }
+
       setEvaluation({
         status: data.status,
         amount: data.amount,
@@ -166,6 +176,8 @@ export default function Home() {
   // Execute Real PayPal Payment
   const handleExecutePayment = async (cartId: string) => {
     if (!mandate) return;
+    const idempotencyKey = paymentIdempotencyKeyRef.current ?? crypto.randomUUID();
+    paymentIdempotencyKeyRef.current = idempotencyKey;
     setLoading(true);
     try {
       const res = await fetch("/api/payments/pay", {
@@ -219,6 +231,7 @@ export default function Home() {
 
       await loadState();
     } finally {
+      paymentIdempotencyKeyRef.current = null;
       setLoading(false);
     }
   };

@@ -54,7 +54,7 @@ function StepIndicator({ status }: { status: "passed" | "failed" | "pending" }) 
   return <span className="flex items-center gap-1.5 text-[9px] font-bold tracking-[0.12em] uppercase text-white/25"><Clock3 className="w-4 h-4" />waiting</span>;
 }
 
-export function VisualPolicyGate({ evaluation, loading, isDark = false }: VisualPolicyGateProps) {
+export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps) {
   const isAllowed = evaluation?.status === "ALLOWED" || evaluation?.status === "COMPLETED";
   const checks = evaluation?.checks ?? {};
 

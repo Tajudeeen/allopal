@@ -25,6 +25,9 @@ export async function GET() {
     const decisions = await prisma.decision.findMany({
       orderBy: { createdAt: "desc" },
       take: 20,
+      include: {
+        transaction: true,
+      },
     });
 
     // 4. Fetch PayPal transactions
@@ -45,6 +48,8 @@ export async function GET() {
       decisions: decisions.map((d) => ({
         ...d,
         checks: JSON.parse(d.checks || "{}"),
+        paymentStatus: d.transaction?.status ?? null,
+        paypalCaptureId: d.transaction?.captureId ?? null,
       })),
       transactions,
     });

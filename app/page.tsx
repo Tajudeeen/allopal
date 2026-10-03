@@ -210,8 +210,9 @@ export default function Home() {
         <section id="hero" className="pt-8 pb-4 text-center sm:text-left">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-white/60 shadow-sm text-xs font-semibold text-[#1f4fe0]">
-                <ShieldCheck className="w-4 h-4 text-[#1f4fe0]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-white/60 shadow-sm text-xs font-semibold text-[#1f4fe0]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.png" alt="Allopal Logo" className="w-4 h-4 rounded object-cover" />
                 <span>Deterministic Spending Gateway</span>
                 <span className="text-slate-300">•</span>
                 <span className="text-[#6b6b73]">PayPal Agentic Commerce</span>

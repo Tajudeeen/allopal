@@ -25,8 +25,13 @@ export function Navbar({ onResetDemo, onOpenAiModal }: NavbarProps) {
       <nav className="h-16 px-5 sm:px-6 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/70 shadow-lg shadow-black/5 flex items-center justify-between transition-all">
         {/* Brand */}
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1f4fe0] via-[#3a6bf5] to-[#7095ff] flex items-center justify-center text-white shadow-md shadow-blue-500/25 border border-white/30">
-            <ShieldCheck className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/20 border border-white/60 flex items-center justify-center bg-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Allopal Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <div className="flex items-center space-x-2">

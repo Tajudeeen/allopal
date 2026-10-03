@@ -1,5 +1,9 @@
 # Allopal 🛡️💳
 
+<p align="center">
+  <img src="public/logo.png" width="140" alt="Allopal Logo - Blended PayPal Monogram and Allow Verification Shield" style="border-radius: 24px;" />
+</p>
+
 > **Deterministic Spending Authorization Layer for PayPal Agentic Commerce**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -280,7 +284,7 @@ Allopal maintains a comprehensive automated test suite testing every boundary, p
 npm test
 ```
 
-**Test Suite Health: 10 passed / 48 passed (100% pass rate)**
+**Test Suite Health: 12 passed / 58 passed (100% pass rate)**
 
 ### Test Coverage Highlights
 
@@ -294,6 +298,8 @@ npm test
 * `tests/ai/proposal.test.ts`: Verifies natural-language mandate parsing, validation bounds, and strict human approval gating.
 * `tests/ai/explainer.test.ts`: Evaluates structured AI decision explanations for allowed and denied payment decisions.
 * `tests/e2e/allopal_full_flow.test.ts`: End-to-end specification test executing the canonical primary demo across Cases A, B, C, and D.
+* `tests/security/security_audit.test.ts`: Multi-vector security audit testing price tampering, category injection, and credential leak prevention.
+* `tests/failures/failure_recovery.test.ts`: Fail-closed rollback invariants guaranteeing reserved budgets release if PayPal or network fails.
 
 ---
 

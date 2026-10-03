@@ -63,6 +63,40 @@ describe("Allopal guarded AI agent action", () => {
     captureSpy.mockRestore();
   });
 
+  it("executes a permitted agent-selected purchase through PayPal", async () => {
+    const createSpy = vi.spyOn(payPalClient, "createOrder");
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+
+    const response = await POST(
+      createRequest({
+        task: "buy a notebook for me",
+        mode: "EXECUTE",
+        idempotencyKey: "agent-test-key-002",
+      })
+    );
+
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.agent.selectedCartId).toBe("cart-case-a");
+    expect(data.result.status).toBe("COMPLETED");
+    expect(data.result.paypalCalled).toBe(true);
+    expect(data.result.paypalOrderId).toContain("PAYPAL-SANDBOX-ORD-");
+    expect(data.result.paypalCaptureId).toContain("PAYPAL-SANDBOX-CAP-");
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(captureSpy).toHaveBeenCalledTimes(1);
+
+    createSpy.mockRestore();
+    captureSpy.mockRestore();
+
+    await prisma.payPalTransaction.deleteMany({ where: { mandateId: "mandate-school-shopping" } });
+    await prisma.decision.deleteMany({ where: { mandateId: "mandate-school-shopping" } });
+    await prisma.mandate.update({
+      where: { id: "mandate-school-shopping" },
+      data: { spentAmount: 0, status: "ACTIVE" },
+    });
+  });
+
   it("can select and dry-run a permitted purchase without calling PayPal", async () => {
     const createSpy = vi.spyOn(payPalClient, "createOrder");
     const captureSpy = vi.spyOn(payPalClient, "captureOrder");

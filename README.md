@@ -269,12 +269,12 @@ npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design language of [usereins.xyz](https://usereins.xyz/), featuring:
-* **Adaptive Contrast & Multi-Palette Theme Switcher**: Full WCAG AAA compliant text adaptation across multiple background palettes:
-  * **Obsidian Void (Default `bg.jpg`)**: Deep contrast dark aesthetic with pure white headings and glowing accents.
-  * **Alabaster Light**: Clean daylight frosted pearl glass with deep slate typography.
-  * **PayPal Cyber**: Signature PayPal midnight blue with electric cyan/gold highlights.
-  * **Emerald Vault**: Secure authorization vault theme with glowing emerald state indicators.
-* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with real-time palette selector, section anchors, and modal triggers.
+* **Adaptive Text Engine (WCAG AAA Relative Luminance)**: Every text element, heading, card, badge, and input dynamically calculates and adapts its foreground contrast against any active background color:
+  * **Mathematical Contrast Evaluation (`lib/theme/contrast.ts`)**: Evaluates relative luminance `L = 0.2126 * R + 0.7152 * G + 0.0722 * B` and contrast ratios in real time.
+  * **Preset Backgrounds**: Obsidian Void (`#05070d`), Alabaster Daylight (`#f8fafc`), PayPal Midnight (`#00133d`), Cyber Emerald (`#031c16`), Amethyst Deep (`#1a082b`), and Warm Amber (`#fffbeb`).
+  * **Interactive Custom Color Picker**: Users can pick any color via the HTML5 spectrum or enter any 6-digit hex code; all typography, glass cards, and badges immediately adapt with guaranteed readability.
+  * **Live WCAG Status Indicator**: In-navbar badge showing real-time luminance, contrast ratio (e.g., `15.2:1 AAA`), and active typography tokens (Crisp White `#FFFFFF` vs Deep Slate `#0F172A`).
+* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with real-time background color selector, live contrast stats, section anchors, and modal triggers.
 * **Editorial Hero & Invariant Banner**: Bold typography, italic serif accents, and high-contrast formula presentation (`MANDATE PASSES → PAYPAL CAPTURE`).
 * **Desktop Console Stage**: MacOS-style application container (`allopal-runtime-v1 // paypal-sandbox // policy-gate`) framing the live Mandate and Agent Commerce simulators.
 * **Status Pipeline & Specification Cards**: Visual check chips (`ALLOWED`, `DENIED`, `RESERVED`) and gradient-accented security architecture cards.
@@ -283,20 +283,22 @@ Visit [http://localhost:3000](http://localhost:3000). The frontend layout is mod
 
 ## 🧪 Testing & Verification
 
-Allopal maintains a comprehensive automated test suite testing every boundary, policy rule, PayPal integration invariant, concurrency protection, and AI flow:
+Allopal maintains a comprehensive automated test suite testing every boundary, policy rule, PayPal integration invariant, concurrency protection, theme contrast engine, and AI flow:
 
 ```bash
 npm test
 ```
 
-**Test Suite Health: 12 passed / 58 passed (100% pass rate)**
+**Test Suite Health: 13 passed / 65 passed (100% pass rate)**
 
 ### Test Coverage Highlights
 
 * `tests/foundation.test.ts`: Environment validation and schema structure.
+* `tests/theme/contrast.test.ts`: WCAG relative luminance math, contrast ratios, and adaptive typography token guarantees.
 * `tests/database_seed.test.ts`: Exact cents representation, timestamps, and seed data integrity.
 * `tests/policy/engine.test.ts`: Comprehensive policy engine tests (12 tests covering invalid merchant, disallowed category, boundary conditions, revoked mandates, zero amount).
 * `tests/api/authorize.test.ts`: Server-side authorization endpoint security and client-tamper resistance.
+
 * `tests/payments/paypal.test.ts`: Real PayPal sandbox abstraction, order creation, capture, budget decrementing, and the critical **zero-call failure boundary proof**.
 * `tests/payments/security_boundary.test.ts`: Dedicated tests proving 0 PayPal API calls for disallowed categories, over-budget purchases, and revoked mandates.
 * `tests/payments/concurrency.test.ts`: Prevents race conditions (e.g. two concurrent $25 purchases against a $40 limit will never charge $50) and handles idempotent request replays.

@@ -2,6 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Navbar, AppPalette } from "@/components/Navbar";
+import {
+  PRESET_BACKGROUND_COLORS,
+  getAdaptiveTypography,
+  AdaptiveTypography,
+} from "@/lib/theme/contrast";
 import { MandateCard } from "@/components/mandate/MandateCard";
 import { AgentConsole } from "@/components/payment/AgentConsole";
 import { VisualPolicyGate, GateEvaluationState } from "@/components/gate/VisualPolicyGate";
@@ -27,9 +32,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-  // Background palette state with adaptive text contrast
+  // Adaptive background color & typography state
+  const [bgColorHex, setBgColorHex] = useState<string>("#05070d");
   const [palette, setPalette] = useState<AppPalette>("obsidian");
-  const isDark = palette !== "alabaster";
+  const typography: AdaptiveTypography = getAdaptiveTypography(bgColorHex);
+  const isDark = typography.isDark;
+
 
   // Load authoritative server state
   const loadState = useCallback(async () => {
@@ -196,39 +204,48 @@ export default function Home() {
     }
   };
 
-  // Determine background overlay style based on palette
+  // Determine background overlay style based on background color
   const getOverlayStyle = () => {
-    switch (palette) {
-      case "alabaster":
-        return "bg-white/88 backdrop-blur-md";
-      case "navy":
-        return "bg-gradient-to-b from-[#00133d]/85 via-[#000922]/80 to-[#00133d]/90 backdrop-blur-sm";
-      case "emerald":
-        return "bg-gradient-to-b from-[#031c16]/85 via-[#010e0b]/80 to-[#031c16]/90 backdrop-blur-sm";
-      case "obsidian":
-      default:
-        return "bg-black/55 backdrop-blur-[0.5px]";
+    const matched = PRESET_BACKGROUND_COLORS.find(
+      (p) => p.hex.toLowerCase() === bgColorHex.toLowerCase()
+    );
+    if (matched) {
+      return matched.overlayStyle;
     }
+    return isDark ? "backdrop-blur-sm" : "backdrop-blur-md";
   };
+
+  const isCustomBg = !PRESET_BACKGROUND_COLORS.some(
+    (p) => p.hex.toLowerCase() === bgColorHex.toLowerCase()
+  );
 
   return (
     <div
+      style={isCustomBg ? { backgroundColor: bgColorHex } : undefined}
       className={`min-h-screen relative transition-colors duration-500 selection:bg-[#1f4fe0]/30 ${
         isDark ? "text-white selection:text-white" : "text-slate-900 selection:text-slate-900"
       }`}
     >
-      {/* Background Soft Sheen Overlay responding to selected palette */}
+      {/* Background Soft Sheen Overlay responding to selected background color */}
       <div
         className={`fixed inset-0 pointer-events-none z-0 transition-all duration-700 ${getOverlayStyle()}`}
+        style={
+          isCustomBg
+            ? { backgroundColor: `${bgColorHex}${isDark ? "bf" : "e6"}` }
+            : undefined
+        }
       />
 
-      {/* Floating Navbar with Palette Switcher */}
+      {/* Floating Navbar with Background Color & Contrast Controller */}
       <Navbar
         onResetDemo={handleResetDemo}
         onOpenAiModal={() => setIsAiModalOpen(true)}
         palette={palette}
         onSelectPalette={setPalette}
+        currentBgColorHex={bgColorHex}
+        onSelectBgColorHex={setBgColorHex}
       />
+
 
       {/* Main Content Area */}
       <main className="relative z-10 pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">

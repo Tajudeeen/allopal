@@ -109,7 +109,7 @@ export default function Home() {
                 <WalletCards className="mb-3 h-4 w-4 text-blue-600" />
                 <p className="text-[10px] uppercase tracking-wider text-slate-600">remaining</p>
                 <p className="mt-1 text-2xl font-black text-slate-950">
-                  {`${(remaining / 100).toFixed(2)}`}
+                  {${(remaining / 100).toFixed(2)}}
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">

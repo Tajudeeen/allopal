@@ -124,7 +124,7 @@ export function AgentConsole({
             <button
               key={cart.id}
               onClick={() => setSelectedCartId(cart.id)}
-              className={`p-3 rounded-[18px] text-left border transition-all ${
+              className={`selo-inner-card p-3 rounded-[18px] text-left border transition-all ${
                 isSelected
                   ? isDark
                     ? "bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/10"
@@ -177,7 +177,7 @@ export function AgentConsole({
       {/* Selected Cart Inspector */}
       {selectedCart && (
         <div
-          className={`p-4 rounded-[20px] border mb-5 bg-white/[0.015] ${
+          className={`selo-inner-card p-4 rounded-[20px] border mb-5 bg-white/[0.015] ${
             isDark
               ? "bg-slate-950/60 border-slate-800/80"
               : "bg-slate-50 border-slate-200/80"

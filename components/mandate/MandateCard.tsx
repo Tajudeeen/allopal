@@ -144,7 +144,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
 
       {/* Budget Balance Visualization */}
       <div
-        className={`mt-5 p-4 rounded-xl border ${
+        className={`selo-inner-card mt-5 p-4 rounded-xl border ${
           isDark
             ? "bg-slate-950/60 border-slate-800/80"
             : "bg-slate-50 border-slate-200/80"
@@ -223,7 +223,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         {/* Categories */}
         <div
-          className={`p-3 rounded-xl border ${
+          className={`selo-inner-card p-3 rounded-xl border ${
             isDark
               ? "bg-slate-950/60 border-slate-800/80"
               : "bg-slate-50/80 border-slate-200/60"
@@ -255,7 +255,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
 
         {/* Merchants */}
         <div
-          className={`p-3 rounded-xl border ${
+          className={`selo-inner-card p-3 rounded-xl border ${
             isDark
               ? "bg-slate-950/60 border-slate-800/80"
               : "bg-slate-50/80 border-slate-200/60"

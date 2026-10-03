@@ -5,7 +5,7 @@ import { PayPalApiError, payPalClient } from "@/lib/paypal/client";
 export const dynamic = "force-dynamic";
 
 function redirect(req: NextRequest, status: string, orderId?: string) {
-  const url = new URL("/", req.url);
+  const url = new URL("/console", req.url);
   url.searchParams.set("payment", status);
   if (orderId) url.searchParams.set("order", orderId);
   return NextResponse.redirect(url);

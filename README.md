@@ -122,11 +122,26 @@ The test suite and seed data deterministically verify the canonical primary scen
 
 | Scenario | Cart Item | Cost | Category | Merchant | Mandate State | Result | PayPal Call |
 |:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Case A** | Notebook Bundle | `$18.00` | School Supplies | Campus Books | Active ($40 remaining) |  **PASS** | **Order Created & Captured** |
+| **Case A** | Notebook Bundle | `$18.00` | School Supplies | Campus Books | Active ($40 remaining) |  **PASS** | **Mock: Created & Captured / Real: Approval → Capture** |
 | **Case B** | Gaming Headset | `$90.00` | Electronics | Campus Books | Active ($40 remaining) |  **DENIED** | **Zero Calls** |
 | **Case C** | Heavy Notebook Bundle | `$25.00` | School Supplies | Campus Books | Active ($22 remaining) |  **DENIED** | **Zero Calls** |
 | **Case D** | Supplementary Pens | `$8.00` | School Supplies | Campus Books | **Revoked** |  **DENIED** | **Zero Calls** |
 | **Case E** | Natural Language Prompt | - | - | - | Proposed by AI |  **PENDING** | **Requires Explicit Human Lock** |
+
+##  Product Screens
+
+The application is intentionally split into separate working screens rather than forcing every capability into the landing page:
+
+| Screen | Route | Purpose |
+|:---|:---|:---|
+| Overview | `/` | Live runtime summary and navigation into the product workflows |
+| Mandate | `/mandate` | Full mandate details, revoke control, and AI mandate proposal + human lock |
+| Agent Console | `/console` | Canonical cart scenarios, dry-run authorization, and PayPal execution |
+| Policy | `/policy` | Full deterministic check inspection and PayPal boundary details |
+| Ledger | `/ledger` | Decision history plus PayPal transaction lifecycle and refresh controls |
+
+The navigation collapses into a mobile menu below the desktop breakpoint. Muted labels on light surfaces use stronger slate tones, while muted text inside black session cards remains bright enough to read.
+
 
 ---
 
@@ -145,13 +160,14 @@ Dry-run policy evaluation. Verifies if a mandate allows a cart purchase without 
 * **Response (Allowed)**:
   ```json
   {
-    "allowed": true,
     "decisionId": "dec-...",
-    "status": "APPROVED",
+    "status": "ALLOWED",
     "amount": 1800,
     "merchant": "Campus Books",
     "category": "School Supplies",
-    "remainingBudget": 4000,
+    "remainingBudgetBefore": 4000,
+    "remainingBudgetAfter": 2200,
+    "paypalOrderId": null,
     "checks": { ... }
   }
   ```

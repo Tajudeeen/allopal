@@ -142,7 +142,7 @@ function deterministicAgentSelection(
   const budgetCents = budgetMatch ? Math.round(Number(budgetMatch[1]) * 100) : Number.POSITIVE_INFINITY;
 
   const scored = catalog
-    .map((item) => {
+    .map((item, index) => {
       const haystack = `${item.productName} ${item.category} ${item.merchant}`.toLowerCase();
       const terms = lower
         .replace(/(?:under|below|less than|up to|within)\s*\$?(\d+(?:\.\d{1,2})?)/g, "")
@@ -155,10 +155,11 @@ function deterministicAgentSelection(
 
       return {
         item,
+        index,
         score: matches * 5 + budgetFit + amountPenalty,
       };
     })
-    .sort((a, b) => b.score - a.score || a.item.amount - b.item.amount);
+    .sort((a, b) => b.score - a.score || a.index - b.index);
 
   const selected = scored[0]?.item;
   if (!selected) {

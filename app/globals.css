@@ -116,3 +116,78 @@ body {
     transform: rotate(360deg);
   }
 }
+
+
+/* Editorial bento surface inspired by the reference direction */
+:root {
+  --selo-line: rgba(16, 17, 20, 0.14);
+}
+
+body {
+  background-color: #e9e7e1;
+  background-image:
+    radial-gradient(circle at 14% 12%, rgba(255,255,255,0.82), transparent 30%),
+    radial-gradient(circle at 84% 20%, rgba(197,204,218,0.34), transparent 28%),
+    radial-gradient(circle at 50% 90%, rgba(255,255,255,0.52), transparent 34%),
+    linear-gradient(135deg, #eceae5 0%, #deddd8 48%, #f0efeb 100%);
+  background-size: auto, auto, auto, 100% 100%;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(20,20,20,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,20,20,0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.selo-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: var(--selo-line);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 18px 50px rgba(27, 28, 31, 0.10);
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+}
+
+.selo-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(31,79,224,0.08), transparent 32%),
+    linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.20) 50%, transparent 65%);
+  opacity: 0.8;
+}
+
+.selo-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(16,17,20,0.22);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 26px 65px rgba(27, 28, 31, 0.14);
+}
+
+.selo-shell {
+  border-color: var(--selo-line);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 28px 75px rgba(27,28,31,0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selo-card,
+  .selo-card:hover {
+    transition: none;
+    transform: none;
+  }
+}

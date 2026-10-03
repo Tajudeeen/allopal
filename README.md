@@ -140,7 +140,7 @@ The application is intentionally split into separate working screens rather than
 | Policy | `/policy` | Full deterministic check inspection and PayPal boundary details |
 | Ledger | `/ledger` | Decision history plus PayPal transaction lifecycle and refresh controls |
 
-The navigation collapses into a mobile menu below the desktop breakpoint. Muted labels on light surfaces use stronger slate tones, while muted text inside black session cards remains bright enough to read.
+The navigation collapses into a mobile menu below the desktop breakpoint. The demo reset is one shared control that changes presentation responsively: a labeled `Reset Demo` control on desktop and the same reset action as a compact icon beside the menu on smaller screens. Muted labels on light surfaces use stronger slate tones, while muted text inside black session cards remains bright enough to read.
 
 ### Launch Experience
 

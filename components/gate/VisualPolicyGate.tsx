@@ -1,33 +1,29 @@
 "use client";
 
 import React from "react";
-import { CheckCircle, XCircle, Clock3, CreditCard, Sparkles, ShieldCheck } from "lucide-react";
-
-export interface PolicyCheckResult {
-  passed: boolean;
-  message: string;
-}
+import { CheckCircle, XCircle, CreditCard, Sparkles, Loader2 } from "lucide-react";
+import { PolicyCheckDetail } from "@/lib/policy/types";
 
 export interface GateEvaluationState {
   status: "ALLOWED" | "DENIED" | "COMPLETED";
   amount: number;
   merchant: string;
   category: string;
-  reason: string;
-  failedCheck: string | null;
+  reason?: string;
+  failedCheck?: string | null;
   paypalCalled: boolean;
   paypalOrderId: string | null;
   paypalCaptureId?: string | null;
   aiExplanation?: string;
   checks?: {
-    MANDATE_EXISTS?: PolicyCheckResult;
-    MANDATE_ACTIVE?: PolicyCheckResult;
-    MANDATE_NOT_REVOKED?: PolicyCheckResult;
-    CART_EXISTS?: PolicyCheckResult;
-    MERCHANT_ALLOWED?: PolicyCheckResult;
-    CATEGORY_ALLOWED?: PolicyCheckResult;
-    AMOUNT_VALID?: PolicyCheckResult;
-    BUDGET_SUFFICIENT?: PolicyCheckResult;
+    MANDATE_EXISTS?: PolicyCheckDetail;
+    MANDATE_ACTIVE?: PolicyCheckDetail;
+    MANDATE_NOT_REVOKED?: PolicyCheckDetail;
+    CART_EXISTS?: PolicyCheckDetail;
+    MERCHANT_ALLOWED?: PolicyCheckDetail;
+    CATEGORY_ALLOWED?: PolicyCheckDetail;
+    AMOUNT_VALID?: PolicyCheckDetail;
+    BUDGET_SUFFICIENT?: PolicyCheckDetail;
   };
 }
 
@@ -37,92 +33,276 @@ interface VisualPolicyGateProps {
   isDark?: boolean;
 }
 
-const gateSteps = [
-  { key: "MANDATE_EXISTS", title: "Mandate exists", subtitle: "Authoritative spending mandate is present." },
-  { key: "MANDATE_ACTIVE", title: "Mandate active", subtitle: "The mandate is currently enabled." },
-  { key: "MANDATE_NOT_REVOKED", title: "Mandate not revoked", subtitle: "Human control has not disabled spending." },
-  { key: "CART_EXISTS", title: "Cart exists", subtitle: "The requested purchase resolves to a known cart." },
-  { key: "MERCHANT_ALLOWED", title: "Merchant allowed", subtitle: "Merchant is inside the locked allow-list." },
-  { key: "CATEGORY_ALLOWED", title: "Category allowed", subtitle: "Purchase category is inside policy." },
-  { key: "AMOUNT_VALID", title: "Amount valid", subtitle: "Amount is valid and represented in integer cents." },
-  { key: "BUDGET_SUFFICIENT", title: "Budget sufficient", subtitle: "Remaining mandate budget covers the request." },
-] as const;
-
-function StepIndicator({ status }: { status: "passed" | "failed" | "pending" }) {
-  if (status === "passed") return <span className="flex items-center gap-1.5 text-[9px] font-bold tracking-[0.12em] uppercase text-emerald-300"><CheckCircle className="w-4 h-4" />passed</span>;
-  if (status === "failed") return <span className="flex items-center gap-1.5 text-[9px] font-bold tracking-[0.12em] uppercase text-rose-300"><XCircle className="w-4 h-4" />failed</span>;
-  return <span className="flex items-center gap-1.5 text-[9px] font-bold tracking-[0.12em] uppercase text-white/25"><Clock3 className="w-4 h-4" />waiting</span>;
-}
-
-export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps) {
-  const isAllowed = evaluation?.status === "ALLOWED" || evaluation?.status === "COMPLETED";
-  const checks = evaluation?.checks ?? {};
-
-  if (!evaluation && !loading) {
+export function VisualPolicyGate({
+  evaluation,
+  loading,
+  isDark = false,
+}: VisualPolicyGateProps) {
+  if (loading) {
     return (
-      <div className="selo-checks rounded-[32px] border bg-white/78">
-        <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
-          <div className="relative p-7 sm:p-9 lg:p-10 min-h-[430px] flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-8"><span className="w-2 h-2 rounded-full bg-slate-300" /><span className="text-[10px] font-bold tracking-[0.18em] uppercase text-slate-400">Awaiting request</span></div>
-              <p className="text-xs font-mono text-slate-400 mb-3">/checks</p>
-              <h2 className="text-5xl sm:text-6xl font-light tracking-[-0.055em] leading-[0.92] text-[#17181b]">Policy<br /><span className="font-serif italic text-[#1f4fe0]">checks.</span></h2>
-              <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-500">Run a purchase through Allopal to see the authorization sequence, the failed rule, and whether PayPal was ever reached.</p>
-            </div>
-            <div className="rounded-2xl border border-black/[0.08] bg-black/[0.018] p-4">
-              <div className="text-[9px] font-bold tracking-[0.16em] uppercase text-slate-400 mb-2">execution boundary</div>
-              <div className="flex items-center justify-between gap-3"><span className="text-sm font-medium text-[#17181b]">PayPal API</span><span className="text-[9px] font-bold tracking-[0.12em] uppercase text-slate-400">untouched</span></div>
-            </div>
-          </div>
-          <div className="p-4 sm:p-6 lg:p-7 border-t lg:border-t-0 lg:border-l border-black/[0.08]">
-            <div className="h-full rounded-2xl border border-black/[0.08] bg-white/65 p-5 sm:p-6">
-              <div className="flex items-center justify-between pb-4 border-b border-black/[0.07]"><span className="text-[10px] font-bold tracking-[0.16em] uppercase text-slate-400">Sequential evaluation</span><span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-300">8 rules</span></div>
-              <div className="pt-1">{gateSteps.map((step, idx) => <div key={step.key} className="grid grid-cols-[34px_1fr_auto] items-center gap-3 py-4 border-b last:border-b-0 border-black/[0.06]"><span className="text-[10px] font-mono text-slate-300">0{idx + 1}</span><div><div className="text-sm font-semibold text-[#202126]">{step.title}</div><div className="text-[11px] mt-0.5 text-slate-400">{step.subtitle}</div></div><span className="text-[9px] font-bold tracking-[0.12em] uppercase text-slate-300">waiting</span></div>)}</div>
-            </div>
-          </div>
-        </div>
+      <div
+        className={`rounded-2xl p-8 border shadow-xl flex flex-col items-center justify-center space-y-3 transition-all ${
+          isDark
+            ? "bg-slate-900/85 border-slate-700/80 text-white"
+            : "bg-white/95 border-slate-200/90 text-slate-900"
+        }`}
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-[#1f4fe0]" />
+        <p
+          className={`text-sm font-medium ${
+            isDark ? "text-slate-300" : "text-slate-600"
+          }`}
+        >
+          Evaluating deterministic policy engine on server...
+        </p>
       </div>
     );
   }
 
-  return (
-    <div className={"selo-checks rounded-[32px] border " + (isAllowed ? "bg-[#111216] text-white" : "bg-[#111216] text-white")}>
-      <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
-        <div className="relative p-7 sm:p-9 lg:p-10 min-h-[610px] flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/[0.08]">
-          <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-8"><span className={"w-2 h-2 rounded-full " + (isAllowed ? "bg-emerald-400" : "bg-rose-400")} /><span className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/45">{loading ? "evaluating request" : "authorization result"}</span></div>
-            <p className="text-xs font-mono text-white/30 mb-3">/checks</p>
-            <h2 className="text-5xl sm:text-6xl font-light tracking-[-0.055em] leading-[0.92]">Policy<br /><span className={"font-serif italic " + (isAllowed ? "text-blue-300" : "text-rose-300")}>{isAllowed ? "passed." : "blocked."}</span></h2>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/45">{evaluation?.merchant} · {evaluation?.category}<br />${((evaluation?.amount ?? 0) / 100).toFixed(2)} USD</p>
-            <div className="mt-8 flex flex-wrap gap-2"><span className="px-3 py-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] text-[10px] font-mono text-white/60">{evaluation?.status}</span><span className="px-3 py-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] text-[10px] font-mono text-white/60">{evaluation?.paypalCalled ? "PAYPAL CALLED" : "ZERO PAYPAL CALLS"}</span></div>
-          </div>
-          <div className="relative mt-10 rounded-2xl border border-white/[0.09] bg-white/[0.035] p-4">
-            <div className="flex items-center gap-2 mb-3"><ShieldCheck className={"w-4 h-4 " + (isAllowed ? "text-emerald-300" : "text-rose-300")} /><span className="text-[9px] font-bold tracking-[0.15em] uppercase text-white/40">final boundary</span></div>
-            <div className="flex items-center justify-between gap-3"><span className="text-sm font-medium">PayPal execution</span><span className={"text-[9px] font-bold tracking-[0.12em] uppercase px-2.5 py-1 rounded-full border " + (evaluation?.paypalCalled ? "text-emerald-300 bg-emerald-400/10 border-emerald-400/20" : "text-rose-300 bg-rose-400/10 border-rose-400/20")}>{evaluation?.paypalCalled ? "captured" : "blocked"}</span></div>
-          </div>
-        </div>
-
-        <div className="p-4 sm:p-6 lg:p-7">
-          <div className="flex items-center justify-between px-2 pb-4 border-b border-white/[0.08]"><div className="flex items-center gap-2"><span className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/35">Sequential evaluation</span><span className="text-[9px] font-mono text-white/20">8 RULES</span></div><span className={"text-[9px] font-bold uppercase tracking-[0.12em] " + (isAllowed ? "text-emerald-300" : "text-rose-300")}>{evaluation?.status}</span></div>
-          <div className="py-1">{gateSteps.map((step, idx) => {
-            const result = checks[step.key as keyof NonNullable<GateEvaluationState["checks"]>];
-            const status = result ? (result.passed ? "passed" : "failed") : "pending";
-            return <div key={step.key} className="grid grid-cols-[34px_1fr_auto] items-center gap-3 py-4 px-2 border-b last:border-b-0 border-white/[0.07] transition-colors hover:bg-white/[0.025]">
-              <span className="text-[10px] font-mono text-white/20">0{idx + 1}</span>
-              <div className="min-w-0"><div className="text-sm font-semibold truncate">{step.title}</div><div className="text-[11px] mt-0.5 text-white/35 truncate">{step.subtitle}{result?.message ? " · " + result.message : ""}</div></div>
-              <StepIndicator status={status} />
-            </div>;
-          })}</div>
-
-          <div className={"mt-4 rounded-2xl p-4 border " + (isAllowed ? "bg-[#003087]/80 border-blue-400/20" : "bg-rose-950/45 border-rose-400/15")}>
-            <div className="flex items-center justify-between gap-3 mb-2"><div className="flex items-center gap-2"><CreditCard className={"w-4 h-4 " + (isAllowed ? "text-[#FFC439]" : "text-rose-300")} /><span className="text-[10px] font-bold tracking-[0.12em] uppercase">Execution boundary</span></div><span className="text-[9px] font-mono opacity-55">{evaluation?.paypalCalled ? "API INVOKED" : "ZERO CALLS"}</span></div>
-            {isAllowed ? <div className="text-xs font-mono space-y-1"><div><span className="opacity-50">order </span>{evaluation?.paypalOrderId || "PENDING_CAPTURE"}</div>{evaluation?.paypalCaptureId && <div><span className="opacity-50">capture </span>{evaluation.paypalCaptureId}</div>}<div className="font-sans text-[11px] opacity-60 pt-1">Server-side capture succeeded for ${((evaluation?.amount ?? 0) / 100).toFixed(2)} USD</div></div> : <div className="text-xs space-y-1"><div className="font-semibold">Zero money movement. PayPal was never invoked.</div><div className="text-[11px] opacity-60">{evaluation?.failedCheck || "POLICY_RULE"} · {evaluation?.reason}</div></div>}
-          </div>
-
-          {evaluation?.aiExplanation && <div className="mt-3 rounded-2xl border border-purple-400/15 bg-purple-950/25 p-3.5 text-xs flex items-start gap-2.5"><Sparkles className="w-4 h-4 text-purple-300 shrink-0 mt-0.5" /><div><span className="font-bold block mb-0.5">AI decision explanation</span><p className="leading-relaxed text-white/50">{evaluation.aiExplanation}</p></div></div>}
-        </div>
+  if (!evaluation) {
+    return (
+      <div
+        className={`rounded-2xl p-8 border shadow-xl text-center transition-all ${
+          isDark
+            ? "bg-slate-900/85 border-slate-700/80 text-white"
+            : "bg-white/95 border-slate-200/90 text-slate-900"
+        }`}
+      >
+        <p
+          className={`text-sm ${
+            isDark ? "text-slate-400" : "text-slate-500"
+          }`}
+        >
+          Select a shopping scenario above to observe real-time policy checks.
+        </p>
       </div>
+    );
+  }
+
+  const isAllowed = evaluation.status === "ALLOWED" || evaluation.status === "COMPLETED";
+  const checks = evaluation.checks || {};
+
+  const gateSteps = [
+    {
+      key: "MANDATE_EXISTS",
+      title: "1. Mandate",
+      subtitle: "Identified",
+      passed: checks.MANDATE_EXISTS?.passed ?? true,
+      message: checks.MANDATE_EXISTS?.message,
+    },
+    {
+      key: "MANDATE_ACTIVE",
+      title: "2. Active",
+      subtitle: "Not Revoked",
+      passed:
+        (checks.MANDATE_ACTIVE?.passed ?? true) &&
+        (checks.MANDATE_NOT_REVOKED?.passed ?? true),
+      message:
+        checks.MANDATE_NOT_REVOKED?.passed === false
+          ? checks.MANDATE_NOT_REVOKED.message
+          : checks.MANDATE_ACTIVE?.message,
+    },
+    {
+      key: "MERCHANT_ALLOWED",
+      title: "3. Merchant",
+      subtitle: "Authorized",
+      passed: checks.MERCHANT_ALLOWED?.passed ?? true,
+      message: checks.MERCHANT_ALLOWED?.message,
+    },
+    {
+      key: "CATEGORY_ALLOWED",
+      title: "4. Category",
+      subtitle: "Permitted",
+      passed: checks.CATEGORY_ALLOWED?.passed ?? true,
+      message: checks.CATEGORY_ALLOWED?.message,
+    },
+    {
+      key: "BUDGET_SUFFICIENT",
+      title: "5. Budget",
+      subtitle: "Remaining",
+      passed: checks.BUDGET_SUFFICIENT?.passed ?? true,
+      message: checks.BUDGET_SUFFICIENT?.message,
+    },
+  ];
+
+  return (
+    <div
+      className={`rounded-2xl p-6 border shadow-2xl backdrop-blur-2xl transition-all ${
+        isDark
+          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
+      }`}
+    >
+      {/* Header */}
+      <div
+        className={`flex items-center justify-between mb-5 pb-3 border-b ${
+          isDark ? "border-slate-800" : "border-slate-200"
+        }`}
+      >
+        <div className="flex items-center space-x-2.5">
+          <div
+            className={`w-3 h-3 rounded-full ${
+              isAllowed ? "bg-emerald-500 animate-pulse" : "bg-rose-500 animate-pulse"
+            }`}
+          />
+          <h2 className="text-base font-bold tracking-tight">
+            Visual Policy Gate Evaluation
+          </h2>
+        </div>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+            isAllowed
+              ? isDark
+                ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
+                : "bg-emerald-100 text-emerald-800 border-emerald-300"
+              : isDark
+              ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
+              : "bg-rose-100 text-rose-800 border-rose-300"
+          }`}
+        >
+          {evaluation.status}
+        </span>
+      </div>
+
+      {/* 5 Sequential Policy Check Gates */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-5">
+        {gateSteps.map((step, idx) => (
+          <div
+            key={idx}
+            className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
+              step.passed
+                ? isDark
+                  ? "bg-emerald-950/40 border-emerald-800/60 text-emerald-200"
+                  : "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+                : isDark
+                ? "bg-rose-950/40 border-rose-800/80 text-rose-200 shadow-md ring-1 ring-rose-500/20"
+                : "bg-rose-50/90 border-rose-300 text-rose-950 shadow-md ring-2 ring-rose-400/20"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span
+                className={`text-[11px] font-bold ${
+                  isDark ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
+                {step.title}
+              </span>
+              {step.passed ? (
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              )}
+            </div>
+            <div>
+              <div
+                className={`text-[11px] font-semibold leading-tight ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
+                {step.subtitle}
+              </div>
+              <div
+                className={`text-[9px] font-bold uppercase mt-1 ${
+                  step.passed
+                    ? isDark
+                      ? "text-emerald-400"
+                      : "text-emerald-700"
+                    : isDark
+                    ? "text-rose-400"
+                    : "text-rose-700"
+                }`}
+              >
+                {step.passed ? "PASSED" : "FAILED"}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Final PayPal Gateway Execution State */}
+      <div
+        className={`p-4 rounded-xl border transition-all ${
+          isAllowed
+            ? "bg-gradient-to-r from-blue-950 via-[#003087] to-blue-900 text-white border-blue-700/80 shadow-lg"
+            : "bg-rose-950 text-rose-100 border-rose-800 shadow-md"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <CreditCard className={`w-5 h-5 ${isAllowed ? "text-[#FFC439]" : "text-rose-400"}`} />
+            <span className="text-xs font-bold tracking-wide uppercase">
+              PayPal Execution Boundary
+            </span>
+          </div>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-wider uppercase ${
+              isAllowed
+                ? "bg-emerald-400 text-slate-950"
+                : "bg-rose-500 text-white"
+            }`}
+          >
+            {evaluation.paypalCalled ? "PAYPAL CAPTURED" : "PAYPAL NOT CALLED"}
+          </span>
+        </div>
+
+        {isAllowed ? (
+          <div className="text-xs space-y-1 font-mono">
+            <div>
+              <span className="text-blue-200">PayPal Order ID: </span>
+              <span className="font-bold text-yellow-300">
+                {evaluation.paypalOrderId || "PENDING_CAPTURE"}
+              </span>
+            </div>
+            {evaluation.paypalCaptureId && (
+              <div>
+                <span className="text-blue-200">Capture ID: </span>
+                <span className="text-emerald-300">{evaluation.paypalCaptureId}</span>
+              </div>
+            )}
+            <div className="text-[11px] text-blue-200/90 font-sans pt-1">
+              Server-side capture succeeded for ${(evaluation.amount / 100).toFixed(2)} USD
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs space-y-1 font-mono">
+            <div className="text-rose-200 font-bold">
+              Zero Money Movement: PayPal API was never invoked.
+            </div>
+            <div className="text-[11px] text-rose-300/90 font-sans">
+              Failed gate: {evaluation.failedCheck || "POLICY_RULE"} • {evaluation.reason}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* AI Read-Only Explanation Card */}
+      {evaluation.aiExplanation && (
+        <div
+          className={`mt-4 p-3.5 rounded-xl border text-xs flex items-start space-x-2.5 ${
+            isDark
+              ? "bg-purple-950/40 border-purple-800/60 text-purple-200"
+              : "bg-purple-50/80 border-purple-200 text-purple-950"
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+          <div>
+            <span
+              className={`font-bold block mb-0.5 ${
+                isDark ? "text-purple-300" : "text-purple-900"
+              }`}
+            >
+              AI Decision Explanation (Read-Only)
+            </span>
+            <p
+              className={`leading-relaxed font-sans ${
+                isDark ? "text-slate-300" : "text-slate-700"
+              }`}
+            >
+              {evaluation.aiExplanation}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

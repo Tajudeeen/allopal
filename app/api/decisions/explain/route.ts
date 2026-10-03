@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     if (parsed.data.decisionId) {
       const dbDecision = await prisma.decision.findUnique({
         where: { id: parsed.data.decisionId },
-        include: { mandate: true },
+        include: { mandate: true, transaction: true },
       });
 
       if (!dbDecision) {

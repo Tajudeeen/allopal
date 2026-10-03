@@ -521,6 +521,154 @@ header nav button {
 }
 
 
+
+/* universal proof-style card system */
+.selo-card,
+.selo-shell,
+.selo-checks {
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(31,79,224,0.10), transparent 30%),
+    linear-gradient(145deg, #17191d 0%, #0f1114 52%, #0a0c0f 100%) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.055) inset,
+    0 22px 65px rgba(0,0,0,0.22);
+}
+
+.selo-card::before,
+.selo-shell::before,
+.selo-checks::before {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(31,79,224,0.16), transparent 34%),
+    linear-gradient(118deg, transparent 34%, rgba(255,255,255,0.06) 50%, transparent 66%);
+  opacity: 0.9;
+}
+
+.selo-card::after,
+.selo-shell::after,
+.selo-checks::after {
+  pointer-events: none;
+}
+
+.selo-card:hover,
+.selo-shell:hover,
+.selo-checks:hover {
+  border-color: rgba(255,255,255,0.15) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.07) inset,
+    0 30px 85px rgba(0,0,0,0.30);
+}
+
+.selo-card .text-slate-950,
+.selo-card .text-slate-900,
+.selo-card .text-slate-800,
+.selo-card .text-slate-700,
+.selo-shell .text-slate-950,
+.selo-shell .text-slate-900,
+.selo-shell .text-slate-800,
+.selo-shell .text-slate-700,
+.selo-checks .text-slate-950,
+.selo-checks .text-slate-900,
+.selo-checks .text-slate-800,
+.selo-checks .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+.selo-card .text-slate-600,
+.selo-card .text-slate-500,
+.selo-shell .text-slate-600,
+.selo-shell .text-slate-500,
+.selo-checks .text-slate-600,
+.selo-checks .text-slate-500 {
+  color: rgba(226,232,240,0.68) !important;
+}
+
+.selo-card .text-slate-400,
+.selo-shell .text-slate-400,
+.selo-checks .text-slate-400 {
+  color: rgba(226,232,240,0.78) !important;
+}
+
+.selo-card .border-slate-100,
+.selo-card .border-slate-200,
+.selo-card .border-slate-300,
+.selo-shell .border-slate-100,
+.selo-shell .border-slate-200,
+.selo-shell .border-slate-300,
+.selo-checks .border-slate-100,
+.selo-checks .border-slate-200,
+.selo-checks .border-slate-300 {
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+.selo-card .bg-white,
+.selo-card .bg-white\/95,
+.selo-card .bg-white\/90,
+.selo-card .bg-white\/88,
+.selo-card .bg-white\/85,
+.selo-card .bg-white\/80,
+.selo-card .bg-slate-50,
+.selo-card .bg-slate-50\/70,
+.selo-card .bg-slate-50\/80,
+.selo-shell .bg-white,
+.selo-shell .bg-white\/95,
+.selo-shell .bg-white\/90,
+.selo-shell .bg-white\/88,
+.selo-shell .bg-white\/85,
+.selo-shell .bg-white\/80,
+.selo-shell .bg-slate-50,
+.selo-shell .bg-slate-50\/70,
+.selo-shell .bg-slate-50\/80,
+.selo-checks .bg-white,
+.selo-checks .bg-white\/95,
+.selo-checks .bg-white\/90,
+.selo-checks .bg-white\/88,
+.selo-checks .bg-white\/85,
+.selo-checks .bg-white\/80,
+.selo-checks .bg-slate-50,
+.selo-checks .bg-slate-50\/70,
+.selo-checks .bg-slate-50\/80 {
+  background-color: rgba(255,255,255,0.035) !important;
+}
+
+.selo-card .selo-button-secondary,
+.selo-shell .selo-button-secondary,
+.selo-checks .selo-button-secondary {
+  color: #f8fafc !important;
+  background: rgba(255,255,255,0.055) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.selo-card .selo-button-secondary:hover,
+.selo-shell .selo-button-secondary:hover,
+.selo-checks .selo-button-secondary:hover {
+  background: rgba(255,255,255,0.10) !important;
+}
+
+.selo-card .selo-inner-card,
+.selo-shell .selo-inner-card {
+  background: linear-gradient(145deg, #15171a, #0c0e11) !important;
+  border-color: rgba(255,255,255,0.09) !important;
+}
+
+.selo-card .selo-inner-card .text-slate-500,
+.selo-card .selo-inner-card .text-slate-600,
+.selo-shell .selo-inner-card .text-slate-500,
+.selo-shell .selo-inner-card .text-slate-600 {
+  color: rgba(226,232,240,0.65) !important;
+}
+
+@media (max-width: 640px) {
+  .selo-card,
+  .selo-shell,
+  .selo-checks {
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.05) inset,
+      0 18px 50px rgba(0,0,0,0.22);
+  }
+}
+
 /* Black session-card system */
 .selo-dark-card {
   color: #f8fafc !important;

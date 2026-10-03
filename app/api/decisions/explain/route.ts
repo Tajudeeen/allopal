@@ -16,6 +16,8 @@ const explainSchema = z.object({
       merchant: z.string(),
       category: z.string(),
       remainingBudget: z.number().int().optional(),
+      paypalCalled: z.boolean().optional(),
+      paymentStatus: z.string().nullable().optional(),
     })
     .optional(),
 });
@@ -57,6 +59,8 @@ export async function POST(req: NextRequest) {
         remainingBudget: dbDecision.mandate
           ? dbDecision.mandate.weeklyLimit - dbDecision.mandate.spentAmount
           : undefined,
+        paypalCalled: Boolean(dbDecision.transaction),
+        paymentStatus: dbDecision.transaction?.status ?? null,
       };
     } else if (parsed.data.decision) {
       decisionData = parsed.data.decision;

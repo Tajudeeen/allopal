@@ -40,7 +40,7 @@ export default function WelcomePage() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-7 sm:px-8 sm:py-10">
         <header className="flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white/10 backdrop-blur-xl transition-transform group-hover:scale-[1.04]">
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-white/60 shadow-sm backdrop-blur-xl transition-transform group-hover:scale-[1.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Allopal" className="h-full w-full object-contain p-1" />
             </div>
@@ -126,7 +126,7 @@ export default function WelcomePage() {
                 </div>
 
                 <div className="mt-5 rounded-2xl border border-blue-400/15 bg-blue-500/[0.06] p-4">
-                  <p className="text-[9px] font-mono font-bold uppercase tracking-[0.16em] text-blue-300">core invariant</p>
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-[0.16em] text-[#1f4fe0]">core invariant</p>
                   <p className="mt-2 text-sm font-semibold leading-6 text-white/88">
                     a denied request never crosses the PayPal execution boundary.
                   </p>
@@ -141,7 +141,7 @@ export default function WelcomePage() {
             const Icon = point.icon;
             return (
               <div key={point.title} className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-md">
-                <Icon className="h-4 w-4 text-blue-300" />
+                <Icon className="h-4 w-4 text-[#1f4fe0]" />
                 <p className="mt-3 text-sm font-bold">{point.title}</p>
                 <p className="mt-1 text-xs leading-5 text-white/48">{point.body}</p>
               </div>

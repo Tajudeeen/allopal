@@ -557,3 +557,55 @@ header nav button {
     font-size: 2.55rem;
   }
 }
+
+
+.selo-inner-card {
+  color: #f8fafc !important;
+  background: linear-gradient(145deg, #151619, #0d0e11) !important;
+  border-color: rgba(255,255,255,0.09) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.045) inset,
+    0 14px 36px rgba(0,0,0,0.18);
+}
+
+.selo-inner-card:hover {
+  border-color: rgba(255,255,255,0.14) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 18px 46px rgba(0,0,0,0.24);
+}
+
+.selo-inner-card .text-slate-900,
+.selo-inner-card .text-slate-800,
+.selo-inner-card .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+.selo-inner-card .text-slate-600,
+.selo-inner-card .text-slate-500 {
+  color: rgba(226,232,240,0.62) !important;
+}
+
+.selo-inner-card .text-slate-400 {
+  color: rgba(226,232,240,0.48) !important;
+}
+
+.selo-inner-card .border-slate-200,
+.selo-inner-card .border-slate-300,
+.selo-inner-card .border-slate-100 {
+  border-color: rgba(255,255,255,0.09) !important;
+}
+
+.selo-inner-card .bg-white,
+.selo-inner-card .bg-white\/95,
+.selo-inner-card .bg-slate-50,
+.selo-inner-card .bg-slate-50\/70,
+.selo-inner-card .bg-slate-50\/80 {
+  background-color: rgba(255,255,255,0.035) !important;
+}
+
+@media (max-width: 640px) {
+  .selo-inner-card {
+    border-radius: 16px !important;
+  }
+}

@@ -188,7 +188,7 @@ export function AiMandateModal({
         <button
           onClick={handlePropose}
           disabled={interpreting || !prompt.trim()}
-          className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 shadow transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 mb-4 ${
+          className={`selo-button selo-button-primary w-full disabled:opacity-50 mb-4 ${
             isDark
               ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20"
               : "bg-slate-900 hover:bg-slate-800 text-white"
@@ -288,7 +288,7 @@ export function AiMandateModal({
             <button
               onClick={handleLock}
               disabled={locking}
-              className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center space-x-2 shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+              className="selo-button w-full text-white bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg shadow-emerald-600/25 disabled:opacity-50"
             >
               <Lock className="w-4 h-4" />
               <span>{locking ? "Locking Mandate..." : "Approve & Lock Mandate (Human Gate)"}</span>

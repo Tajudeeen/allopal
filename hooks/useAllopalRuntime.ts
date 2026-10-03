@@ -219,22 +219,6 @@ export function useAllopalRuntime() {
     }
   }, [loadState, mandate]);
 
-  const resetDemo = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/demo/reset", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || data.error || "Reset failed.");
-      setEvaluation(null);
-      setNotice("Demo reset to the canonical Allopal state.");
-      await loadState();
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Reset failed.");
-    } finally {
-      setLoading(false);
-    }
-  }, [loadState]);
-
   return {
     mandate,
     carts,
@@ -248,6 +232,5 @@ export function useAllopalRuntime() {
     handleRevokeMandate,
     handleAuthorize,
     handleExecutePayment,
-    resetDemo,
   };
 }

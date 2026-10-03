@@ -50,6 +50,33 @@ export default function Home() {
     loadState();
   }, [loadState]);
 
+  // Smooth, accessible anchor transitions for the fixed editorial navbar and in-page CTAs.
+  useEffect(() => {
+    const handleAnchorClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest("a[href^=\"#\"]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href || href === "#") return;
+
+      const destination = document.querySelector(href);
+      if (!(destination instanceof HTMLElement)) return;
+
+      event.preventDefault();
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      destination.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+
+      window.history.replaceState(null, "", href);
+    };
+
+    document.addEventListener("click", handleAnchorClick);
+    return () => document.removeEventListener("click", handleAnchorClick);
+  }, []);
+
   // Demo Reset Handler
   const handleResetDemo = async () => {
     setLoading(true);

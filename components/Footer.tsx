@@ -5,8 +5,7 @@ import { ArrowUp, ExternalLink, ShieldCheck } from "lucide-react";
 
 interface FooterLink {
   readonly label: string;
-  readonly href?: string;
-  readonly onClick?: () => void;
+  readonly href: string;
   readonly external?: boolean;
 }
 
@@ -41,109 +40,61 @@ export function Footer() {
   ];
 
   const handleBackToTop = () => {
-    if (typeof window !== "undefined") {
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
-    }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   };
 
   return (
-    <footer
-      className={`relative z-20 w-full border-t pb-10 pt-16 backdrop-blur-2xl transition-all duration-300 ${
-        isDark
-          ? "border-slate-800/80 bg-slate-950/85 text-slate-300"
-          : "border-slate-200/90 bg-white/90 text-slate-700"
-      }`}
-    >
+    <footer className="relative z-20 w-full border-t border-slate-200/90 bg-white/90 pb-10 pt-16 text-slate-700 backdrop-blur-2xl">
       <div className="mx-auto w-full max-w-7xl px-6">
         <div className="mb-16 grid gap-12 lg:grid-cols-12">
-          {/* Brand Col */}
-          <div className="flex flex-col lg:col-span-5 space-y-4">
+          <div className="flex flex-col space-y-4 lg:col-span-5">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/10 border border-white/20 flex items-center justify-center flex-none">
+              <div className="flex h-10 w-10 flex-none items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-white shadow-md shadow-blue-500/10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo.png"
-                  alt="Allopal Logo"
-                  className="w-full h-full object-cover"
-                />
+                <img src="/logo.png" alt="Allopal Logo" className="h-full w-full object-cover" />
               </div>
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wide border ${
-                  isDark
-                    ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                    : "bg-blue-50 text-blue-700 border-blue-200"
-                }`}
-              >
-                <ShieldCheck className="w-3 h-3 text-blue-400" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-mono font-bold tracking-wide text-blue-700">
+                <ShieldCheck className="h-3 w-3 text-blue-600" />
                 PAYPAL RUNTIME GATE
               </span>
             </div>
 
-            <p
-              className={`text-3xl sm:text-4xl font-bold tracking-tight ${
-                isDark ? "text-white" : "text-slate-950"
-              }`}
-            >
+            <p className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
               Allopal<span className="text-[#1f4fe0]">.</span>
             </p>
 
-            <p
-              className={`max-w-sm text-sm leading-relaxed font-light ${
-                isDark ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
+            <p className="max-w-sm text-sm font-light leading-relaxed text-slate-600">
               Deterministic spending authorization layer for PayPal agentic commerce.
-              Autonomous AI agents get a locked mandate, never direct access to your payment credentials.
+              Autonomous AI agents get a locked mandate, never direct access to payment credentials.
             </p>
 
-            <div
-              className={`pt-1 text-xs font-mono flex items-center gap-2 ${
-                isDark ? "text-slate-400" : "text-slate-500"
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+            <div className="flex items-center gap-2 pt-1 text-xs font-mono text-slate-600">
+              <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
               <span>Strict Policy Evaluation · Integer-Cents Accuracy</span>
             </div>
           </div>
 
-          {/* Links Columns */}
           <div className="lg:col-span-7">
             <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
               {columns.map((column) => (
                 <div key={column.title} className="flex flex-col gap-4">
-                  <h3
-                    className={`text-xs font-bold uppercase tracking-wider ${
-                      isDark ? "text-white" : "text-slate-900"
-                    }`}
-                  >
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
                     {column.title}
                   </h3>
                   <ul className="flex flex-col gap-2.5">
                     {column.items.map((item) => (
                       <li key={item.label}>
-                        (
-                          <a
-                            href={item.href}
-                            target={item.external ? "_blank" : undefined}
-                            rel={item.external ? "noopener noreferrer" : undefined}
-                            className={`inline-flex items-center gap-1 text-xs sm:text-sm transition-colors ${
-                              isDark
-                                ? "text-slate-400 hover:text-white"
-                                : "text-slate-600 hover:text-slate-950"
-                            }`}
-                          >
-                            <span>{item.label}</span>
-                            {item.external && (
-                              <ExternalLink
-                                className={`w-3 h-3 inline-block ${
-                                  isDark ? "text-slate-500" : "text-slate-400"
-                                }`}
-                              />
-                            )}
-                          </a>
-                        )}
-                        </li>
+                        <a
+                          href={item.href}
+                          target={item.external ? "_blank" : undefined}
+                          rel={item.external ? "noopener noreferrer" : undefined}
+                          className="inline-flex items-center gap-1 text-xs text-slate-600 transition-colors hover:text-slate-950 sm:text-sm"
+                        >
+                          <span>{item.label}</span>
+                          {item.external && <ExternalLink className="inline-block h-3 w-3 text-slate-500" />}
+                        </a>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -152,36 +103,16 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Sub-bar */}
-        <div
-          className={`flex flex-col items-center justify-between gap-4 border-t pt-6 md:flex-row text-xs ${
-            isDark
-              ? "border-slate-800 text-slate-400"
-              : "border-slate-200 text-slate-500"
-          }`}
-        >
-          <p className="font-light">
-            Allopal · Spending Authorization Layer for PayPal Agentic Commerce
-          </p>
-
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-xs text-slate-600 md:flex-row">
+          <p className="font-light">Allopal · Spending Authorization Layer for PayPal Agentic Commerce</p>
           <button
             type="button"
             onClick={handleBackToTop}
-            className={`group flex items-center gap-2 uppercase tracking-wider text-[11px] font-semibold transition-colors ${
-              isDark
-                ? "text-slate-400 hover:text-white"
-                : "text-slate-600 hover:text-slate-950"
-            }`}
+            className="group flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600 transition-colors hover:text-slate-950"
           >
             <span>Back to top</span>
-            <span
-              className={`flex size-6 items-center justify-center rounded-md border transition-all ${
-                isDark
-                  ? "border-slate-800 bg-slate-900 group-hover:border-slate-600 group-hover:bg-slate-800"
-                  : "border-slate-300 bg-slate-100 group-hover:border-slate-400 group-hover:bg-slate-200"
-              }`}
-            >
-              <ArrowUp className="w-3 h-3 transition-colors" />
+            <span className="flex size-6 items-center justify-center rounded-md border border-slate-300 bg-slate-100 transition-all group-hover:border-slate-400 group-hover:bg-slate-200">
+              <ArrowUp className="h-3 w-3" />
             </span>
           </button>
         </div>

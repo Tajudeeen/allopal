@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Navbar, AppPalette } from "@/components/Navbar";
-import {
-  PRESET_BACKGROUND_COLORS,
-  getAdaptiveTypography,
-  AdaptiveTypography,
-} from "@/lib/theme/contrast";
+import { Navbar } from "@/components/Navbar";
 import { MandateCard } from "@/components/mandate/MandateCard";
 import { AgentConsole } from "@/components/payment/AgentConsole";
 import { VisualPolicyGate, GateEvaluationState } from "@/components/gate/VisualPolicyGate";
@@ -14,7 +9,6 @@ import { DecisionLedger } from "@/components/ledger/DecisionLedger";
 import { AiMandateModal } from "@/components/mandate/AiMandateModal";
 import { Footer } from "@/components/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { AnimatedBackground } from "@/components/AnimatedBackground";
 import {
   ArrowRight,
   Cpu,
@@ -34,11 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-  // Adaptive background color & typography state
-  const [bgColorHex, setBgColorHex] = useState<string>("#05070d");
-  const [palette, setPalette] = useState<AppPalette>("obsidian");
-  const typography: AdaptiveTypography = getAdaptiveTypography(bgColorHex);
-  const isDark = typography.isDark;
+  const isDark = false;
 
 
   // Load authoritative server state
@@ -206,50 +196,17 @@ export default function Home() {
     }
   };
 
-  // Determine background overlay style based on background color
-  const getOverlayStyle = () => {
-    const matched = PRESET_BACKGROUND_COLORS.find(
-      (p) => p.hex.toLowerCase() === bgColorHex.toLowerCase()
-    );
-    if (matched) {
-      return matched.overlayStyle;
-    }
-    return isDark ? "backdrop-blur-sm" : "backdrop-blur-md";
-  };
-
-  const isCustomBg = !PRESET_BACKGROUND_COLORS.some(
-    (p) => p.hex.toLowerCase() === bgColorHex.toLowerCase()
-  );
-
   return (
-    <div
-      style={isCustomBg ? { backgroundColor: bgColorHex } : undefined}
-      className={`min-h-screen relative transition-colors duration-500 selection:bg-[#1f4fe0]/30 ${
-        isDark ? "text-white selection:text-white" : "text-slate-900 selection:text-slate-900"
-      }`}
-    >
-      {/* Background Soft Sheen Overlay responding to selected background color */}
-      <div
-        className={`fixed inset-0 pointer-events-none z-0 transition-all duration-700 ${getOverlayStyle()}`}
-        style={
-          isCustomBg
-            ? { backgroundColor: `${bgColorHex}${isDark ? "bf" : "e6"}` }
-            : undefined
-        }
-      />
+    <div className="min-h-screen relative text-[#1c1c1f] selection:bg-[#1f4fe0]/20 selection:text-[#1c1c1f]">
+      {/* Background Soft Sheen Overlay */}
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-white/70 via-transparent to-white/80 z-0" />
 
-      {/* Animated Background mimicking TryVeir graphics */}
-      {isDark && <AnimatedBackground />}
-
-      {/* Floating Navbar with Background Color & Contrast Controller */}
+      {/* Floating Navbar */}
       <Navbar
         onResetDemo={handleResetDemo}
         onOpenAiModal={() => setIsAiModalOpen(true)}
-        palette={palette}
-        onSelectPalette={setPalette}
-        currentBgColorHex={bgColorHex}
-        onSelectBgColorHex={setBgColorHex}
       />
+
 
 
       {/* Main Content Area */}

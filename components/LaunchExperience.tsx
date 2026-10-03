@@ -75,8 +75,6 @@ export function LaunchExperience({ children }: LaunchExperienceProps) {
       {showSplash && (
         <div className="launch-surface fixed inset-0 z-[100] flex min-h-screen items-center justify-center overflow-hidden text-[#17181b]">
           <div className="launch-surface__image absolute inset-0" />
-          <div className="launch-surface__wash absolute inset-0" />
-          <div className="launch-surface__grid absolute inset-0" />
 
           <div className="launch-content relative z-10 flex flex-col items-center px-6 text-center">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-[24px] launch-logo-card launch-card border border-white/10 bg-[linear-gradient(145deg,#181a1e,#0d0f12)] shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:h-24 sm:w-24">

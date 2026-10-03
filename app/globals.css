@@ -562,11 +562,9 @@ header nav button {
 @keyframes allopal-bg-drift {
   0% {
     background-position: 49.5% 50%;
-    background-size: 100% 100%;
   }
   100% {
     background-position: 50.5% 51%;
-    background-size: 104% 104%;
   }
 }
 

@@ -139,6 +139,8 @@ export default function Home() {
               merchant: data.merchant,
               category: data.category,
               remainingBudget: data.remainingBudgetBefore,
+              paypalCalled: false,
+              paymentStatus: null,
             },
           }),
         });
@@ -209,6 +211,8 @@ export default function Home() {
               merchant: data.merchant || "Campus Books",
               category: data.category || "School Supplies",
               remainingBudget: data.remainingBudget,
+              paypalCalled: Boolean(data.paypalCalled),
+              paymentStatus: data.paymentStatus || null,
             },
           }),
         });

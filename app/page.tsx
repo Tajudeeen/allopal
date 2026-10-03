@@ -197,9 +197,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen relative text-[#1c1c1f] selection:bg-[#1f4fe0]/20 selection:text-[#1c1c1f]">
+    <div className="selo-page min-h-screen relative text-[#1c1c1f] selection:bg-[#1f4fe0]/20 selection:text-[#1c1c1f]">
       {/* Background Soft Sheen Overlay */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-white/70 via-transparent to-white/80 z-0" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-white/20 via-transparent to-white/30 z-0" />
 
       {/* Floating Navbar */}
       <Navbar
@@ -210,10 +210,10 @@ export default function Home() {
 
 
       {/* Main Content Area */}
-      <main className="relative z-10 pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+      <main className="relative z-10 pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
         
         {/* ================= HERO SECTION ================= */}
-        <section id="hero" className="pt-8 pb-4 text-center sm:text-left">
+        <section id="hero" className="selo-hero pt-8 pb-4 text-center sm:text-left">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <ScrollReveal className="max-w-3xl space-y-4">
               <div
@@ -269,7 +269,7 @@ export default function Home() {
               <div className="pt-2 flex flex-wrap items-center gap-3">
                 <a
                   href="#console"
-                  className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                  className={`selo-button selo-button-primary ${
                     isDark
                       ? "bg-white text-slate-950 hover:bg-slate-100 shadow-white/10"
                       : "bg-[#17171a] text-white hover:bg-black shadow-slate-900/20"
@@ -281,7 +281,7 @@ export default function Home() {
 
                 <button
                   onClick={() => setIsAiModalOpen(true)}
-                  className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl border text-sm font-semibold shadow-sm backdrop-blur-md transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                  className={`selo-button selo-button-secondary ${
                     isDark
                       ? "bg-slate-900/80 hover:bg-slate-800 border-slate-700/80 text-white"
                       : "bg-white/85 hover:bg-white border-slate-300 text-slate-900"
@@ -530,7 +530,7 @@ export default function Home() {
 
         {/* ================= THREE SPECIFICATION CARDS ================= */}
         <section className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
+          <div className="selo-card-grid grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
             {/* Card 1 */}
             <ScrollReveal
               className={`selo-card md:col-span-7 lg:col-span-7 rounded-[26px] p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${

@@ -6,12 +6,17 @@ interface CreateOrderOptions {
   currency?: string;
   referenceId?: string;
   description?: string;
+  requestId?: string;
+  returnUrl?: string;
+  cancelUrl?: string;
 }
 
 interface PayPalOrderResponse {
   id: string;
   status: string;
   links?: Array<{ href: string; rel: string; method: string }>;
+  approvalUrl?: string;
+  requiresPayerApproval: boolean;
 }
 
 interface PayPalCaptureResponse {
@@ -100,6 +105,8 @@ export class PayPalClient {
             method: "GET",
           },
         ],
+        approvalUrl: `${this.baseUrl}/checkoutnow?token=${mockOrderId}`,
+        requiresPayerApproval: false,
       };
     }
 
@@ -121,17 +128,22 @@ export class PayPalClient {
           experience_context: {
             payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
             user_action: "PAY_NOW",
+            return_url: options.returnUrl,
+            cancel_url: options.cancelUrl,
           },
         },
       },
     };
 
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+    if (options.requestId) headers["PayPal-Request-Id"] = options.requestId;
+
     const response = await fetch(`${this.baseUrl}/v2/checkout/orders`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 
@@ -141,17 +153,23 @@ export class PayPalClient {
     }
 
     const data = await response.json();
+    const approvalUrl = data.links?.find(
+      (link: { rel?: string }) => link.rel === "approve" || link.rel === "payer-action"
+    )?.href;
+
     return {
       id: data.id,
       status: data.status,
       links: data.links,
+      approvalUrl,
+      requiresPayerApproval: true,
     };
   }
 
   /**
    * Captures payment for an authorized PayPal Order
    */
-  async captureOrder(orderId: string): Promise<PayPalCaptureResponse> {
+  async captureOrder(orderId: string, requestId?: string): Promise<PayPalCaptureResponse> {
     if (this.isMock()) {
       const mockCaptureId = `PAYPAL-SANDBOX-CAP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
       return {
@@ -168,12 +186,15 @@ export class PayPalClient {
     }
 
     const token = await this.getAccessToken();
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+    if (requestId) headers["PayPal-Request-Id"] = requestId;
+
     const response = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}/capture`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -190,6 +211,27 @@ export class PayPalClient {
       orderId,
       rawResponse: data,
     };
+  async getOrder(orderId: string): Promise<{ id: string; status: string }> {
+    if (this.isMock()) {
+      return { id: orderId, status: "COMPLETED" };
+    }
+
+    const token = await this.getAccessToken();
+    const response = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`PayPal getOrder failed (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    return { id: data.id, status: data.status };
   }
 }
 

@@ -59,10 +59,7 @@ Remaining Budget: ${
       : "N/A"
   }
 
-Explain clearly to the human account holder why this payment was ${
-    decision.status === "ALLOWED" ? "authorized and captured" : "blocked"
-  }.
-Do not change the decision.
+Explain clearly to the human account holder what happened according to the policy decision, whether PayPal was called, and the current payment status.\nDo not change the decision.
 `;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.AI_API_KEY}`;

@@ -590,7 +590,7 @@ npm run build
 | Failure recovery | tests/failures/failure_recovery.test.ts |
 | Theme contrast | tests/theme/contrast.test.ts |
 
-The test inventory documents the verification surface. A current green test result should be captured from the environment where the tests were run rather than inferred from the presence of the files.
+The test inventory documents the verification surface. A current green test result should be captured from the environment where the tests were run rather than inferred from the presence of the files. Light-surface neutral text uses deeper slate/grey tokens for easier scanning, while muted text inside dark-gradient cards remains intentionally brighter.
 
 ---
 

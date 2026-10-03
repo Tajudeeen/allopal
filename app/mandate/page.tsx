@@ -142,7 +142,9 @@ export default function MandatePage() {
       <AiMandateModal
         isOpen={draftOpen}
         onClose={() => setDraftOpen(false)}
-        onMandateLocked={loadState}
+        onMandateLocked={async () => {
+          await loadState();
+        }}
         isDark={false}
       />
 

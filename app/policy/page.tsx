@@ -107,10 +107,10 @@ export default function PolicyPage() {
             </p>
             <div className="mt-6 space-y-2.5">
               {[
-                ["policy denied", "PayPal not called", false],
-                ["policy allowed", "PayPal can be called", true],
-                ["payer approved", "Capture can proceed", true],
-              ].map(([label, value, passed]) => (
+                { label: "policy denied", value: "PayPal not called", passed: false },
+                { label: "policy allowed", value: "PayPal can be called", passed: true },
+                { label: "payer approved", value: "Capture can proceed", passed: true },
+              ].map(({ label, value, passed }) => (
                 <div key={label} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
                   {passed ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <XCircle className="h-4 w-4 text-rose-400" />}
                   <div>

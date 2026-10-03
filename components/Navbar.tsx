@@ -90,6 +90,18 @@ export function Navbar() {
 
             <button
               type="button"
+              onClick={handleReset}
+              disabled={resetting}
+              title={resetError || "Reset database to fresh canonical demo state"}
+              aria-label={resetError || (resetting ? "Resetting demo" : "Reset demo")}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-[12px] border border-black/[0.08] bg-black/[0.025] text-[#2b2e33] hover:bg-black/[0.06] transition-colors disabled:opacity-50"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#1f4fe0]" : "text-[#51545b]"}`} />
+              <span className="sr-only">{resetting ? "Resetting demo" : "Reset demo"}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setMenuOpen((open) => !open)}
               aria-expanded={menuOpen}
               aria-controls="allopal-mobile-menu"
@@ -99,16 +111,6 @@ export function Navbar() {
               {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
 
-            <button
-              type="button"
-              onClick={handleReset}
-              disabled={resetting}
-              title={resetError || "Reset database to fresh canonical demo state"}
-              className="hidden sm:inline-flex selo-button selo-button-secondary !min-h-[38px] !rounded-[12px] !px-2.5 sm:!px-3 disabled:opacity-50"
-            >
-              <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#1f4fe0]" : "text-[#51545b]"}`} />
-              <span className="hidden md:inline">{resetting ? "Resetting..." : "Reset Demo"}</span>
-            </button>
           </div>
         </div>
 
@@ -134,15 +136,6 @@ export function Navbar() {
                   </a>
                 );
               })}
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={resetting}
-                className="mt-1 flex items-center gap-2 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#4c5057] hover:bg-black/[0.04] disabled:opacity-50"
-              >
-                <RotateCcw className={`w-4 h-4 ${resetting ? "animate-spin text-[#1f4fe0]" : ""}`} />
-                <span>{resetting ? "Resetting demo..." : "Reset demo state"}</span>
-              </button>
               {resetError && (
                 <p className="px-3 pt-1 text-xs text-rose-700">{resetError}</p>
               )}

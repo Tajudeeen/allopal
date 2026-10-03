@@ -50,9 +50,9 @@ export function Footer() {
         <div className="mb-16 grid gap-12 lg:grid-cols-12">
           <div className="flex flex-col space-y-4 lg:col-span-5">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 flex-none items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#111111] shadow-md shadow-black/30">
+              <div className="flex h-10 w-10 flex-none items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white p-1 shadow-md shadow-black/30">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="Allopal Logo" className="h-full w-full object-cover" />
+                <img src="/logo.png" alt="Allopal Logo" className="h-full w-full object-contain" />
               </div>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 px-2.5 py-0.5 text-[10px] font-mono font-bold tracking-wide text-blue-300">
                 <ShieldCheck className="h-3 w-3 text-blue-300" />

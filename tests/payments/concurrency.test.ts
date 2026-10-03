@@ -116,7 +116,17 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
     captureSpy.mockRestore();
   });
   it("Concurrent idempotency test: the same key can produce only one PayPal side effect", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        return {
+          id: "PAYPAL-CONCURRENT-ORDER",
+          status: "CREATED",
+          links: [],
+          requiresPayerApproval: false,
+        };
+      });
     const captureSpy = vi.spyOn(payPalClient, "captureOrder");
 
     await prisma.mandate.update({

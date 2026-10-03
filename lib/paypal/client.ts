@@ -58,8 +58,7 @@ export class PayPalClient {
   private isMock(): boolean {
     return (
       this.clientId.startsWith("mock_") ||
-      this.clientSecret.startsWith("mock_") ||
-      process.env.NODE_ENV === "test"
+      this.clientSecret.startsWith("mock_")
     );
   }
 

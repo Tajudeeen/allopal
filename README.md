@@ -1,7 +1,7 @@
 # Allopal
 
 <p align="center">
-  <img src="public/logo.png" width="140" alt="Allopal Logo - Monochrome Black & White Blended PayPal Monogram and Allow Verification Shield" style="border-radius: 24px;" />
+  <img src="public/logo.png" width="130" alt="Allopal Logo - Transparent Standalone Monochrome Emblem" />
 </p>
 
 > **Deterministic Spending Authorization Layer for PayPal Agentic Commerce**
@@ -347,10 +347,11 @@ The automated suite covers policy evaluation, database invariants, PayPal bounda
 
 ##  Visual Identity & Branding
 
-* **Monochrome Black & White Logo**: The Allopal emblem seamlessly fuses the iconic overlapping PayPal double-`P` monogram geometry with an authoritative allow verification checkmark / shield emblem. Rendered strictly in high-contrast solid black (`#000000`) and pure white (`#FFFFFF`) with subtle monochrome shading, providing instant brand recognition without color distraction.
+* **Monochrome Standalone Emblem**: The Allopal emblem seamlessly fuses the iconic overlapping PayPal double-`P` monogram geometry with an authoritative allow verification checkmark / shield emblem. Rendered with a fully transparent background (`alpha = 0`) and with bottom logotype text removed for maximum icon clarity and versatility.
+* **Dual-Surface High Contrast**: An integrated subtle crisp white outer keyline guarantees razor-sharp definition against pitch-dark canvases and GitHub dark mode, while blending seamlessly on pure white and light surfaces.
 * **Multi-Resolution App Icon & Favicon**:
-  * `public/logo.png` & `app/icon.png`: High-resolution (1024×1024) lossless vector-finish PNGs for navbar brand headers, hero identity badges, and manifest configurations.
-  * `public/favicon.ico` & `app/favicon.ico`: Multi-layer ICO assets bundling 16×16, 32×32, and 48×48 dimensions for browser tab clarity across light and dark OS chrome.
+  * `public/logo.png` & `app/icon.png`: High-resolution (1024×1024) lossless transparent RGBA PNGs for navbar brand headers, hero identity badges, and manifest configurations.
+  * `public/favicon.ico` & `app/favicon.ico`: Multi-layer transparent ICO assets bundling 16×16, 32×32, and 48×48 dimensions for browser tab clarity across light and dark OS chrome.
 * **Surface Adaptability**: High-contrast dark-mode and light-mode readability across all card surfaces, visual policy gates, and audit ledgers against the preserved `bg.jpg` canvas.
 
 ---

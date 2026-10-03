@@ -43,7 +43,7 @@ export function Navbar() {
           <a href="/" onClick={closeMenu} className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[13px] overflow-hidden shadow-sm border border-black/10 flex items-center justify-center bg-white flex-none transition-transform duration-300 group-hover:scale-[1.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Allopal Logo" className="w-full h-full object-cover" />
+              <img src="/logo.png" alt="Allopal Logo" className="w-full h-full object-contain p-1" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">

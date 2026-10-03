@@ -236,8 +236,8 @@ export async function POST(req: NextRequest) {
     }
 
     const origin = new URL(req.url).origin;
-    const returnUrl = `${origin}/api/payments/paypal/return`;
-    const cancelUrl = `${origin}/api/payments/paypal/cancel`;
+    const returnUrl = `${origin}/api/payments/paypal/return?next=/console`;
+    const cancelUrl = `${origin}/api/payments/paypal/cancel?next=/console`;
 
     // PayPal's own idempotency key is distinct for create/capture operations.
     const createRequestId = `${operationId}-create`;
@@ -318,7 +318,7 @@ export async function POST(req: NextRequest) {
         paypalCaptureId: null,
         approvalUrl: payPalOrder.approvalUrl,
         amount: cart.totalAmount,
-        remainingBudget: mandate.weeklyLimit - mandate.spentAmount,
+        remainingBudget: decision.remainingBudgetAfter,
         checks: decision.checks,
       };
 

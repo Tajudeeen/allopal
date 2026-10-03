@@ -32,9 +32,50 @@ body {
   background-position: center center;
   background-attachment: fixed;
   background-repeat: no-repeat;
+  animation: allopal-bg-drift 28s ease-in-out infinite alternate;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+.selo-page {
+  text-shadow: 0 1px 1.5px rgba(255, 255, 255, 0.26);
+}
+
+.selo-page h1,
+.selo-page h2,
+.selo-page h3,
+.selo-page h4,
+.selo-page h5,
+.selo-page h6,
+.selo-page p,
+.selo-page li,
+.selo-page label {
+  text-rendering: optimizeLegibility;
+}
+
+.selo-page h1,
+.selo-page h2,
+.selo-page h3,
+.selo-page h4,
+.selo-page h5,
+.selo-page h6 {
+  letter-spacing: -0.035em;
+}
+
+.selo-page .text-slate-600,
+.selo-page .text-gray-600 {
+  color: #40434a !important;
+}
+
+.selo-page .text-slate-500,
+.selo-page .text-gray-500 {
+  color: #4f5259 !important;
+}
+
+.selo-page .text-slate-400,
+.selo-page .text-gray-400 {
+  color: #5d6067 !important;
 }
 
 ::selection {
@@ -465,6 +506,10 @@ header nav button {
     scroll-behavior: auto;
   }
 
+  body {
+    animation: none !important;
+  }
+
   .fx-shield .ring,
   .fx-scan .beam,
   .fx-scan .ping,
@@ -491,6 +536,39 @@ header nav button {
 }
 
 
+
+.selo-card,
+.selo-shell,
+.selo-checks,
+.selo-dark-card,
+.selo-inner-card,
+.launch-card {
+  text-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.18);
+}
+
+.selo-card .text-slate-600,
+.selo-card .text-slate-500,
+.selo-shell .text-slate-600,
+.selo-shell .text-slate-500,
+.selo-checks .text-slate-600,
+.selo-checks .text-slate-500,
+.selo-dark-card .text-slate-600,
+.selo-dark-card .text-slate-500,
+.selo-inner-card .text-slate-600,
+.selo-inner-card .text-slate-500 {
+  line-height: 1.55;
+}
+
+@keyframes allopal-bg-drift {
+  0% {
+    background-position: 49.5% 50%;
+    background-size: 100% 100%;
+  }
+  100% {
+    background-position: 50.5% 51%;
+    background-size: 104% 104%;
+  }
+}
 
 /* universal proof-style card system */
 .selo-card,
@@ -711,6 +789,10 @@ header nav button {
 }
 
 @media (max-width: 640px) {
+  body {
+    animation-duration: 36s;
+  }
+
   main {
     padding-left: 1rem;
     padding-right: 1rem;

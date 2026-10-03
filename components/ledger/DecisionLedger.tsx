@@ -13,6 +13,8 @@ interface DecisionRecord {
   status: string; // ALLOWED | DENIED
   reason: string;
   paypalOrderId: string | null;
+  paymentStatus?: string | null;
+  paypalCaptureId?: string | null;
   createdAt: string;
 }
 
@@ -100,6 +102,8 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
             >
               {decisions.map((d) => {
                 const isAllowed = d.status === "ALLOWED";
+                const isCaptured = d.paymentStatus === "COMPLETED";
+                const isPending = isAllowed && d.paymentStatus === "CREATED";
                 return (
                   <tr
                     key={d.id}
@@ -120,11 +124,11 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
                         }`}
                       >
                         {isAllowed ? (
-                          <CheckCircle className="w-3 h-3 text-emerald-400" />
+                          <CheckCircle className={"w-3 h-3 " + (isCaptured ? "text-emerald-400" : isPending ? "text-amber-400" : "text-blue-400")} />
                         ) : (
                           <XCircle className="w-3 h-3 text-rose-400" />
                         )}
-                        <span>{isAllowed ? "CAPTURED" : "BLOCKED"}</span>
+                        <span>{isAllowed ? (isCaptured ? "CAPTURED" : isPending ? "AWAITING PAYER" : "ALLOWED") : "BLOCKED"}</span>
                       </span>
                     </td>
                     <td
@@ -193,12 +197,22 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
         <div className="sm:hidden space-y-2.5">
           {decisions.map((d) => {
             const isAllowed = d.status === "ALLOWED";
+            const isCaptured = d.paymentStatus === "COMPLETED";
+            const isPending = isAllowed && d.paymentStatus === "CREATED";
             return (
-              <div key={d.id} className="rounded-[18px] border border-white/[0.09] bg-white/[0.035] p-4 space-y-3">
+              <div key={d.id} className="selo-inner-card rounded-[18px] border p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${isAllowed ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60" : "bg-rose-950/80 text-rose-300 border-rose-700/60"}`}>
-                    {isAllowed ? <CheckCircle className="w-3 h-3 text-emerald-400" /> : <XCircle className="w-3 h-3 text-rose-400" />}
-                    {isAllowed ? "captured" : "blocked"}
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+                    isAllowed
+                      ? isCaptured
+                        ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
+                        : isPending
+                        ? "bg-amber-950/80 text-amber-300 border-amber-700/60"
+                        : "bg-blue-950/80 text-blue-300 border-blue-700/60"
+                      : "bg-rose-950/80 text-rose-300 border-rose-700/60"
+                  }`}>
+                    {isAllowed ? <CheckCircle className={`w-3 h-3 ${isCaptured ? "text-emerald-400" : isPending ? "text-amber-400" : "text-blue-400"}`} /> : <XCircle className="w-3 h-3 text-rose-400" />}
+                    {isAllowed ? (isCaptured ? "captured" : isPending ? "awaiting payer" : "allowed") : "blocked"}
                   </span>
                   <span className="font-mono text-sm font-bold text-white">${(d.amount / 100).toFixed(2)}</span>
                 </div>
@@ -218,6 +232,10 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
                   <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
                     <span className="block text-white/30 mb-1">time</span>
                     <span className="text-white/60">{new Date(d.createdAt).toLocaleTimeString()}</span>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
+                    <span className="block text-white/30 mb-1">payment state</span>
+                    <span className="text-white/60">{d.paymentStatus || "policy-only"}</span>
                   </div>
                 </div>
               </div>

@@ -128,4 +128,53 @@ describe("PayPal approval lifecycle", () => {
 
     createSpy.mockRestore();
   });
+  it("does not capture a pending order after the mandate is revoked", async () => {
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
+      id: "PAYPAL-REVOKED-ORDER",
+      status: "CREATED",
+      links: [],
+      approvalUrl: "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-REVOKED-ORDER",
+      requiresPayerApproval: true,
+    });
+
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+
+    const paymentRes = await payPOST(
+      request("http://localhost:3000/api/payments/pay", "POST", {
+        mandateId: "mandate-school-shopping",
+        cartId: "cart-case-a",
+      })
+    );
+    expect(paymentRes.status).toBe(200);
+
+    await prisma.mandate.update({
+      where: { id: "mandate-school-shopping" },
+      data: { status: "REVOKED" },
+    });
+
+    const returnRes = await returnGET(
+      request(
+        "http://localhost:3000/api/payments/paypal/return?token=PAYPAL-REVOKED-ORDER",
+        "GET"
+      )
+    );
+
+    expect(returnRes.status).toBe(307);
+    expect(returnRes.headers.get("location")).toContain("payment=cancelled");
+    expect(captureSpy).toHaveBeenCalledTimes(0);
+
+    const tx = await prisma.payPalTransaction.findUnique({
+      where: { orderId: "PAYPAL-REVOKED-ORDER" },
+    });
+    expect(tx?.status).toBe("FAILED");
+
+    const mandate = await prisma.mandate.findUnique({
+      where: { id: "mandate-school-shopping" },
+    });
+    expect(mandate?.spentAmount).toBe(0);
+
+    createSpy.mockRestore();
+    captureSpy.mockRestore();
+  });
+
 });

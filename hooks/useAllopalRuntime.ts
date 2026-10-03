@@ -10,6 +10,19 @@ interface RuntimeState {
   transactions: any[];
 }
 
+export interface AgentRunState {
+  task: string;
+  mode: "DRY_RUN" | "EXECUTE";
+  selectedCartId: string;
+  productName: string;
+  amount: number;
+  merchant: string;
+  category: string;
+  reasoning: string;
+  finalDecision: string;
+  paypalCalled: boolean;
+}
+
 export function useAllopalRuntime() {
   const [mandate, setMandate] = useState<any>(null);
   const [carts, setCarts] = useState<any[]>([]);
@@ -18,6 +31,7 @@ export function useAllopalRuntime() {
   const [evaluation, setEvaluation] = useState<GateEvaluationState | null>(null);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [agentRun, setAgentRun] = useState<AgentRunState | null>(null);
   const paymentKeyRef = useRef<string | null>(null);
 
   const loadState = useCallback(async () => {
@@ -52,6 +66,93 @@ export function useAllopalRuntime() {
     setNotice(messages[payment] || `Payment state: ${payment}`);
     window.history.replaceState(null, "", window.location.pathname);
   }, []);
+
+  const handleAgentRequest = useCallback(async (
+    task: string,
+    mode: "DRY_RUN" | "EXECUTE"
+  ) => {
+    setLoading(true);
+    setNotice(null);
+
+    try {
+      const idempotencyKey = mode === "EXECUTE" ? crypto.randomUUID() : undefined;
+      const res = await fetch("/api/agent/act", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+        },
+        body: JSON.stringify({
+          task,
+          mode,
+          ...(idempotencyKey ? { idempotencyKey } : {}),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok && !data.agent) {
+        throw new Error(data.message || data.error || "Agent request failed.");
+      }
+
+      const result = data.result || {};
+      const finalDecision = result.status || data.authority?.finalDecision || "UNKNOWN";
+
+      setAgentRun({
+        task: data.agent.task,
+        mode,
+        selectedCartId: data.agent.selectedCartId,
+        productName: data.agent.productName,
+        amount: data.agent.amount,
+        merchant: data.agent.merchant,
+        category: data.agent.category,
+        reasoning: data.agent.reasoning,
+        finalDecision,
+        paypalCalled: Boolean(result.paypalCalled),
+      });
+
+      if (result.status === "PENDING_APPROVAL" && result.approvalUrl) {
+        setNotice("Agent selected the cart and Allopal authorized it. Continue to PayPal for payer approval.");
+        window.location.assign(result.approvalUrl);
+        return;
+      }
+
+      if (!res.ok && result.status !== "DENIED") {
+        setEvaluation({
+          status: "FAILED",
+          amount: result.amount || data.agent.amount || 0,
+          merchant: result.merchant || data.agent.merchant,
+          category: result.category || data.agent.category,
+          reason: result.message || result.error || "Agent payment failed.",
+          failedCheck: result.failedCheck || null,
+          paypalCalled: Boolean(result.paypalCalled),
+          paypalOrderId: result.paypalOrderId || null,
+          paypalCaptureId: result.paypalCaptureId || null,
+          checks: result.checks,
+        });
+      } else {
+        setEvaluation({
+          status: finalDecision,
+          amount: result.amount || data.agent.amount,
+          merchant: result.merchant || data.agent.merchant,
+          category: result.category || data.agent.category,
+          reason: result.reason || data.agent.reasoning,
+          failedCheck: result.failedCheck || null,
+          paypalCalled: Boolean(result.paypalCalled),
+          paypalOrderId: result.paypalOrderId || null,
+          paypalCaptureId: result.paypalCaptureId || null,
+          approvalUrl: result.approvalUrl || null,
+          checks: result.checks,
+        });
+      }
+
+      await loadState();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Agent request failed.");
+    } finally {
+      setLoading(false);
+    }
+  }, [loadState]);
 
   const handleRevokeMandate = useCallback(async (mandateId: string) => {
     setLoading(true);
@@ -232,5 +333,7 @@ export function useAllopalRuntime() {
     handleRevokeMandate,
     handleAuthorize,
     handleExecutePayment,
+    handleAgentRequest,
+    agentRun,
   };
 }

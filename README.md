@@ -361,6 +361,20 @@ The automated suite covers policy evaluation, database invariants, PayPal bounda
 
 ---
 
+##  Card Design System
+
+All product cards use a shared proof-inspired visual language rather than mixing light and dark card treatments across screens.
+
+* **Dark gradient surfaces**: Primary cards, shells, policy sections, mandate panels, console surfaces, and ledger panels use layered charcoal-to-black gradients.
+* **Deep visual separation**: Cards sit above the preserved `public/bg.jpg` canvas with soft shadows, subtle edge lighting, and controlled blue ambient accents.
+* **Strong hierarchy**: Primary text is white, secondary metadata uses readable cool-grey tones, and borders remain low-contrast so content carries the visual weight.
+* **Nested surfaces**: Inner cards use a slightly darker gradient to create clear layers without introducing a second unrelated theme.
+* **Responsive consistency**: The same card language carries through desktop, tablet, mobile, splash, and intro surfaces.
+
+This keeps Allopal's interface visually coherent while preserving the application's original background asset.
+
+---
+
 ##  Visual Identity & Branding
 
 * **Monochrome Standalone Emblem**: The Allopal emblem seamlessly fuses the iconic overlapping PayPal double-`P` monogram geometry with an authoritative allow verification checkmark / shield emblem. Rendered with a fully transparent background (`alpha = 0`) and with bottom logotype text removed for maximum icon clarity and versatility.

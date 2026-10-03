@@ -154,7 +154,7 @@ APP LAUNCH → SPLASH SCREEN → FIRST-TIME INTRO → PRODUCT
 * **Splash screen**: Uses the preserved `public/bg.jpg` backdrop, Allopal identity, PayPal runtime label, and lightweight loading motion.
 * **First-time intro**: A dedicated `/welcome` screen explains the human mandate, deterministic policy, and PayPal execution boundary before entering the product.
 * **Returning visitors**: The intro completion state is stored locally so subsequent launches move from the splash into the product directly.
-* **Visual consistency**: Splash and intro surfaces reuse the same `bg.jpg` backdrop, subtle grid/ambient treatment, blue accent language, and dark-gradient card system used across the application.
+* **Visual consistency**: Splash and intro surfaces reuse the same `bg.jpg` backdrop, subtle grid/ambient treatment, blue accent language, and dark-gradient card system used across the application. The splash logo card keeps a neutral dark surface without an ambient blue glow around the mark.
 * **Responsive launch UI**: The backdrop, cards, spacing, and content layout adapt for mobile screens rather than relying on the desktop composition.
 
 

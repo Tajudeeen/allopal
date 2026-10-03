@@ -3,7 +3,7 @@ import { POST } from "@/app/api/payments/pay/route";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { seed } from "@/prisma/seed";
-import { payPalClient } from "@/lib/paypal/client";
+import { PayPalClient, payPalClient } from "@/lib/paypal/client";
 import { centsToPayPalAmount, payPalAmountToCents } from "@/lib/paypal/money";
 
 function createPayRequest(body: unknown): NextRequest {
@@ -180,4 +180,64 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
     createOrderSpy.mockRestore();
     captureOrderSpy.mockRestore();
   });
+  it("real sandbox mode surfaces payer approval and sends PayPal request idempotency headers", async () => {
+    const client = new PayPalClient(
+      "real-client-id",
+      "real-client-secret",
+      "https://api-m.sandbox.paypal.com"
+    );
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            access_token: "access-token",
+            expires_in: 3600,
+          }),
+          { status: 200 }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: "ORDER-REAL-1",
+            status: "CREATED",
+            links: [
+              {
+                href: "https://www.sandbox.paypal.com/checkoutnow?token=ORDER-REAL-1",
+                rel: "approve",
+                method: "GET",
+              },
+            ],
+          }),
+          { status: 201 }
+        )
+      );
+
+    const order = await client.createOrder({
+      amountInCents: 1800,
+      referenceId: "cart-case-a",
+      requestId: "allopal-create-123",
+      returnUrl: "http://localhost:3000/api/payments/paypal/return",
+      cancelUrl: "http://localhost:3000/api/payments/paypal/cancel",
+    });
+
+    expect(order.id).toBe("ORDER-REAL-1");
+    expect(order.requiresPayerApproval).toBe(true);
+    expect(order.approvalUrl).toContain("ORDER-REAL-1");
+
+    const createHeaders = new Headers(fetchSpy.mock.calls[1][1]?.headers as HeadersInit);
+    expect(createHeaders.get("Authorization")).toBe("Bearer access-token");
+    expect(createHeaders.get("PayPal-Request-Id")).toBe("allopal-create-123");
+
+    const createBody = JSON.parse(String(fetchSpy.mock.calls[1][1]?.body));
+    expect(createBody.purchase_units[0].amount.value).toBe("18.00");
+    expect(
+      createBody.payment_source.paypal.experience_context.return_url
+    ).toContain("/api/payments/paypal/return");
+
+    fetchSpy.mockRestore();
+  });
+
 });

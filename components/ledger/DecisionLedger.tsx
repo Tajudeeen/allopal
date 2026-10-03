@@ -200,7 +200,7 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
             const isCaptured = d.paymentStatus === "COMPLETED";
             const isPending = isAllowed && d.paymentStatus === "CREATED";
             return (
-              <div key={d.id} className="selo-inner-card rounded-[18px] border border-slate-200 bg-slate-50 p-4 space-y-3">
+              <div key={d.id} className="selo-inner-card rounded-[18px] border p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
                     isAllowed
@@ -214,24 +214,24 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
                     {isAllowed ? <CheckCircle className={`w-3 h-3 ${isCaptured ? "text-emerald-400" : isPending ? "text-amber-400" : "text-blue-400"}`} /> : <XCircle className="w-3 h-3 text-rose-400" />}
                     {isAllowed ? (isCaptured ? "captured" : isPending ? "awaiting payer" : "allowed") : "blocked"}
                   </span>
-                  <span className="font-mono text-sm font-bold text-slate-950">${(d.amount / 100).toFixed(2)}</span>
+                  <span className="font-mono text-sm font-bold text-white">${(d.amount / 100).toFixed(2)}</span>
                 </div>
 
                 <div>
-                  <div className="text-sm font-semibold text-slate-950">{d.merchant}</div>
-                  <div className="text-[11px] text-slate-600">{d.category}</div>
+                  <div className="text-sm font-semibold text-white">{d.merchant}</div>
+                  <div className="text-[11px] text-slate-300">{d.category}</div>
                 </div>
 
-                <p className="text-[11px] leading-relaxed text-slate-600">{d.reason}</p>
+                <p className="text-[11px] leading-relaxed text-slate-300">{d.reason}</p>
 
                 <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
                   <div className="rounded-xl border border-slate-200 bg-white p-2">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">paypal order</span>
-                    <span className="text-blue-700 break-all">{d.paypalOrderId || "null"}</span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">paypal order</span>
+                    <span className="text-blue-300 break-all">{d.paypalOrderId || "null"}</span>
                   </div>
-                  <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
+                  <div className="rounded-xl border border-white/[0.09] bg-white/[0.035] p-2">
                     <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">time</span>
-                    <span className="text-slate-700">{new Date(d.createdAt).toLocaleTimeString()}</span>
+                    <span className="text-slate-200">{new Date(d.createdAt).toLocaleTimeString()}</span>
                   </div>
                   <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
                     <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">payment state</span>

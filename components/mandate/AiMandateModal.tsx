@@ -49,7 +49,7 @@ export function AiMandateModal({
     setSuccessMessage(null);
 
     try {
-      const res = await fetch("/api/mandates/interpret", {
+      const res = await fetch("/api/mandates/propose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -60,7 +60,7 @@ export function AiMandateModal({
         throw new Error(data.message || data.error || "Failed to interpret prompt");
       }
 
-      setProposal(data.proposedMandate);
+      setProposal(data.proposal);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error interpreting mandate");
     } finally {

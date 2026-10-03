@@ -5,7 +5,7 @@ import { GET as cancelGET } from "@/app/api/payments/paypal/cancel/route";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { seed } from "@/prisma/seed";
-import { payPalClient } from "@/lib/paypal/client";
+import { PayPalApiError, payPalClient } from "@/lib/paypal/client";
 
 function request(url: string, method = "POST", body?: unknown): NextRequest {
   return new NextRequest(url, {
@@ -165,6 +165,52 @@ describe("PayPal approval lifecycle", () => {
 
     const tx = await prisma.payPalTransaction.findUnique({
       where: { orderId: "PAYPAL-REVOKED-ORDER" },
+    });
+    expect(tx?.status).toBe("FAILED");
+
+    const mandate = await prisma.mandate.findUnique({
+      where: { id: "mandate-school-shopping" },
+    });
+    expect(mandate?.spentAmount).toBe(0);
+
+    createSpy.mockRestore();
+    captureSpy.mockRestore();
+  });
+
+  it("releases the reservation on a terminal PayPal capture rejection", async () => {
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
+      id: "PAYPAL-DECLINED-ORDER",
+      status: "CREATED",
+      links: [],
+      approvalUrl: "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-DECLINED-ORDER",
+      requiresPayerApproval: true,
+    });
+
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockRejectedValueOnce(new PayPalApiError("captureOrder", 422, "ORDER_NOT_APPROVED"));
+
+    const paymentRes = await payPOST(
+      request("http://localhost:3000/api/payments/pay", "POST", {
+        mandateId: "mandate-school-shopping",
+        cartId: "cart-case-a",
+      })
+    );
+    expect(paymentRes.status).toBe(200);
+
+    const returnRes = await returnGET(
+      request(
+        "http://localhost:3000/api/payments/paypal/return?token=PAYPAL-DECLINED-ORDER",
+        "GET"
+      )
+    );
+
+    expect(returnRes.status).toBe(307);
+    expect(returnRes.headers.get("location")).toContain("payment=failed");
+    expect(captureSpy).toHaveBeenCalledTimes(1);
+
+    const tx = await prisma.payPalTransaction.findUnique({
+      where: { orderId: "PAYPAL-DECLINED-ORDER" },
     });
     expect(tx?.status).toBe("FAILED");
 

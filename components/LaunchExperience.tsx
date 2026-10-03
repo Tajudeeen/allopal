@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode, useEffect, useState } from "react";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 interface LaunchExperienceProps {

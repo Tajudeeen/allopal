@@ -74,8 +74,9 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
           No decisions recorded yet. Run a test scenario above to populate the ledger.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <>
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-xs">
             <thead>
               <tr
                 className={`text-[10px] font-bold uppercase tracking-wider border-b ${
@@ -188,6 +189,42 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
             </tbody>
           </table>
         </div>
+
+        <div className="sm:hidden space-y-2.5">
+          {decisions.map((d) => {
+            const isAllowed = d.status === "ALLOWED";
+            return (
+              <div key={d.id} className="rounded-[18px] border border-white/[0.09] bg-white/[0.035] p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${isAllowed ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60" : "bg-rose-950/80 text-rose-300 border-rose-700/60"}`}>
+                    {isAllowed ? <CheckCircle className="w-3 h-3 text-emerald-400" /> : <XCircle className="w-3 h-3 text-rose-400" />}
+                    {isAllowed ? "captured" : "blocked"}
+                  </span>
+                  <span className="font-mono text-sm font-bold text-white">${(d.amount / 100).toFixed(2)}</span>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-white">{d.merchant}</div>
+                  <div className="text-[11px] text-white/45">{d.category}</div>
+                </div>
+
+                <p className="text-[11px] leading-relaxed text-white/60">{d.reason}</p>
+
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                  <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
+                    <span className="block text-white/30 mb-1">paypal order</span>
+                    <span className="text-blue-300 break-all">{d.paypalOrderId || "null"}</span>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
+                    <span className="block text-white/30 mb-1">time</span>
+                    <span className="text-white/60">{new Date(d.createdAt).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        </>
       )}
     </div>
   );

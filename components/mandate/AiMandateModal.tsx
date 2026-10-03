@@ -158,10 +158,10 @@ export function AiMandateModal({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
-            className={`w-full p-3 rounded-xl border text-xs focus:ring-2 focus:ring-blue-500/30 focus:outline-none font-sans transition-colors ${
+            className={`w-full p-3 rounded-xl border text-xs focus:ring-2 focus:ring-zinc-500/30 focus:outline-none font-sans transition-colors ${
               isDark
-                ? "bg-slate-950 border-slate-700 text-white placeholder-slate-500 focus:border-blue-500"
-                : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-blue-600"
+                ? "bg-slate-950 border-slate-700 text-white placeholder-slate-500 focus:border-zinc-500"
+                : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-zinc-600"
             }`}
             placeholder="e.g. Give my shopping agent $40 for school supplies from Campus Books for 7 days."
           />
@@ -177,7 +177,7 @@ export function AiMandateModal({
                   "Give my shopping agent $40 for school supplies from Campus Books for the next 7 days."
                 )
               }
-              className="text-blue-400 hover:underline font-semibold"
+              className="text-zinc-400 hover:underline font-semibold"
             >
               Reset to Case E
             </button>
@@ -190,7 +190,7 @@ export function AiMandateModal({
           disabled={interpreting || !prompt.trim()}
           className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 shadow transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 mb-4 ${
             isDark
-              ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20"
+              ? "bg-zinc-600 hover:bg-zinc-500 text-white shadow-zinc-500/20"
               : "bg-slate-900 hover:bg-slate-800 text-white"
           }`}
         >
@@ -270,7 +270,7 @@ export function AiMandateModal({
                 <span className={isDark ? "text-slate-400" : "text-slate-500"}>
                   Allowed Categories:
                 </span>
-                <span className="font-semibold text-blue-400">
+                <span className="font-semibold text-zinc-400">
                   {proposal.allowedCategories.join(", ")}
                 </span>
               </div>

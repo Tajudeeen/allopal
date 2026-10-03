@@ -29,7 +29,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
       <div
         className={`rounded-2xl p-6 border shadow-xl text-center transition-all ${
           isDark
-            ? "bg-slate-900/85 backdrop-blur-xl border-slate-800 text-slate-400"
+            ? "bg-gradient-to-b from-[#18181b] to-black backdrop-blur-xl border-slate-800 text-slate-400"
             : "bg-white/90 backdrop-blur-xl border-slate-200 text-slate-500"
         }`}
       >
@@ -63,7 +63,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
     <div
       className={`rounded-2xl p-6 border shadow-2xl transition-all relative overflow-hidden backdrop-blur-2xl ${
         isDark
-          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          ? "bg-gradient-to-b from-[#18181b] to-black border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
       }`}
     >
@@ -71,7 +71,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
       <div
         className={`absolute top-0 left-0 right-0 h-1.5 ${
           isActive
-            ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500"
+            ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500"
             : "bg-rose-500"
         }`}
       />
@@ -83,8 +83,8 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
             className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-md flex-none ${
               isActive
                 ? isDark
-                  ? "bg-blue-950/80 text-blue-400 border border-blue-800/60"
-                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                  ? "bg-zinc-900/80 text-zinc-400 border border-zinc-800/60"
+                  : "bg-zinc-50 text-zinc-700 border border-zinc-200"
                 : isDark
                 ? "bg-rose-950/80 text-rose-400 border border-rose-800/60"
                 : "bg-rose-50 text-rose-600 border border-rose-200"
@@ -234,7 +234,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
               isDark ? "text-slate-300" : "text-slate-600"
             }`}
           >
-            <Tag className="w-3.5 h-3.5 text-blue-400" />
+            <Tag className="w-3.5 h-3.5 text-zinc-400" />
             <span>Allowed Categories</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -243,8 +243,8 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
                 key={idx}
                 className={`px-2 py-0.5 rounded-md font-semibold text-[11px] border ${
                   isDark
-                    ? "bg-blue-950/70 text-blue-300 border-blue-800/60"
-                    : "bg-blue-100/80 text-blue-800 border-blue-200"
+                    ? "bg-zinc-900/70 text-zinc-300 border-zinc-800/60"
+                    : "bg-zinc-100/80 text-zinc-800 border-zinc-200"
                 }`}
               >
                 {cat}

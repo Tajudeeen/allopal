@@ -26,7 +26,7 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
     <div
       className={`rounded-2xl p-6 border shadow-2xl backdrop-blur-2xl transition-all ${
         isDark
-          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          ? "bg-gradient-to-b from-[#18181b] to-black border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
       }`}
     >
@@ -160,7 +160,7 @@ export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps
                       {d.paypalOrderId ? (
                         <span
                           className={`font-bold flex items-center space-x-1 ${
-                            isDark ? "text-blue-300" : "text-blue-700"
+                            isDark ? "text-zinc-300" : "text-zinc-700"
                           }`}
                         >
                           <span>{d.paypalOrderId}</span>

@@ -60,7 +60,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
     <footer
       className={`relative z-20 w-full border-t pb-10 pt-16 backdrop-blur-2xl transition-all duration-300 ${
         isDark
-          ? "border-slate-800/80 bg-slate-950/85 text-slate-300"
+          ? "border-slate-800/80 bg-gradient-to-b from-[#18181b] to-black text-slate-300"
           : "border-slate-200/90 bg-white/90 text-slate-700"
       }`}
     >
@@ -69,7 +69,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
           {/* Brand Col */}
           <div className="flex flex-col lg:col-span-5 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/10 border border-white/20 flex items-center justify-center bg-white flex-none">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-zinc-500/10 border border-white/20 flex items-center justify-center bg-white flex-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo.png"
@@ -80,11 +80,11 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wide border ${
                   isDark
-                    ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                    : "bg-blue-50 text-blue-700 border-blue-200"
+                    ? "bg-zinc-500/10 text-zinc-400 border-zinc-500/30"
+                    : "bg-zinc-50 text-zinc-700 border-zinc-200"
                 }`}
               >
-                <ShieldCheck className="w-3 h-3 text-blue-400" />
+                <ShieldCheck className="w-3 h-3 text-zinc-400" />
                 PAYPAL RUNTIME GATE
               </span>
             </div>
@@ -94,7 +94,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
                 isDark ? "text-white" : "text-slate-950"
               }`}
             >
-              Allopal<span className="text-[#1f4fe0]">.</span>
+              Allopal<span className="text-zinc-800">.</span>
             </p>
 
             <p

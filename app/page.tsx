@@ -262,8 +262,8 @@ export default function Home() {
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold backdrop-blur-md transition-colors ${
                   isDark
-                    ? "bg-slate-900/80 border-slate-700/80 text-blue-300 shadow-md"
-                    : "bg-white/90 border-slate-200 text-[#1f4fe0] shadow-sm"
+                    ? "bg-slate-900/80 border-slate-700/80 text-zinc-300 shadow-md"
+                    : "bg-white/90 border-slate-200 text-zinc-800 shadow-sm"
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -290,7 +290,7 @@ export default function Home() {
                 for{" "}
                 <span
                   className={`font-normal italic font-serif ${
-                    isDark ? "text-blue-400" : "text-[#1f4fe0]"
+                    isDark ? "text-zinc-400" : "text-zinc-800"
                   }`}
                 >
                   AI-agent
@@ -347,7 +347,7 @@ export default function Home() {
               </p>
               <p
                 className={`font-serif italic text-2xl sm:text-3xl leading-tight ${
-                  isDark ? "text-blue-300" : "text-[#1f4fe0]"
+                  isDark ? "text-zinc-300" : "text-zinc-800"
                 }`}
               >
                 One mandate. One budget. Across every agent.
@@ -368,14 +368,14 @@ export default function Home() {
           <ScrollReveal
             className={`rounded-3xl p-8 sm:p-12 border shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center backdrop-blur-2xl transition-all ${
               isDark
-                ? "bg-slate-950/85 border-slate-800/80 text-white shadow-black/60"
+                ? "bg-gradient-to-b from-[#18181b] to-black border-slate-800/80 text-white shadow-black/60"
                 : "bg-gradient-to-br from-white/95 via-white/85 to-[#f0f4fd]/90 border-slate-200/90 text-slate-900 shadow-xl"
             }`}
           >
             <div className="lg:col-span-8 space-y-4">
               <span
                 className={`text-xs font-bold tracking-widest uppercase ${
-                  isDark ? "text-blue-400" : "text-[#1736b8]"
+                  isDark ? "text-zinc-400" : "text-zinc-900"
                 }`}
               >
                 Core Deterministic Invariant
@@ -387,7 +387,7 @@ export default function Home() {
                     MANDATE PASSES
                   </span>
                   <span className={isDark ? "text-slate-500" : "text-slate-400"}>&rarr;</span>
-                  <span className="text-blue-400 font-bold drop-shadow-sm">
+                  <span className="text-zinc-400 font-bold drop-shadow-sm">
                     PAYPAL CAPTURE
                   </span>
                 </div>
@@ -417,7 +417,7 @@ export default function Home() {
                 isDark ? "border-slate-800 text-slate-200" : "border-slate-200 text-slate-800"
               }`}
             >
-              <div className="flex items-center gap-2 text-blue-400">
+              <div className="flex items-center gap-2 text-zinc-400">
                 <CheckCircle2 className="w-5 h-5 flex-none" />
                 <span>Zero unauthorized money movement</span>
               </div>
@@ -447,7 +447,7 @@ export default function Home() {
                 Agentic{" "}
                 <span
                   className={`font-serif italic ${
-                    isDark ? "text-blue-400" : "text-[#1f4fe0]"
+                    isDark ? "text-zinc-400" : "text-zinc-800"
                   }`}
                 >
                   Commerce
@@ -472,7 +472,7 @@ export default function Home() {
           <ScrollReveal
             className={`rounded-3xl border shadow-2xl overflow-hidden backdrop-blur-2xl transition-all ${
               isDark
-                ? "bg-slate-950/90 border-slate-800/90 shadow-black/80 text-white"
+                ? "bg-gradient-to-b from-[#18181b] to-black border-slate-800/90 shadow-black/80 text-white"
                 : "bg-gradient-to-b from-[#fbfbfd]/95 to-[#f4f4f7]/95 border-slate-200/90 shadow-xl text-slate-900"
             }`}
           >
@@ -500,8 +500,8 @@ export default function Home() {
                 <span
                   className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${
                     isDark
-                      ? "bg-blue-950/80 text-blue-300 border-blue-800/60"
-                      : "bg-blue-50 text-blue-700 border-blue-200"
+                      ? "bg-zinc-900/80 text-zinc-300 border-zinc-800/60"
+                      : "bg-zinc-50 text-zinc-700 border-zinc-200"
                   }`}
                 >
                   SQLite dev.db
@@ -549,7 +549,7 @@ export default function Home() {
                 Deterministic{" "}
                 <span
                   className={`font-serif italic ${
-                    isDark ? "text-blue-400" : "text-[#1f4fe0]"
+                    isDark ? "text-zinc-400" : "text-zinc-800"
                   }`}
                 >
                   Policy
@@ -578,7 +578,7 @@ export default function Home() {
             <ScrollReveal
               className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
-                  ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
+                  ? "bg-gradient-to-b from-[#18181b] to-black border-slate-800/80 text-white shadow-black/50"
                   : "bg-white/90 border-slate-200/90 text-slate-900 shadow-xl"
               }`}
             >
@@ -586,8 +586,8 @@ export default function Home() {
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${
                     isDark
-                      ? "bg-blue-950/80 border-blue-800 text-blue-400"
-                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-[#1f4fe0]"
+                      ? "bg-zinc-900/80 border-zinc-800 text-zinc-400"
+                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-zinc-800"
                   }`}
                 >
                   <Cpu className="w-7 h-7" />
@@ -605,7 +605,7 @@ export default function Home() {
               </div>
               <div
                 className={`pt-3 border-t text-xs font-mono ${
-                  isDark ? "border-slate-800 text-blue-300" : "border-slate-200 text-blue-700"
+                  isDark ? "border-slate-800 text-zinc-300" : "border-slate-200 text-zinc-700"
                 }`}
               >
                 0% LLM authorization hallucination
@@ -616,7 +616,7 @@ export default function Home() {
             <ScrollReveal
               className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
-                  ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
+                  ? "bg-gradient-to-b from-[#18181b] to-black border-slate-800/80 text-white shadow-black/50"
                   : "bg-white/90 border-slate-200/90 text-slate-900 shadow-xl"
               }`}
             >
@@ -624,8 +624,8 @@ export default function Home() {
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${
                     isDark
-                      ? "bg-blue-950/80 border-blue-800 text-blue-400"
-                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-[#1f4fe0]"
+                      ? "bg-zinc-900/80 border-zinc-800 text-zinc-400"
+                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-zinc-800"
                   }`}
                 >
                   <ShieldCheck className="w-7 h-7" />
@@ -643,7 +643,7 @@ export default function Home() {
               </div>
               <div
                 className={`pt-3 border-t text-xs font-mono ${
-                  isDark ? "border-slate-800 text-blue-300" : "border-slate-200 text-blue-700"
+                  isDark ? "border-slate-800 text-zinc-300" : "border-slate-200 text-zinc-700"
                 }`}
               >
                 Integer cents monetary precision
@@ -654,7 +654,7 @@ export default function Home() {
             <ScrollReveal
               className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
-                  ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
+                  ? "bg-gradient-to-b from-[#18181b] to-black border-slate-800/80 text-white shadow-black/50"
                   : "bg-white/90 border-slate-200/90 text-slate-900 shadow-xl"
               }`}
             >
@@ -662,8 +662,8 @@ export default function Home() {
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${
                     isDark
-                      ? "bg-blue-950/80 border-blue-800 text-blue-400"
-                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-[#1f4fe0]"
+                      ? "bg-zinc-900/80 border-zinc-800 text-zinc-400"
+                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-zinc-800"
                   }`}
                 >
                   <Layers className="w-7 h-7" />
@@ -681,7 +681,7 @@ export default function Home() {
               </div>
               <div
                 className={`pt-3 border-t text-xs font-mono ${
-                  isDark ? "border-slate-800 text-blue-300" : "border-slate-200 text-blue-700"
+                  isDark ? "border-slate-800 text-zinc-300" : "border-slate-200 text-zinc-700"
                 }`}
               >
                 Fail-closed rollback protection
@@ -704,7 +704,7 @@ export default function Home() {
                 Authoritative{" "}
                 <span
                   className={`font-serif italic ${
-                    isDark ? "text-blue-400" : "text-[#1f4fe0]"
+                    isDark ? "text-zinc-400" : "text-zinc-800"
                   }`}
                 >
                   Decision

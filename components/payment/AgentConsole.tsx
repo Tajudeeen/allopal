@@ -77,7 +77,7 @@ export function AgentConsole({
     <div
       className={`rounded-2xl p-6 border shadow-2xl transition-all backdrop-blur-2xl ${
         isDark
-          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          ? "bg-gradient-to-b from-[#18181b] to-black border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
       }`}
     >
@@ -127,8 +127,8 @@ export function AgentConsole({
               className={`p-3 rounded-xl text-left border transition-all ${
                 isSelected
                   ? isDark
-                    ? "bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/10"
-                    : "bg-blue-50/90 border-[#003087] ring-2 ring-[#003087]/20 shadow-md"
+                    ? "bg-zinc-900/80 border-zinc-500 ring-2 ring-zinc-500/30 shadow-md shadow-zinc-500/10"
+                    : "bg-zinc-50/90 border-[#003087] ring-2 ring-[#003087]/20 shadow-md"
                   : isDark
                   ? "bg-slate-950/60 border-slate-800 hover:bg-slate-800/60"
                   : "bg-slate-50/70 border-slate-200 hover:bg-slate-100/80"
@@ -139,7 +139,7 @@ export function AgentConsole({
                   className={`text-xs font-bold ${
                     isSelected
                       ? isDark
-                        ? "text-blue-300"
+                        ? "text-zinc-300"
                         : "text-[#003087]"
                       : isDark
                       ? "text-white"
@@ -204,7 +204,7 @@ export function AgentConsole({
             </div>
             <span
               className={`text-xs font-mono font-bold ${
-                isDark ? "text-blue-300" : "text-slate-900"
+                isDark ? "text-zinc-300" : "text-slate-900"
               }`}
             >
               Total: ${(selectedCart.totalAmount / 100).toFixed(2)} USD
@@ -264,7 +264,7 @@ export function AgentConsole({
         <button
           onClick={() => selectedCart && onExecutePayment(selectedCart.id)}
           disabled={loading || !mandateId}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#003087] via-[#0070BA] to-[#003087] hover:from-[#002766] hover:to-[#005ea6] text-white text-xs font-extrabold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#003087] via-[#0070BA] to-[#003087] hover:from-[#002766] hover:to-[#005ea6] text-white text-xs font-extrabold shadow-lg shadow-zinc-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
         >
           <span>Execute PayPal Payment</span>
           <ArrowRight className="w-4 h-4" />

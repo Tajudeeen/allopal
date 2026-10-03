@@ -53,7 +53,7 @@ export function VisualPolicyGate({
       <div
         className={`rounded-2xl p-6 border shadow-2xl text-center backdrop-blur-2xl transition-all ${
           isDark
-            ? "bg-slate-900/85 border-slate-700/80 text-white"
+            ? "bg-gradient-to-b from-[#18181b] to-black border-slate-700/80 text-white"
             : "bg-white/95 border-slate-200 text-slate-800"
         }`}
       >
@@ -71,15 +71,15 @@ export function VisualPolicyGate({
       <div
         className={`rounded-2xl p-6 border shadow-2xl text-center backdrop-blur-2xl transition-all ${
           isDark
-            ? "bg-slate-900/85 border-slate-700/80 text-white"
+            ? "bg-gradient-to-b from-[#18181b] to-black border-slate-700/80 text-white"
             : "bg-white/95 border-slate-200 text-slate-900"
         }`}
       >
         <div
           className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 border shadow-sm ${
             isDark
-              ? "bg-blue-950/80 border-blue-800 text-blue-400"
-              : "bg-blue-50 border-blue-100 text-[#1f4fe0]"
+              ? "bg-zinc-900/80 border-zinc-800 text-zinc-400"
+              : "bg-zinc-50 border-zinc-100 text-zinc-800"
           }`}
         >
           <ShieldCheck className="w-6 h-6" />
@@ -146,7 +146,7 @@ export function VisualPolicyGate({
     <div
       className={`rounded-2xl p-6 border shadow-2xl backdrop-blur-2xl transition-all ${
         isDark
-          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          ? "bg-gradient-to-b from-[#18181b] to-black border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
       }`}
     >
@@ -240,7 +240,7 @@ export function VisualPolicyGate({
       <div
         className={`p-4 rounded-xl border transition-all ${
           isAllowed
-            ? "bg-gradient-to-r from-blue-950 via-[#003087] to-blue-900 text-white border-blue-700/80 shadow-lg"
+            ? "bg-gradient-to-r from-zinc-950 via-[#003087] to-zinc-900 text-white border-zinc-700/80 shadow-lg"
             : "bg-rose-950 text-rose-100 border-rose-800 shadow-md"
         }`}
       >
@@ -265,18 +265,18 @@ export function VisualPolicyGate({
         {isAllowed ? (
           <div className="text-xs space-y-1 font-mono">
             <div>
-              <span className="text-blue-200">PayPal Order ID: </span>
+              <span className="text-zinc-200">PayPal Order ID: </span>
               <span className="font-bold text-yellow-300">
                 {evaluation.paypalOrderId || "PENDING_CAPTURE"}
               </span>
             </div>
             {evaluation.paypalCaptureId && (
               <div>
-                <span className="text-blue-200">Capture ID: </span>
+                <span className="text-zinc-200">Capture ID: </span>
                 <span className="text-emerald-300">{evaluation.paypalCaptureId}</span>
               </div>
             )}
-            <div className="text-[11px] text-blue-200/90 font-sans pt-1">
+            <div className="text-[11px] text-zinc-200/90 font-sans pt-1">
               ✓ Server-side capture succeeded for ${(evaluation.amount / 100).toFixed(2)} USD
             </div>
           </div>

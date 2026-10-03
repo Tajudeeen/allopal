@@ -75,7 +75,7 @@ export function AgentConsole({
 
   return (
     <div
-      className={`selo-card rounded-[26px] p-6 border shadow-2xl transition-all backdrop-blur-2xl ${
+      className={`selo-card selo-dark-card rounded-[26px] p-6 border shadow-2xl transition-all backdrop-blur-2xl ${
         isDark
           ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"

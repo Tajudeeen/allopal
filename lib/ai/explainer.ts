@@ -8,6 +8,8 @@ export interface DecisionExplanationInput {
   merchant: string;
   category: string;
   remainingBudget?: number; // Integer cents
+  paypalCalled?: boolean;
+  paymentStatus?: string | null;
 }
 
 /**
@@ -46,6 +48,8 @@ Provide a concise, friendly 1-2 sentence explanation for the following finalized
 Decision: ${decision.status}
 Reason: ${decision.reason}
 Failed Check: ${decision.failedCheck || "None"}
+PayPal Called: ${decision.paypalCalled ? "Yes" : "No"}
+Payment Status: ${decision.paymentStatus || "Policy-only"}
 Amount: $${(decision.amount / 100).toFixed(2)}
 Merchant: ${decision.merchant}
 Category: ${decision.category}
@@ -88,9 +92,17 @@ Do not change the decision.
  */
 export function deterministicExplanation(decision: DecisionExplanationInput): string {
   if (decision.status === "ALLOWED") {
-    return `Payment of $${(decision.amount / 100).toFixed(
-      2
-    )} at ${decision.merchant} was approved and captured via PayPal because it satisfies all mandate spending rules.`;
+    const amount = `${(decision.amount / 100).toFixed(2)}`;
+
+    if (decision.paymentStatus === "CREATED") {
+      return `The ${amount} purchase at ${decision.merchant} passed the spending policy and a PayPal order is waiting for payer approval.`;
+    }
+
+    if (decision.paypalCalled) {
+      return `Payment of ${amount} at ${decision.merchant} was approved by the mandate and captured via PayPal because it satisfies all spending rules.`;
+    }
+
+    return `The ${amount} purchase at ${decision.merchant} passed the spending policy in dry-run mode. PayPal was not called, so no money moved.`;
   }
 
   switch (decision.failedCheck) {

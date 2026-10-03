@@ -586,8 +586,8 @@ export default function Home() {
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${
                     isDark
-                      ? "bg-blue-950/80 border-blue-800 text-blue-400"
-                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-[#1f4fe0]"
+                      ? "bg-gradient-to-tr from-gray-900 via-black to-gray-900 border-slate-800 text-white shadow-black/50"
+                      : "bg-gradient-to-tr from-gray-900 via-black to-gray-900 border-slate-800 text-slate-300"
                   }`}
                 >
                   <Cpu className="w-7 h-7" />
@@ -624,8 +624,8 @@ export default function Home() {
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${
                     isDark
-                      ? "bg-blue-950/80 border-blue-800 text-blue-400"
-                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-[#1f4fe0]"
+                      ? "bg-gradient-to-tr from-gray-900 via-black to-gray-900 border-slate-800 text-white shadow-black/50"
+                      : "bg-gradient-to-tr from-gray-900 via-black to-gray-900 border-slate-800 text-slate-300"
                   }`}
                 >
                   <ShieldCheck className="w-7 h-7" />
@@ -662,8 +662,8 @@ export default function Home() {
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-md ${
                     isDark
-                      ? "bg-blue-950/80 border-blue-800 text-blue-400"
-                      : "bg-gradient-to-tr from-[#cfdcfb] via-[#eaf0fd] to-[#d3e0fb] border-white text-[#1f4fe0]"
+                      ? "bg-gradient-to-tr from-gray-900 via-black to-gray-900 border-slate-800 text-white shadow-black/50"
+                      : "bg-gradient-to-tr from-gray-900 via-black to-gray-900 border-slate-800 text-slate-300"
                   }`}
                 >
                   <Layers className="w-7 h-7" />

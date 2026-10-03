@@ -68,7 +68,7 @@ export function Navbar({
       >
         {/* Brand: Logo and Name */}
         <a href="#hero" className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/20 border border-white/40 flex items-center justify-center bg-white flex-none group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/20 border border-white/40 flex items-center justify-center flex-none group-hover:scale-105 transition-transform">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"

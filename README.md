@@ -142,6 +142,21 @@ The application is intentionally split into separate working screens rather than
 
 The navigation collapses into a mobile menu below the desktop breakpoint. Muted labels on light surfaces use stronger slate tones, while muted text inside black session cards remains bright enough to read.
 
+### Launch Experience
+
+Allopal now has an intentional application launch flow instead of dropping users directly into the dashboard:
+
+```
+APP LAUNCH → SPLASH SCREEN → FIRST-TIME INTRO → PRODUCT
+                         └──── returning users ────→ PRODUCT
+```
+
+* **Splash screen**: Uses the preserved `public/bg.jpg` backdrop, Allopal identity, PayPal runtime label, and lightweight loading motion.
+* **First-time intro**: A dedicated `/welcome` screen explains the human mandate, deterministic policy, and PayPal execution boundary before entering the product.
+* **Returning visitors**: The intro completion state is stored locally so subsequent launches move from the splash into the product directly.
+* **Visual consistency**: Splash and intro surfaces reuse the same `bg.jpg` backdrop, subtle grid/ambient treatment, blue accent language, and dark-gradient card system used across the application.
+* **Responsive launch UI**: The backdrop, cards, spacing, and content layout adapt for mobile screens rather than relying on the desktop composition.
+
 
 ---
 
@@ -313,6 +328,7 @@ Visit [http://localhost:3000](http://localhost:3000). The frontend layout is mod
 * **Responsive product UI**: Inner session cards, policy checks, ledger views, controls, and action surfaces adapt down to mobile layouts instead of simply shrinking the desktop interface.
 * **Smooth interaction system**: In-page anchor scrolling, intersection-based section reveals, tactile card/button motion, and reduced-motion support.
 * **Interactive Runtime Screens**: The product no longer depends on one long landing page. Each workflow has its own screen and the shared runtime state keeps mandate, policy, payment, and ledger views synchronized.
+* **Launch & Intro Flow**: The splash screen and first-time `/welcome` experience use the preserved background asset and shared dark-gradient cards so the visual language remains consistent from app launch through the runtime.
 
 ---
 

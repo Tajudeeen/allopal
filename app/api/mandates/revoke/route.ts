@@ -19,6 +19,29 @@ export async function POST(req: NextRequest) {
 
     const { mandateId } = parsed.data;
 
+    const existing = await prisma.mandate.findUnique({
+      where: { id: mandateId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "MANDATE_NOT_FOUND", message: "Mandate ID was not found." },
+        { status: 404 }
+      );
+    }
+
+    if (existing.status === "REVOKED") {
+      return NextResponse.json({
+        status: "REVOKED",
+        mandate: {
+          id: existing.id,
+          name: existing.name,
+          status: existing.status,
+        },
+        message: `Mandate "${existing.name}" is already revoked.`,
+      });
+    }
+
     const updated = await prisma.mandate.update({
       where: { id: mandateId },
       data: { status: "REVOKED" },

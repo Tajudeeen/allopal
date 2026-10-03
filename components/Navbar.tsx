@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Menu, RotateCcw, Sparkles, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
@@ -40,7 +41,7 @@ export function Navbar() {
     <header className="fixed top-3 left-3 right-3 sm:top-5 sm:left-4 sm:right-4 max-w-7xl mx-auto z-50">
       <nav className="relative rounded-[18px] border border-black/[0.08] bg-white/82 shadow-[0_18px_48px_rgba(27,28,31,0.10)] backdrop-blur-2xl">
         <div className="min-h-14 sm:min-h-16 px-3 sm:px-5 flex items-center justify-between gap-3">
-          <a href="/" onClick={closeMenu} className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+          <Link href="/" onClick={closeMenu} className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[13px] overflow-hidden shadow-sm border border-black/10 flex items-center justify-center bg-white flex-none transition-transform duration-300 group-hover:scale-[1.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Allopal Logo" className="w-full h-full object-contain p-1" />
@@ -58,13 +59,13 @@ export function Navbar() {
                 Spending controls for AI-agent commerce
               </p>
             </div>
-          </a>
+          </Link>
 
           <div className="hidden lg:flex items-center gap-1 text-[11px] font-semibold text-[#51545b]">
             {links.map((link) => {
               const active = pathname === link.href;
               return (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
                   className={`px-3 py-2 rounded-xl transition-all ${active
@@ -72,13 +73,13 @@ export function Navbar() {
                     : "hover:text-[#18191c] hover:bg-black/[0.04]"}`}
                 >
                   {link.label}
-                </a>
+                </Link>
               );
             })}
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <a
+            <Link
               href="/mandate#draft"
               className="selo-button selo-button-primary !min-h-[38px] !rounded-[12px] !px-3 sm:!px-3.5"
               onClick={closeMenu}
@@ -86,7 +87,7 @@ export function Navbar() {
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span className="hidden sm:inline">Draft Mandate</span>
               <span className="sm:hidden">Draft</span>
-            </a>
+            </Link>
 
             <button
               type="button"
@@ -124,7 +125,7 @@ export function Navbar() {
               {links.map((link) => {
                 const active = pathname === link.href;
                 return (
-                  <a
+                  <Link
                     key={link.href}
                     href={link.href}
                     onClick={closeMenu}
@@ -134,7 +135,7 @@ export function Navbar() {
                   >
                     <span>{link.label}</span>
                     <span className="text-[10px] uppercase tracking-wider opacity-45">open</span>
-                  </a>
+                  </Link>
                 );
               })}
               {resetError && (

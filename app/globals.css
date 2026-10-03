@@ -123,29 +123,6 @@ body {
   --selo-line: rgba(16, 17, 20, 0.14);
 }
 
-body {
-  background-color: #e9e7e1;
-  background-image:
-    radial-gradient(circle at 14% 12%, rgba(255,255,255,0.82), transparent 30%),
-    radial-gradient(circle at 84% 20%, rgba(197,204,218,0.34), transparent 28%),
-    radial-gradient(circle at 50% 90%, rgba(255,255,255,0.52), transparent 34%),
-    linear-gradient(135deg, #eceae5 0%, #deddd8 48%, #f0efeb 100%);
-  background-size: auto, auto, auto, 100% 100%;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -2;
-  opacity: 0.24;
-  background-image:
-    linear-gradient(rgba(20,20,20,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20,20,20,0.035) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: linear-gradient(to bottom, black, transparent 78%);
-}
 
 .selo-card {
   position: relative;

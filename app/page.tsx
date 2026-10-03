@@ -366,7 +366,7 @@ export default function Home() {
         {/* ================= INVARIANT FORMULA BANNER ================= */}
         <section id="invariant">
           <ScrollReveal
-            className={`rounded-3xl p-8 sm:p-12 border shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center backdrop-blur-2xl transition-all ${
+            className={`selo-card rounded-[26px] p-8 sm:p-12 border shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center backdrop-blur-2xl transition-all ${
               isDark
                 ? "bg-slate-950/85 border-slate-800/80 text-white shadow-black/60"
                 : "bg-gradient-to-br from-white/95 via-white/85 to-[#f0f4fd]/90 border-slate-200/90 text-slate-900 shadow-xl"
@@ -470,7 +470,7 @@ export default function Home() {
 
           {/* Desktop App Shell Window */}
           <ScrollReveal
-            className={`rounded-3xl border shadow-2xl overflow-hidden backdrop-blur-2xl transition-all ${
+            className={`selo-shell rounded-[26px] border shadow-2xl overflow-hidden backdrop-blur-2xl transition-all ${
               isDark
                 ? "bg-slate-950/90 border-slate-800/90 shadow-black/80 text-white"
                 : "bg-gradient-to-b from-[#fbfbfd]/95 to-[#f4f4f7]/95 border-slate-200/90 shadow-xl text-slate-900"
@@ -573,10 +573,10 @@ export default function Home() {
 
         {/* ================= THREE SPECIFICATION CARDS ================= */}
         <section className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
             {/* Card 1 */}
             <ScrollReveal
-              className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
+              className={`selo-card md:col-span-7 lg:col-span-7 rounded-[26px] p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
                   ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
                   : "bg-white/90 border-slate-200/90 text-slate-900 shadow-xl"
@@ -614,7 +614,7 @@ export default function Home() {
 
             {/* Card 2 */}
             <ScrollReveal
-              className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
+              className={`selo-card md:col-span-5 lg:col-span-5 rounded-[26px] p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
                   ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
                   : "bg-white/90 border-slate-200/90 text-slate-900 shadow-xl"
@@ -652,7 +652,7 @@ export default function Home() {
 
             {/* Card 3 */}
             <ScrollReveal
-              className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
+              className={`selo-card md:col-span-12 lg:col-span-12 rounded-[26px] p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
                   ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
                   : "bg-white/90 border-slate-200/90 text-slate-900 shadow-xl"

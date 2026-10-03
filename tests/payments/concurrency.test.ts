@@ -115,4 +115,45 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
     createSpy.mockRestore();
     captureSpy.mockRestore();
   });
+  it("Concurrent idempotency test: the same key can produce only one PayPal side effect", async () => {
+    const createSpy = vi.spyOn(payPalClient, "createOrder");
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+
+    await prisma.mandate.update({
+      where: { id: "mandate-school-shopping" },
+      data: { spentAmount: 0 },
+    });
+
+    const idempotencyKey = "concurrent-req-key-67890";
+    const payload = {
+      mandateId: "mandate-school-shopping",
+      cartId: "cart-case-a",
+      idempotencyKey,
+    };
+
+    const [resA, resB] = await Promise.all([
+      POST(createPayRequest(payload, idempotencyKey)),
+      POST(createPayRequest(payload, idempotencyKey)),
+    ]);
+
+    const dataA = await resA.json();
+    const dataB = await resB.json();
+    const statuses = [resA.status, resB.status];
+    const outcomes = [dataA.status, dataB.status];
+
+    expect(statuses).toContain(200);
+    expect(statuses).toContain(409);
+    expect(outcomes).toContain("COMPLETED");
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(captureSpy).toHaveBeenCalledTimes(1);
+
+    const mandate = await prisma.mandate.findUnique({
+      where: { id: "mandate-school-shopping" },
+    });
+    expect(mandate?.spentAmount).toBe(1800);
+
+    createSpy.mockRestore();
+    captureSpy.mockRestore();
+  });
+
 });

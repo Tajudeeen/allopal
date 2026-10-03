@@ -6,7 +6,7 @@
   --color-canvas: #f2f1ed;
   --color-ink: #17181b;
   --color-ink-soft: #3f4147;
-  --color-muted: #70727a;
+  --color-muted: #5f626a;
   --color-line: rgba(23, 24, 27, 0.14);
   --color-accent: #1f4fe0;
   --color-cta: #17181b;
@@ -469,7 +469,7 @@ header nav button {
 }
 
 .selo-dark-card .text-slate-400 {
-  color: rgba(226, 232, 240, 0.48) !important;
+  color: rgba(226, 232, 240, 0.72) !important;
 }
 
 .selo-dark-card .border-slate-200,
@@ -635,7 +635,7 @@ header nav button {
 }
 
 .selo-inner-card .text-slate-400 {
-  color: rgba(226,232,240,0.48) !important;
+  color: rgba(226,232,240,0.72) !important;
 }
 
 .selo-inner-card .border-slate-200,

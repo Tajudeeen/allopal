@@ -27,7 +27,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
   if (!mandate) {
     return (
       <div
-        className={`rounded-2xl p-6 border shadow-xl text-center transition-all ${
+        className={`selo-card rounded-[26px] p-6 border shadow-xl text-center transition-all ${
           isDark
             ? "bg-slate-900/85 backdrop-blur-xl border-slate-800 text-slate-400"
             : "bg-white/90 backdrop-blur-xl border-slate-200 text-slate-500"
@@ -61,7 +61,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
 
   return (
     <div
-      className={`rounded-2xl p-6 border shadow-2xl transition-all relative overflow-hidden backdrop-blur-2xl ${
+      className={`selo-card rounded-[26px] p-6 border shadow-2xl transition-all relative overflow-hidden backdrop-blur-2xl ${
         isDark
           ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
           : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
@@ -130,7 +130,7 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
           <button
             onClick={handleRevoke}
             disabled={revoking}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 ${
+            className={`selo-button selo-button-danger !min-h-[36px] !rounded-xl !px-3 flex items-center space-x-1.5 disabled:opacity-50 ${
               isDark
                 ? "bg-rose-950/80 hover:bg-rose-900 text-rose-300 border-rose-700/80"
                 : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"

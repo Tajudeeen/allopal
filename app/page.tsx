@@ -190,6 +190,11 @@ export default function Home() {
       });
       const data = await res.json();
 
+      if (data.status === "PENDING_APPROVAL" && data.approvalUrl) {
+        window.location.assign(data.approvalUrl);
+        return;
+      }
+
       let aiExplanation = "";
       try {
         const explainRes = await fetch("/api/decisions/explain", {

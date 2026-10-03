@@ -17,7 +17,19 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 7rem;
   background: var(--color-canvas);
+}
+
+html,
+body {
+  scroll-margin-top: 7rem;
+}
+
+@supports (scroll-behavior: smooth) {
+  :target {
+    scroll-margin-top: 7rem;
+  }
 }
 
 body {
@@ -98,12 +110,14 @@ body::after {
 /* shared editorial motion */
 .reveal {
   opacity: 0;
-  filter: blur(5px);
-  transform: translate3d(0, 20px, 0) scale(0.995);
+  filter: blur(8px);
+  transform: translate3d(0, 34px, 0) scale(0.985);
+  clip-path: inset(4% 0 0 0 round 18px);
   transition:
     opacity 720ms var(--selo-ease) var(--reveal-delay, 0ms),
     transform 720ms var(--selo-ease) var(--reveal-delay, 0ms),
-    filter 720ms var(--selo-ease) var(--reveal-delay, 0ms);
+    filter 720ms var(--selo-ease) var(--reveal-delay, 0ms),
+    clip-path 720ms var(--selo-ease) var(--reveal-delay, 0ms);
   will-change: transform, opacity;
 }
 
@@ -111,6 +125,7 @@ body::after {
   opacity: 1;
   filter: blur(0);
   transform: none;
+  clip-path: inset(0 0 0 0 round 0);
 }
 
 .selo-card-grid > .reveal:nth-child(1) { --reveal-delay: 0ms; }
@@ -120,6 +135,7 @@ body::after {
 .selo-card,
 .selo-shell,
 .selo-checks {
+  scroll-margin-top: 7rem;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -128,7 +144,7 @@ body::after {
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   transition:
-    transform 320ms var(--selo-ease),
+    transform 360ms var(--selo-ease),
     box-shadow 320ms var(--selo-ease),
     border-color 320ms ease;
 }
@@ -560,18 +576,50 @@ header nav button {
 
 
 .selo-inner-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   color: #f8fafc !important;
   background: linear-gradient(145deg, #151619, #0d0e11) !important;
   border-color: rgba(255,255,255,0.09) !important;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.045) inset,
     0 14px 36px rgba(0,0,0,0.18);
+  transform: translateZ(0);
+  transition:
+    transform 360ms var(--selo-ease),
+    border-color 260ms ease,
+    box-shadow 360ms var(--selo-ease),
+    background-color 260ms ease;
+}
+
+.selo-inner-card::after {
+  content: "";
+  position: absolute;
+  inset: -40% -25%;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,0.07) 50%, transparent 58%);
+  transform: translateX(-55%) rotate(8deg);
+  transition: transform 900ms var(--selo-ease);
 }
 
 .selo-inner-card:hover {
+  transform: translateY(-3px);
   border-color: rgba(255,255,255,0.14) !important;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.06) inset,
+    0 18px 46px rgba(0,0,0,0.24);
+}
+
+.selo-inner-card:hover::after {
+  transform: translateX(55%) rotate(8deg);
+}
+
+.selo-inner-card:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 3px rgba(31,79,224,0.34),
     0 18px 46px rgba(0,0,0,0.24);
 }
 

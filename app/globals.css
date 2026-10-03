@@ -428,3 +428,132 @@ header nav button {
     transition: none;
   }
 }
+
+
+/* Black session-card system */
+.selo-dark-card {
+  color: #f8fafc !important;
+  background: linear-gradient(145deg, rgba(17, 18, 22, 0.985), rgba(11, 12, 15, 0.97)) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 24px 70px rgba(0,0,0,0.20);
+}
+
+.selo-dark-card .text-slate-950,
+.selo-dark-card .text-slate-900,
+.selo-dark-card .text-slate-800,
+.selo-dark-card .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+.selo-dark-card .text-slate-600,
+.selo-dark-card .text-slate-500 {
+  color: rgba(226, 232, 240, 0.62) !important;
+}
+
+.selo-dark-card .text-slate-400 {
+  color: rgba(226, 232, 240, 0.48) !important;
+}
+
+.selo-dark-card .border-slate-200,
+.selo-dark-card .border-slate-300,
+.selo-dark-card .border-slate-100 {
+  border-color: rgba(255,255,255,0.09) !important;
+}
+
+.selo-dark-card .bg-white,
+.selo-dark-card .bg-white\/95,
+.selo-dark-card .bg-white\/90,
+.selo-dark-card .bg-slate-50,
+.selo-dark-card .bg-slate-50\/70,
+.selo-dark-card .bg-slate-50\/80 {
+  background-color: rgba(255,255,255,0.035) !important;
+}
+
+.selo-dark-card .selo-button-secondary {
+  color: #f8fafc !important;
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.selo-dark-card .selo-button-secondary:hover {
+  background: rgba(255,255,255,0.09) !important;
+}
+
+.selo-dark-card .overflow-x-auto {
+  scrollbar-color: rgba(255,255,255,0.22) transparent;
+}
+
+@media (max-width: 900px) {
+  header nav {
+    min-width: 0;
+  }
+
+  .selo-hero h1 {
+    font-size: clamp(2.65rem, 8vw, 4.4rem);
+  }
+
+  .selo-shell,
+  .selo-card,
+  .selo-checks {
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .selo-card,
+  .selo-dark-card {
+    padding: 1.1rem !important;
+  }
+
+  .selo-shell {
+    border-radius: 20px !important;
+  }
+
+  .selo-checks {
+    border-radius: 22px !important;
+  }
+
+  .selo-button {
+    min-height: 44px;
+  }
+
+  .selo-card-grid {
+    gap: 0.85rem;
+  }
+
+  .selo-checks [class*="grid-cols-\[34px_1fr_auto\]"] {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+
+  .selo-checks [class*="grid-cols-\[34px_1fr_auto\]"] > :last-child {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 0.35rem;
+  }
+
+  table {
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 420px) {
+  .selo-button {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
+
+  .selo-hero h1 {
+    font-size: 2.55rem;
+  }
+}

@@ -5,7 +5,7 @@ import { CheckCircle, XCircle, CreditCard, Sparkles, Loader2, ExternalLink, Minu
 import { PolicyCheckDetail } from "@/lib/policy/types";
 
 export interface GateEvaluationState {
-  status: "ALLOWED" | "DENIED" | "COMPLETED" | "PENDING_APPROVAL";
+  status: "ALLOWED" | "DENIED" | "COMPLETED" | "PENDING_APPROVAL" | "FAILED";
   amount: number;
   merchant: string;
   category: string;
@@ -76,6 +76,7 @@ export function VisualPolicyGate({
   }
 
   const isDenied = evaluation.status === "DENIED";
+  const isFailed = evaluation.status === "FAILED";
   const isPending = evaluation.status === "PENDING_APPROVAL";
   const isCaptured = evaluation.status === "COMPLETED" && Boolean(evaluation.paypalCaptureId);
   const checks = evaluation.checks || {};
@@ -85,7 +86,7 @@ export function VisualPolicyGate({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
         <div className="flex items-center gap-2.5">
           <div
-            className={`w-3 h-3 rounded-full ${isDenied ? "bg-rose-500" : isPending ? "bg-amber-400" : "bg-emerald-500"}`}
+            className={`w-3 h-3 rounded-full ${isDenied || isFailed ? "bg-rose-500" : isPending ? "bg-amber-400" : "bg-emerald-500"}`}
           />
           <div>
             <h2 className="text-base font-bold tracking-tight">
@@ -98,7 +99,7 @@ export function VisualPolicyGate({
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border w-fit ${
-            isDenied
+            isDenied || isFailed
               ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
               : isPending
               ? "bg-amber-950/80 text-amber-300 border-amber-700/60"
@@ -154,7 +155,7 @@ export function VisualPolicyGate({
 
       <div
         className={`p-4 rounded-xl border transition-all ${
-          isDenied
+          isDenied || isFailed
             ? "bg-rose-950 border-rose-800 text-rose-100"
             : isPending
             ? "bg-amber-950 border-amber-800 text-amber-100"
@@ -163,13 +164,15 @@ export function VisualPolicyGate({
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
-            <CreditCard className={`w-5 h-5 ${isDenied ? "text-rose-400" : isPending ? "text-amber-300" : "text-[#FFC439]"}`} />
+            <CreditCard className={`w-5 h-5 ${isDenied || isFailed ? "text-rose-400" : isPending ? "text-amber-300" : "text-[#FFC439]"}`} />
             <span className="text-xs font-bold tracking-wide uppercase">
               PayPal Execution Boundary
             </span>
           </div>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-wider uppercase w-fit ${
             isDenied
+              ? "bg-rose-500 text-white"
+              : isFailed
               ? "bg-rose-500 text-white"
               : isPending
               ? "bg-amber-400 text-slate-950"
@@ -181,6 +184,10 @@ export function VisualPolicyGate({
           }`}>
             {isDenied
               ? "PAYPAL NOT CALLED"
+              : isFailed
+              ? evaluation.paypalCalled
+                ? "PAYPAL CALL FAILED"
+                : "PAYPAL NOT CALLED"
               : isPending
               ? "PAYER APPROVAL REQUIRED"
               : evaluation.paypalCalled
@@ -197,6 +204,20 @@ export function VisualPolicyGate({
             <div className="text-[11px] text-rose-300/90 font-sans">
               Failed gate: {evaluation.failedCheck || "POLICY_RULE"} • {evaluation.reason}
             </div>
+          </div>
+        ) : isFailed ? (
+          <div className="text-xs space-y-1 font-mono">
+            <div className="text-rose-200 font-bold">
+              Payment request failed{evaluation.paypalCalled ? " after crossing the PayPal boundary." : " before crossing the PayPal boundary."}
+            </div>
+            <div className="text-[11px] text-rose-300/90 font-sans">
+              {evaluation.reason || "The payment request could not be completed."}
+            </div>
+            {evaluation.paypalOrderId && (
+              <div className="text-[11px] text-rose-200/90 font-mono break-all">
+                PayPal Order: {evaluation.paypalOrderId}
+              </div>
+            )}
           </div>
         ) : isPending ? (
           <div className="text-xs space-y-2 font-mono">

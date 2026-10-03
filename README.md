@@ -307,12 +307,12 @@ npm run dev
 
 Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design direction of [useselo.xyz](https://useselo.xyz/), featuring:
 * **WCAG Contrast Utilities**: `lib/theme/contrast.ts` provides tested relative-luminance, contrast-ratio, background classification, and typography-token helpers. The utility is covered by automated tests, but there is no end-user theme/color-picker control in the current UI.
-* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with section anchors and modal triggers.
+* **Route Navigation**: Translucent backdrop-filtered navbar with dedicated Overview, Mandate, Agent Console, Policy, and Ledger screens. On smaller breakpoints the navigation collapses into an accessible menu bar.
 * **Editorial Hero & Invariant Banner**: Bold typography, italic serif accents, and high-contrast formula presentation (`MANDATE PASSES → PAYPAL CAPTURE`).
 * **Desktop Console Stage**: MacOS-style application container (`allopal-runtime-v1 // paypal-sandbox // policy-gate`) framing the live Mandate and Agent Commerce simulators.
 * **Responsive product UI**: Inner session cards, policy checks, ledger views, controls, and action surfaces adapt down to mobile layouts instead of simply shrinking the desktop interface.
 * **Smooth interaction system**: In-page anchor scrolling, intersection-based section reveals, tactile card/button motion, and reduced-motion support.
-* **Status Pipeline & Specification Cards**: Visual check chips (`ALLOWED`, `DENIED`, `RESERVED`) and gradient-accented security architecture cards.
+* **Interactive Runtime Screens**: The product no longer depends on one long landing page. Each workflow has its own screen and the shared runtime state keeps mandate, policy, payment, and ledger views synchronized.
 
 ---
 

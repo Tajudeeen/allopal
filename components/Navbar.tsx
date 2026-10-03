@@ -21,6 +21,7 @@ export function Navbar({ onResetDemo, onOpenAiModal }: NavbarProps) {
       <nav className="h-14 sm:h-16 px-3 sm:px-5 rounded-[18px] bg-white/72 flex items-center justify-between">
         <a href="#hero" className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[13px] overflow-hidden shadow-sm border border-black/10 flex items-center justify-center bg-white flex-none transition-transform duration-300 group-hover:scale-[1.04]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Allopal Logo" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">

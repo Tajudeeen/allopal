@@ -306,20 +306,22 @@ APP LAUNCH
    ↓
 SPLASH SCREEN
    ↓
-FIRST-TIME INTRO ─────→ PRODUCT
-        ↑
-   returning users
-        │
-        └────────────→ PRODUCT
+FIRST-RUN WALKTHROUGH MODAL ─────→ PRODUCT
+              ↑
+         returning users
+              │
+              └──────────────────→ PRODUCT
 ~~~
 
-The splash and intro share the product visual language:
+The splash and walkthrough share the product visual language:
 
 - the preserved public/bg.jpg asset remains the backdrop;
 - launch surfaces use the same dark-gradient card treatment as the runtime;
 - the splash logo card has no ambient blue glow;
-- the first-time intro explains the mandate, policy, and PayPal boundary;
-- the intro completion state is stored locally so returning visitors skip it.
+- the first-run walkthrough is a modal with three short steps covering the human mandate, deterministic policy gate, and controlled PayPal execution;
+- the walkthrough can be skipped or stepped through manually;
+- completion is stored locally so returning visitors move directly from splash to the product;
+- /welcome remains available as a dedicated introduction route, but it is no longer part of the automatic first-run launch path.
 
 ---
 

@@ -112,17 +112,18 @@ export default function Home() {
     try {
       const res = await fetch("/api/authorize", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": idempotencyKey,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mandateId: mandate.id,
           cartId,
-          idempotencyKey,
         }),
       });
       const data = await res.json();
+
+      if (data.status === "PENDING_APPROVAL" && data.approvalUrl) {
+        window.location.assign(data.approvalUrl);
+        return;
+      }
 
       let aiExplanation = "";
       try {
@@ -147,11 +148,6 @@ export default function Home() {
         }
       } catch (err) {
         console.error("Explanation error", err);
-      }
-
-      if (data.status === "PENDING_APPROVAL" && data.approvalUrl) {
-        window.location.assign(data.approvalUrl);
-        return;
       }
 
       setEvaluation({
@@ -182,10 +178,14 @@ export default function Home() {
     try {
       const res = await fetch("/api/payments/pay", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           mandateId: mandate.id,
           cartId,
+          idempotencyKey,
         }),
       });
       const data = await res.json();

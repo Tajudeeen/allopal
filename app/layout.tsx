@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LaunchExperience } from "@/components/LaunchExperience";
 
 export const metadata: Metadata = {
   title: "Allopal | Spending Authorization Layer for PayPal Agentic Commerce",
@@ -18,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans">{children}</body>
+      <body className="antialiased font-sans"><LaunchExperience>{children}</LaunchExperience></body>
     </html>
   );
 }

@@ -94,21 +94,11 @@ export function Navbar() {
               disabled={resetting}
               title={resetError || "Reset database to fresh canonical demo state"}
               aria-label={resetError || (resetting ? "Resetting demo" : "Reset demo")}
-              className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-[12px] border border-black/[0.08] bg-black/[0.025] text-[#2b2e33] hover:bg-black/[0.06] transition-colors disabled:opacity-50"
+              className="selo-button selo-button-secondary !min-h-[38px] !rounded-[12px] !px-2.5 sm:!px-3 disabled:opacity-50"
             >
               <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#1f4fe0]" : "text-[#51545b]"}`} />
-              <span className="sr-only">{resetting ? "Resetting demo" : "Reset demo"}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleReset}
-              disabled={resetting}
-              title={resetError || "Reset database to fresh canonical demo state"}
-              className="hidden lg:inline-flex selo-button selo-button-secondary !min-h-[38px] !rounded-[12px] !px-2.5 sm:!px-3 disabled:opacity-50"
-            >
-              <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#1f4fe0]" : "text-[#51545b]"}`} />
-              <span>{resetting ? "Resetting..." : "Reset Demo"}</span>
+              <span className="hidden lg:inline">{resetting ? "Resetting..." : "Reset Demo"}</span>
+              <span className="lg:hidden sr-only">{resetting ? "Resetting demo" : "Reset demo"}</span>
             </button>
 
             <button

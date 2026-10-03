@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { History, CheckCircle, XCircle, ExternalLink, Shield } from "lucide-react";
+import { History, CheckCircle, XCircle } from "lucide-react";
 
 interface DecisionRecord {
   id: string;
@@ -18,41 +18,72 @@ interface DecisionRecord {
 
 interface DecisionLedgerProps {
   decisions: DecisionRecord[];
+  isDark?: boolean;
 }
 
-export function DecisionLedger({ decisions }: DecisionLedgerProps) {
+export function DecisionLedger({ decisions, isDark = true }: DecisionLedgerProps) {
   return (
-    <div className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 shadow-xl transition-all">
+    <div
+      className={`rounded-2xl p-6 border shadow-2xl backdrop-blur-2xl transition-all ${
+        isDark
+          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
+      }`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+      <div
+        className={`flex items-center justify-between mb-4 pb-3 border-b ${
+          isDark ? "border-slate-800" : "border-slate-200"
+        }`}
+      >
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+          <div
+            className={`w-9 h-9 rounded-xl border flex items-center justify-center ${
+              isDark
+                ? "bg-slate-800/80 border-slate-700 text-slate-300"
+                : "bg-slate-100 border-slate-200 text-slate-700"
+            }`}
+          >
             <History className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight">
+            <h2 className="text-base font-bold tracking-tight">
               Authoritative Decision Ledger
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
               Immutable audit trail of all policy evaluations and PayPal order references
             </p>
           </div>
         </div>
-        <span className="text-xs font-mono font-bold text-slate-500">
+        <span
+          className={`text-xs font-mono font-bold ${
+            isDark ? "text-slate-400" : "text-slate-500"
+          }`}
+        >
           {decisions.length} recorded
         </span>
       </div>
 
       {/* Decision Table */}
       {decisions.length === 0 ? (
-        <div className="py-8 text-center text-xs text-slate-400">
+        <div
+          className={`py-8 text-center text-xs ${
+            isDark ? "text-slate-400" : "text-slate-500"
+          }`}
+        >
           No decisions recorded yet. Run a test scenario above to populate the ledger.
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+              <tr
+                className={`text-[10px] font-bold uppercase tracking-wider border-b ${
+                  isDark
+                    ? "text-slate-400 border-slate-800"
+                    : "text-slate-500 border-slate-100"
+                }`}
+              >
                 <th className="pb-2.5 font-bold">Status</th>
                 <th className="pb-2.5 font-bold">Amount</th>
                 <th className="pb-2.5 font-bold">Merchant / Category</th>
@@ -61,47 +92,94 @@ export function DecisionLedger({ decisions }: DecisionLedgerProps) {
                 <th className="pb-2.5 font-bold text-right">Time</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody
+              className={`divide-y ${
+                isDark ? "divide-slate-800/60" : "divide-slate-100"
+              }`}
+            >
               {decisions.map((d) => {
                 const isAllowed = d.status === "ALLOWED";
                 return (
-                  <tr key={d.id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr
+                    key={d.id}
+                    className={`transition-colors ${
+                      isDark ? "hover:bg-slate-800/40" : "hover:bg-slate-50/70"
+                    }`}
+                  >
                     <td className="py-3">
                       <span
-                        className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                           isAllowed
-                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                            : "bg-rose-100 text-rose-800 border border-rose-300"
+                            ? isDark
+                              ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
+                              : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                            : isDark
+                            ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
+                            : "bg-rose-100 text-rose-800 border-rose-300"
                         }`}
                       >
                         {isAllowed ? (
-                          <CheckCircle className="w-3 h-3 text-emerald-600" />
+                          <CheckCircle className="w-3 h-3 text-emerald-400" />
                         ) : (
-                          <XCircle className="w-3 h-3 text-rose-600" />
+                          <XCircle className="w-3 h-3 text-rose-400" />
                         )}
                         <span>{isAllowed ? "CAPTURED" : "BLOCKED"}</span>
                       </span>
                     </td>
-                    <td className="py-3 font-mono font-bold text-slate-900">
+                    <td
+                      className={`py-3 font-mono font-bold ${
+                        isDark ? "text-white" : "text-slate-900"
+                      }`}
+                    >
                       ${(d.amount / 100).toFixed(2)}
                     </td>
                     <td className="py-3">
-                      <div className="font-semibold text-slate-800">{d.merchant}</div>
-                      <div className="text-[11px] text-slate-500">{d.category}</div>
+                      <div
+                        className={`font-semibold ${
+                          isDark ? "text-slate-100" : "text-slate-800"
+                        }`}
+                      >
+                        {d.merchant}
+                      </div>
+                      <div
+                        className={`text-[11px] ${
+                          isDark ? "text-slate-400" : "text-slate-500"
+                        }`}
+                      >
+                        {d.category}
+                      </div>
                     </td>
-                    <td className="py-3 max-w-xs text-slate-600 text-[11px]">
+                    <td
+                      className={`py-3 max-w-xs text-[11px] leading-relaxed ${
+                        isDark ? "text-slate-300" : "text-slate-600"
+                      }`}
+                    >
                       {d.reason}
                     </td>
                     <td className="py-3 font-mono text-[11px]">
                       {d.paypalOrderId ? (
-                        <span className="text-paypal-blue font-bold flex items-center space-x-1">
+                        <span
+                          className={`font-bold flex items-center space-x-1 ${
+                            isDark ? "text-blue-300" : "text-blue-700"
+                          }`}
+                        >
                           <span>{d.paypalOrderId}</span>
                         </span>
                       ) : (
-                        <span className="text-slate-400 italic">null (Not Called)</span>
+                        <span
+                          className={`italic ${
+                            isDark ? "text-slate-500" : "text-slate-400"
+                          }`}
+                        >
+                          null (Not Called)
+                        </span>
                       )}
                     </td>
-                    <td className="py-3 text-right text-slate-400 font-mono text-[10px]">
+                    <td
+                      className={`py-3 text-right font-mono text-[10px] ${
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      }`}
+                    >
                       {new Date(d.createdAt).toLocaleTimeString()}
                     </td>
                   </tr>

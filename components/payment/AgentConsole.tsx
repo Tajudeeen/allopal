@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bot, ShoppingCart, Zap, CheckCircle2, XCircle, ArrowRight, ShieldAlert } from "lucide-react";
+import { Bot, ShoppingCart, Zap, ArrowRight } from "lucide-react";
 
 interface Product {
   id: string;
@@ -32,6 +32,7 @@ interface AgentConsoleProps {
   onAuthorize: (cartId: string) => Promise<void>;
   onExecutePayment: (cartId: string) => Promise<void>;
   loading: boolean;
+  isDark?: boolean;
 }
 
 export function AgentConsole({
@@ -40,6 +41,7 @@ export function AgentConsole({
   onAuthorize,
   onExecutePayment,
   loading,
+  isDark = true,
 }: AgentConsoleProps) {
   const [selectedCartId, setSelectedCartId] = useState<string>(
     carts[0]?.id || "cart-case-a"
@@ -72,15 +74,37 @@ export function AgentConsole({
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 shadow-xl transition-all">
+    <div
+      className={`rounded-2xl p-6 border shadow-2xl transition-all backdrop-blur-2xl ${
+        isDark
+          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
+      }`}
+    >
       {/* Header */}
       <div className="flex items-center space-x-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center shadow-sm">
+        <div
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm flex-none border ${
+            isDark
+              ? "bg-purple-950/80 border-purple-800 text-purple-300"
+              : "bg-purple-100 border-purple-200 text-purple-700"
+          }`}
+        >
           <Bot className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-slate-900 tracking-tight">AI Agent Payment Console</h2>
-          <p className="text-xs text-slate-500">
+          <h2
+            className={`text-lg font-bold tracking-tight ${
+              isDark ? "text-white" : "text-slate-900"
+            }`}
+          >
+            AI Agent Payment Console
+          </h2>
+          <p
+            className={`text-xs ${
+              isDark ? "text-slate-400" : "text-slate-500"
+            }`}
+          >
             Autonomous agent proposes a purchase; authorization engine enforces locked mandate
           </p>
         </div>
@@ -102,23 +126,49 @@ export function AgentConsole({
               onClick={() => setSelectedCartId(cart.id)}
               className={`p-3 rounded-xl text-left border transition-all ${
                 isSelected
-                  ? "bg-blue-50/80 border-paypal-blue ring-2 ring-paypal-blue/20 shadow-md"
-                  : "bg-slate-50/60 border-slate-200 hover:bg-slate-100/70"
+                  ? isDark
+                    ? "bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/10"
+                    : "bg-blue-50/90 border-[#003087] ring-2 ring-[#003087]/20 shadow-md"
+                  : isDark
+                  ? "bg-slate-950/60 border-slate-800 hover:bg-slate-800/60"
+                  : "bg-slate-50/70 border-slate-200 hover:bg-slate-100/80"
               }`}
             >
               <div className="flex justify-between items-start mb-1">
-                <span className="text-xs font-bold text-slate-900">{meta.label}</span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  className={`text-xs font-bold ${
+                    isSelected
+                      ? isDark
+                        ? "text-blue-300"
+                        : "text-[#003087]"
+                      : isDark
+                      ? "text-white"
+                      : "text-slate-900"
+                  }`}
+                >
+                  {meta.label}
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                     meta.badge.includes("Pass")
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-rose-100 text-rose-800"
+                      ? isDark
+                        ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
+                        : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                      : isDark
+                      ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
+                      : "bg-rose-100 text-rose-800 border-rose-300"
                   }`}
                 >
                   {meta.badge}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 line-clamp-1">{meta.desc}</p>
+              <p
+                className={`text-[11px] line-clamp-1 ${
+                  isDark ? "text-slate-400" : "text-slate-500"
+                }`}
+              >
+                {meta.desc}
+              </p>
             </button>
           );
         })}
@@ -126,15 +176,37 @@ export function AgentConsole({
 
       {/* Selected Cart Inspector */}
       {selectedCart && (
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 mb-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200/80">
+        <div
+          className={`p-4 rounded-xl border mb-5 ${
+            isDark
+              ? "bg-slate-950/60 border-slate-800/80"
+              : "bg-slate-50 border-slate-200/80"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between mb-3 pb-2 border-b ${
+              isDark ? "border-slate-800" : "border-slate-200/80"
+            }`}
+          >
             <div className="flex items-center space-x-2">
-              <ShoppingCart className="w-4 h-4 text-slate-600" />
-              <span className="text-xs font-bold text-slate-800">
+              <ShoppingCart
+                className={`w-4 h-4 ${
+                  isDark ? "text-slate-400" : "text-slate-600"
+                }`}
+              />
+              <span
+                className={`text-xs font-bold ${
+                  isDark ? "text-white" : "text-slate-800"
+                }`}
+              >
                 Cart Items ({selectedCart.items.length})
               </span>
             </div>
-            <span className="text-xs font-mono font-bold text-slate-900">
+            <span
+              className={`text-xs font-mono font-bold ${
+                isDark ? "text-blue-300" : "text-slate-900"
+              }`}
+            >
               Total: ${(selectedCart.totalAmount / 100).toFixed(2)} USD
             </span>
           </div>
@@ -146,12 +218,26 @@ export function AgentConsole({
                 className="flex items-center justify-between text-xs py-1"
               >
                 <div>
-                  <span className="font-semibold text-slate-800">{item.product.name}</span>
-                  <div className="text-[11px] text-slate-500">
+                  <span
+                    className={`font-semibold ${
+                      isDark ? "text-white" : "text-slate-800"
+                    }`}
+                  >
+                    {item.product.name}
+                  </span>
+                  <div
+                    className={`text-[11px] ${
+                      isDark ? "text-slate-400" : "text-slate-500"
+                    }`}
+                  >
                     Merchant: {item.product.merchant} • Category: {item.product.category}
                   </div>
                 </div>
-                <div className="font-mono font-semibold text-slate-900">
+                <div
+                  className={`font-mono font-semibold ${
+                    isDark ? "text-slate-200" : "text-slate-900"
+                  }`}
+                >
                   ${(item.price / 100).toFixed(2)}
                 </div>
               </div>
@@ -165,16 +251,20 @@ export function AgentConsole({
         <button
           onClick={() => selectedCart && onAuthorize(selectedCart.id)}
           disabled={loading || !mandateId}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          className={`flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl border text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 ${
+            isDark
+              ? "bg-slate-800 hover:bg-slate-700 border-slate-700 text-white"
+              : "bg-white hover:bg-slate-50 border-slate-300 text-slate-800"
+          }`}
         >
-          <Zap className="w-4 h-4 text-amber-500" />
+          <Zap className="w-4 h-4 text-amber-400" />
           <span>Dry-Run Policy Gate</span>
         </button>
 
         <button
           onClick={() => selectedCart && onExecutePayment(selectedCart.id)}
           disabled={loading || !mandateId}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#003087] via-[#0070BA] to-[#003087] hover:from-[#002766] hover:to-[#005ea6] text-white text-xs font-extrabold shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#003087] via-[#0070BA] to-[#003087] hover:from-[#002766] hover:to-[#005ea6] text-white text-xs font-extrabold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
         >
           <span>Execute PayPal Payment</span>
           <ArrowRight className="w-4 h-4" />

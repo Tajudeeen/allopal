@@ -4,12 +4,9 @@ import React from "react";
 import {
   CheckCircle,
   XCircle,
-  AlertOctagon,
-  ArrowRight,
   ShieldCheck,
   CreditCard,
   Sparkles,
-  Lock,
 } from "lucide-react";
 
 export interface PolicyCheckResult {
@@ -43,27 +40,56 @@ export interface GateEvaluationState {
 interface VisualPolicyGateProps {
   evaluation: GateEvaluationState | null;
   loading: boolean;
+  isDark?: boolean;
 }
 
-export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps) {
+export function VisualPolicyGate({
+  evaluation,
+  loading,
+  isDark = true,
+}: VisualPolicyGateProps) {
   if (loading) {
     return (
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl text-center">
-        <div className="inline-block animate-spin w-8 h-8 border-4 border-paypal-blue border-t-transparent rounded-full mb-3" />
-        <h3 className="text-sm font-bold text-slate-800">Evaluating Mandate Invariants...</h3>
-        <p className="text-xs text-slate-500 mt-1">Executing deterministic policy checks on server</p>
+      <div
+        className={`rounded-2xl p-6 border shadow-2xl text-center backdrop-blur-2xl transition-all ${
+          isDark
+            ? "bg-slate-900/85 border-slate-700/80 text-white"
+            : "bg-white/95 border-slate-200 text-slate-800"
+        }`}
+      >
+        <div className="inline-block animate-spin w-8 h-8 border-4 border-[#1f4fe0] border-t-transparent rounded-full mb-3" />
+        <h3 className="text-sm font-bold">Evaluating Mandate Invariants...</h3>
+        <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          Executing deterministic policy checks on server
+        </p>
       </div>
     );
   }
 
   if (!evaluation) {
     return (
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl text-center">
-        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-paypal-blue flex items-center justify-center mx-auto mb-3 border border-blue-100 shadow-sm">
+      <div
+        className={`rounded-2xl p-6 border shadow-2xl text-center backdrop-blur-2xl transition-all ${
+          isDark
+            ? "bg-slate-900/85 border-slate-700/80 text-white"
+            : "bg-white/95 border-slate-200 text-slate-900"
+        }`}
+      >
+        <div
+          className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 border shadow-sm ${
+            isDark
+              ? "bg-blue-950/80 border-blue-800 text-blue-400"
+              : "bg-blue-50 border-blue-100 text-[#1f4fe0]"
+          }`}
+        >
           <ShieldCheck className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-slate-900">Deterministic Policy Gate Ready</h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+        <h3 className="text-sm font-bold">Deterministic Policy Gate Ready</h3>
+        <p
+          className={`text-xs max-w-sm mx-auto mt-1 ${
+            isDark ? "text-slate-400" : "text-slate-500"
+          }`}
+        >
           Select an agent purchase scenario above and click &quot;Dry-Run Policy Gate&quot; or &quot;Execute PayPal Payment&quot; to inspect real-time authorization.
         </p>
       </div>
@@ -88,9 +114,10 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
       passed:
         (checks.MANDATE_ACTIVE?.passed ?? true) &&
         (checks.MANDATE_NOT_REVOKED?.passed ?? true),
-      message: checks.MANDATE_NOT_REVOKED?.passed === false
-        ? checks.MANDATE_NOT_REVOKED.message
-        : checks.MANDATE_ACTIVE?.message,
+      message:
+        checks.MANDATE_NOT_REVOKED?.passed === false
+          ? checks.MANDATE_NOT_REVOKED.message
+          : checks.MANDATE_ACTIVE?.message,
     },
     {
       key: "MERCHANT_ALLOWED",
@@ -116,24 +143,38 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
   ];
 
   return (
-    <div className="bg-white/95 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 shadow-xl transition-all">
+    <div
+      className={`rounded-2xl p-6 border shadow-2xl backdrop-blur-2xl transition-all ${
+        isDark
+          ? "bg-slate-900/85 border-slate-700/80 text-white shadow-black/50"
+          : "bg-white/95 border-slate-200/90 text-slate-900 shadow-xl"
+      }`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-200">
+      <div
+        className={`flex items-center justify-between mb-5 pb-3 border-b ${
+          isDark ? "border-slate-800" : "border-slate-200"
+        }`}
+      >
         <div className="flex items-center space-x-2.5">
           <div
             className={`w-3 h-3 rounded-full ${
               isAllowed ? "bg-emerald-500 animate-pulse" : "bg-rose-500 animate-pulse"
             }`}
           />
-          <h2 className="text-base font-black text-slate-900 tracking-tight">
+          <h2 className="text-base font-bold tracking-tight">
             Visual Policy Gate Evaluation
           </h2>
         </div>
         <span
-          className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+          className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
             isAllowed
-              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-              : "bg-rose-100 text-rose-800 border border-rose-300"
+              ? isDark
+                ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
+                : "bg-emerald-100 text-emerald-800 border-emerald-300"
+              : isDark
+              ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
+              : "bg-rose-100 text-rose-800 border-rose-300"
           }`}
         >
           {evaluation.status}
@@ -147,25 +188,45 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
             key={idx}
             className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
               step.passed
-                ? "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+                ? isDark
+                  ? "bg-emerald-950/40 border-emerald-800/60 text-emerald-200"
+                  : "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+                : isDark
+                ? "bg-rose-950/40 border-rose-800/80 text-rose-200 shadow-md ring-1 ring-rose-500/20"
                 : "bg-rose-50/90 border-rose-300 text-rose-950 shadow-md ring-2 ring-rose-400/20"
             }`}
           >
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-bold text-slate-700">{step.title}</span>
+              <span
+                className={`text-[11px] font-bold ${
+                  isDark ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
+                {step.title}
+              </span>
               {step.passed ? (
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
               ) : (
-                <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
               )}
             </div>
             <div>
-              <div className="text-[11px] font-semibold text-slate-900 leading-tight">
+              <div
+                className={`text-[11px] font-semibold leading-tight ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
                 {step.subtitle}
               </div>
               <div
                 className={`text-[9px] font-bold uppercase mt-1 ${
-                  step.passed ? "text-emerald-700" : "text-rose-700"
+                  step.passed
+                    ? isDark
+                      ? "text-emerald-400"
+                      : "text-emerald-700"
+                    : isDark
+                    ? "text-rose-400"
+                    : "text-rose-700"
                 }`}
               >
                 {step.passed ? "PASSED" : "FAILED"}
@@ -179,19 +240,19 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
       <div
         className={`p-4 rounded-xl border transition-all ${
           isAllowed
-            ? "bg-gradient-to-r from-blue-900 to-[#003087] text-white border-blue-800 shadow-lg"
-            : "bg-rose-950 text-rose-100 border-rose-900 shadow-md"
+            ? "bg-gradient-to-r from-blue-950 via-[#003087] to-blue-900 text-white border-blue-700/80 shadow-lg"
+            : "bg-rose-950 text-rose-100 border-rose-800 shadow-md"
         }`}
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <CreditCard className={`w-5 h-5 ${isAllowed ? "text-[#FFC439]" : "text-rose-400"}`} />
-            <span className="text-xs font-black tracking-wide uppercase">
+            <span className="text-xs font-bold tracking-wide uppercase">
               PayPal Execution Boundary
             </span>
           </div>
           <span
-            className={`text-[10px] font-extrabold px-2 py-0.5 rounded tracking-wider uppercase ${
+            className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-wider uppercase ${
               isAllowed
                 ? "bg-emerald-400 text-slate-950"
                 : "bg-rose-500 text-white"
@@ -215,7 +276,7 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
                 <span className="text-emerald-300">{evaluation.paypalCaptureId}</span>
               </div>
             )}
-            <div className="text-[11px] text-blue-200/80 font-sans pt-1">
+            <div className="text-[11px] text-blue-200/90 font-sans pt-1">
               ✓ Server-side capture succeeded for ${(evaluation.amount / 100).toFixed(2)} USD
             </div>
           </div>
@@ -224,7 +285,7 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
             <div className="text-rose-200 font-bold">
               🚫 Zero Money Movement: PayPal API was never invoked.
             </div>
-            <div className="text-[11px] text-rose-300/80 font-sans">
+            <div className="text-[11px] text-rose-300/90 font-sans">
               Failed gate: {evaluation.failedCheck || "POLICY_RULE"} • {evaluation.reason}
             </div>
           </div>
@@ -233,13 +294,27 @@ export function VisualPolicyGate({ evaluation, loading }: VisualPolicyGateProps)
 
       {/* AI Read-Only Explanation Card */}
       {evaluation.aiExplanation && (
-        <div className="mt-4 p-3.5 rounded-xl bg-purple-50/80 border border-purple-200 text-xs text-purple-950 flex items-start space-x-2.5">
-          <Sparkles className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+        <div
+          className={`mt-4 p-3.5 rounded-xl border text-xs flex items-start space-x-2.5 ${
+            isDark
+              ? "bg-purple-950/40 border-purple-800/60 text-purple-200"
+              : "bg-purple-50/80 border-purple-200 text-purple-950"
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold text-purple-900 block mb-0.5">
+            <span
+              className={`font-bold block mb-0.5 ${
+                isDark ? "text-purple-300" : "text-purple-900"
+              }`}
+            >
               AI Decision Explanation (Read-Only)
             </span>
-            <p className="text-slate-700 leading-relaxed font-sans">
+            <p
+              className={`leading-relaxed font-sans ${
+                isDark ? "text-slate-300" : "text-slate-700"
+              }`}
+            >
               {evaluation.aiExplanation}
             </p>
           </div>

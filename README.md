@@ -269,7 +269,12 @@ npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design language of [usereins.xyz](https://usereins.xyz/), featuring:
-* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with quick section anchors and modal triggers.
+* **Adaptive Contrast & Multi-Palette Theme Switcher**: Full WCAG AAA compliant text adaptation across multiple background palettes:
+  * **Obsidian Void (Default `bg.jpg`)**: Deep contrast dark aesthetic with pure white headings and glowing accents.
+  * **Alabaster Light**: Clean daylight frosted pearl glass with deep slate typography.
+  * **PayPal Cyber**: Signature PayPal midnight blue with electric cyan/gold highlights.
+  * **Emerald Vault**: Secure authorization vault theme with glowing emerald state indicators.
+* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with real-time palette selector, section anchors, and modal triggers.
 * **Editorial Hero & Invariant Banner**: Bold typography, italic serif accents, and high-contrast formula presentation (`MANDATE PASSES → PAYPAL CAPTURE`).
 * **Desktop Console Stage**: MacOS-style application container (`allopal-runtime-v1 // paypal-sandbox // policy-gate`) framing the live Mandate and Agent Commerce simulators.
 * **Status Pipeline & Specification Cards**: Visual check chips (`ALLOWED`, `DENIED`, `RESERVED`) and gradient-accented security architecture cards.

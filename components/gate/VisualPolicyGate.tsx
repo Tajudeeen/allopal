@@ -277,13 +277,13 @@ export function VisualPolicyGate({
               </div>
             )}
             <div className="text-[11px] text-blue-200/90 font-sans pt-1">
-              ✓ Server-side capture succeeded for ${(evaluation.amount / 100).toFixed(2)} USD
+               Server-side capture succeeded for ${(evaluation.amount / 100).toFixed(2)} USD
             </div>
           </div>
         ) : (
           <div className="text-xs space-y-1 font-mono">
             <div className="text-rose-200 font-bold">
-              🚫 Zero Money Movement: PayPal API was never invoked.
+               Zero Money Movement: PayPal API was never invoked.
             </div>
             <div className="text-[11px] text-rose-300/90 font-sans">
               Failed gate: {evaluation.failedCheck || "POLICY_RULE"} • {evaluation.reason}

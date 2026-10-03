@@ -86,7 +86,7 @@ export function AiMandateModal({
       }
 
       setSuccessMessage(
-        `✓ Mandate "${data.mandate.name}" ($${(
+        ` Mandate "${data.mandate.name}" ($${(
           data.mandate.weeklyLimit / 100
         ).toFixed(2)}) explicitly approved and locked by human!`
       );

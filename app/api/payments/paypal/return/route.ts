@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { payPalClient } from "@/lib/paypal/client";
+import { PayPalApiError, payPalClient } from "@/lib/paypal/client";
 
 export const dynamic = "force-dynamic";
 
@@ -119,8 +119,34 @@ export async function GET(req: NextRequest) {
 
     // Unknown/pending provider state: keep the reservation and require reconciliation.
     return redirect(req, "pending", orderId);
-  } catch {
-    // An unknown network result must never release the reserved budget blindly.
+  } catch (error: unknown) {
+    // A terminal provider rejection is safe to release. Network/5xx failures remain pending
+    // because the external result may be unknown and must not create a false refund.
+    if (error instanceof PayPalApiError && error.statusCode === 422) {
+      await prisma.$transaction(async (tx) => {
+        const failed = await tx.payPalTransaction.updateMany({
+          where: { orderId, status: "CREATED" },
+          data: {
+            status: "FAILED",
+            rawResponse: JSON.stringify({
+              error: error.message,
+              providerStatus: error.statusCode,
+            }),
+          },
+        });
+
+        if (failed.count === 1) {
+          await tx.mandate.update({
+            where: { id: transaction.mandateId },
+            data: { spentAmount: { decrement: transaction.amount } },
+          });
+        }
+      });
+
+      return redirect(req, "failed", orderId);
+    }
+
+    // An unknown network/5xx result must never release the reserved budget blindly.
     // The PayPal-Request-Id makes a later retry of this capture idempotent.
     return redirect(req, "pending", orderId);
   }

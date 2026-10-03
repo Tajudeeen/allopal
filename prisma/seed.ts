@@ -10,7 +10,7 @@ if (!process.env.DATABASE_URL && typeof process.loadEnvFile === "function") {
 const prisma = new PrismaClient();
 
 export async function seed() {
-  console.log("🌱 Resetting and seeding deterministic Allopal data...");
+  console.log(" Resetting and seeding deterministic Allopal data...");
 
   // 1. Clean existing records in correct foreign key order atomically
   await prisma.$transaction([
@@ -167,7 +167,7 @@ export async function seed() {
     },
   });
 
-  console.log("✅ Seeding complete:");
+  console.log(" Seeding complete:");
   console.log(` - Mandate: ${mandate.name} ($${(mandate.weeklyLimit / 100).toFixed(2)})`);
   console.log(` - Products: 5 items seeded`);
   console.log(` - Carts: Cases A, B, C, D seeded`);

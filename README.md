@@ -1,7 +1,11 @@
-# Allopal 🛡️💳
+# Allopal
 
 <p align="center">
   <img src="public/logo.png" width="140" alt="Allopal Logo - Blended PayPal Monogram and Allow Verification Shield" style="border-radius: 24px;" />
+</p>
+
+<p align="center">
+  <img src="public/landing_page.png" alt="Allopal Landing Page" style="border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);" />
 </p>
 
 > **Deterministic Spending Authorization Layer for PayPal Agentic Commerce**
@@ -14,7 +18,7 @@
 
 ---
 
-## 📖 Overview
+##  Overview
 
 **Allopal** is a security-first authorization gateway designed for autonomous AI agents participating in commerce.
 
@@ -26,7 +30,7 @@ When autonomous agents are empowered to shop or pay for goods on behalf of human
 
 ---
 
-## 🔒 Core Invariant
+##  Core Invariant
 
 ```
 MANDATE PASSES (ALLOWED)  ──▶  CREATE PAYPAL ORDER  ──▶  CAPTURE PAYPAL ORDER
@@ -38,7 +42,7 @@ MANDATE FAILS  (DENIED)   ──▶  NO PAYPAL CALL       ──▶  ZERO MONEY 
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
                   ┌──────────────────────────────────────────────┐
@@ -90,7 +94,7 @@ MANDATE FAILS  (DENIED)   ──▶  NO PAYPAL CALL       ──▶  ZERO MONEY 
 
 ---
 
-## ⚖️ Deterministic Policy Engine
+##  Deterministic Policy Engine
 
 The policy engine (`lib/policy/engine.ts`) runs an ordered sequence of deterministic checks:
 
@@ -107,7 +111,7 @@ The policy engine (`lib/policy/engine.ts`) runs an ordered sequence of determini
 
 ---
 
-## 🎯 Primary Demo Scenarios
+##  Primary Demo Scenarios
 
 The test suite and seed data deterministically verify the canonical primary scenarios:
 
@@ -120,15 +124,15 @@ The test suite and seed data deterministically verify the canonical primary scen
 
 | Scenario | Cart Item | Cost | Category | Merchant | Mandate State | Result | PayPal Call |
 |:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Case A** | Notebook Bundle | `$18.00` | School Supplies | Campus Books | Active ($40 remaining) | ✅ **PASS** | **Order Created & Captured** |
-| **Case B** | Gaming Headset | `$90.00` | Electronics | Campus Books | Active ($40 remaining) | ❌ **DENIED** | **Zero Calls** |
-| **Case C** | Heavy Notebook Bundle | `$25.00` | School Supplies | Campus Books | Active ($22 remaining) | ❌ **DENIED** | **Zero Calls** |
-| **Case D** | Supplementary Pens | `$8.00` | School Supplies | Campus Books | **Revoked** | ❌ **DENIED** | **Zero Calls** |
-| **Case E** | Natural Language Prompt | - | - | - | Proposed by AI | ⏸️ **PENDING** | **Requires Explicit Human Lock** |
+| **Case A** | Notebook Bundle | `$18.00` | School Supplies | Campus Books | Active ($40 remaining) |  **PASS** | **Order Created & Captured** |
+| **Case B** | Gaming Headset | `$90.00` | Electronics | Campus Books | Active ($40 remaining) |  **DENIED** | **Zero Calls** |
+| **Case C** | Heavy Notebook Bundle | `$25.00` | School Supplies | Campus Books | Active ($22 remaining) |  **DENIED** | **Zero Calls** |
+| **Case D** | Supplementary Pens | `$8.00` | School Supplies | Campus Books | **Revoked** |  **DENIED** | **Zero Calls** |
+| **Case E** | Natural Language Prompt | - | - | - | Proposed by AI |  **PENDING** | **Requires Explicit Human Lock** |
 
 ---
 
-## 🔌 API Reference
+##  API Reference
 
 ### 1. `POST /api/authorize`
 Dry-run policy evaluation. Verifies if a mandate allows a cart purchase without charging PayPal.
@@ -206,7 +210,7 @@ Health check and database ping.
 
 ---
 
-## 🗄️ Database Schema
+##  Database Schema
 
 Managed via Prisma (`prisma/schema.prisma`):
 
@@ -219,7 +223,7 @@ Managed via Prisma (`prisma/schema.prisma`):
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -281,7 +285,7 @@ Visit [http://localhost:3000](http://localhost:3000). The frontend layout is mod
 
 ---
 
-## 🧪 Testing & Verification
+##  Testing & Verification
 
 Allopal maintains a comprehensive automated test suite testing every boundary, policy rule, PayPal integration invariant, concurrency protection, theme contrast engine, and AI flow:
 
@@ -310,7 +314,7 @@ npm test
 
 ---
 
-## 🛡️ Security Best Practices
+##  Security Best Practices
 
 1. **Client Price Tampering Defeated**: Prices sent in client payloads are strictly ignored. Product prices are looked up directly from the database using authoritative product IDs.
 2. **Revocation Immutability**: Once a mandate status is set to `REVOKED`, no evaluation can pass regardless of limit or remaining balance.
@@ -319,7 +323,7 @@ npm test
 
 ---
 
-## 🔄 Updating Documentation
+##  Updating Documentation
 
 > **Note for Contributors & Agents**:
 > Whenever new features, routes, database models, or policy rules are implemented:

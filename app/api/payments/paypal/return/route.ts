@@ -36,6 +36,45 @@ export async function GET(req: NextRequest) {
   if (transaction.status === "FAILED") return redirect(req, "cancelled", orderId);
 
   try {
+    // A pending order must still belong to a currently active mandate when the payer returns.
+    // This prevents revocation or expiry during the approval window from crossing the execution boundary.
+    const currentMandate = await prisma.mandate.findUnique({
+      where: { id: transaction.mandateId },
+    });
+
+    const now = Date.now();
+    const withinWindow =
+      currentMandate &&
+      currentMandate.status === "ACTIVE" &&
+      now >= new Date(currentMandate.validFrom).getTime() &&
+      now <= new Date(currentMandate.validUntil).getTime();
+
+    if (!withinWindow) {
+      const released = await prisma.$transaction(async (tx) => {
+        const failed = await tx.payPalTransaction.updateMany({
+          where: { orderId, status: "CREATED" },
+          data: {
+            status: "FAILED",
+            rawResponse: JSON.stringify({
+              error: "MANDATE_NO_LONGER_ACTIVE",
+              reason: currentMandate?.status || "MANDATE_NOT_FOUND",
+            }),
+          },
+        });
+
+        if (failed.count === 1 && currentMandate) {
+          await tx.mandate.update({
+            where: { id: currentMandate.id },
+            data: { spentAmount: { decrement: transaction.amount } },
+          });
+        }
+
+        return failed.count;
+      });
+
+      return redirect(req, released === 1 ? "cancelled" : "pending", orderId);
+    }
+
     const capture = await payPalClient.captureOrder(orderId, `capture-${orderId}`);
 
     if (capture.status === "COMPLETED") {

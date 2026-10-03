@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle, XCircle, CreditCard, Sparkles, Loader2, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, CreditCard, Sparkles, Loader2, ExternalLink, Minus } from "lucide-react";
 import { PolicyCheckDetail } from "@/lib/policy/types";
 
 export interface GateEvaluationState {
@@ -112,14 +112,16 @@ export function VisualPolicyGate({
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5 mb-5">
         {checkLabels.map(({ key, title, subtitle }) => {
           const check = checks[key];
-          const passed = check?.passed ?? false;
+          const passed = check?.passed;
           return (
             <div
               key={key}
               className={`rounded-xl border p-3 min-w-0 transition-all ${
-                passed
+                passed === true
                   ? "bg-emerald-950/35 border-emerald-800/60"
-                  : "bg-rose-950/35 border-rose-800/70"
+                  : passed === false
+                  ? "bg-rose-950/35 border-rose-800/70"
+                  : "bg-white/[0.025] border-white/[0.08]"
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -127,14 +129,18 @@ export function VisualPolicyGate({
                   <div className="text-[11px] font-bold text-white break-words">{title}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5">{subtitle}</div>
                 </div>
-                {passed ? (
+                {passed === true ? (
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                ) : (
+                ) : passed === false ? (
                   <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                ) : (
+                  <Minus className="w-4 h-4 text-slate-500 shrink-0" />
                 )}
               </div>
-              <div className={`text-[9px] font-bold uppercase tracking-wide mt-2 ${passed ? "text-emerald-400" : "text-rose-400"}`}>
-                {passed ? "PASSED" : "FAILED"}
+              <div className={`text-[9px] font-bold uppercase tracking-wide mt-2 ${
+                passed === true ? "text-emerald-400" : passed === false ? "text-rose-400" : "text-slate-500"
+              }`}>
+                {passed === true ? "PASSED" : passed === false ? "FAILED" : "NOT RUN"}
               </div>
               {check?.message && (
                 <p className="text-[10px] leading-relaxed text-slate-300/80 mt-1.5 break-words">

@@ -38,18 +38,17 @@ body {
   color: var(--color-ink);
   background-color: #ebeae6;
   background-image:
-    linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(242,241,237,0.92) 42%, rgba(235,234,230,0.98) 100%),
-    radial-gradient(circle at 8% -4%, rgba(31,79,224,0.17), transparent 30%),
-    radial-gradient(circle at 92% 4%, rgba(117,88,255,0.13), transparent 27%),
-    radial-gradient(circle at 52% 54%, rgba(255,255,255,0.76), transparent 34%),
-    radial-gradient(circle at 12% 88%, rgba(31,79,224,0.06), transparent 25%),
-    radial-gradient(circle at 88% 84%, rgba(0,0,0,0.045), transparent 30%),
-    linear-gradient(rgba(23,24,27,0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23,24,27,0.028) 1px, transparent 1px);
-  background-size: auto, auto, auto, auto, auto, auto, 38px 38px, 38px 38px;
-  background-position: center, center, center, center, center, center, 0 0, 0 0;
+    linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(242,241,237,0.16) 48%, rgba(235,234,230,0.30) 100%),
+    radial-gradient(circle at 8% -4%, rgba(31,79,224,0.13), transparent 30%),
+    radial-gradient(circle at 92% 4%, rgba(117,88,255,0.10), transparent 27%),
+    radial-gradient(circle at 52% 54%, rgba(255,255,255,0.28), transparent 34%),
+    linear-gradient(rgba(23,24,27,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23,24,27,0.022) 1px, transparent 1px),
+    url('/bg.jpg');
+  background-size: auto, auto, auto, auto, 38px 38px, 38px 38px, cover;
+  background-position: center, center, center, center, 0 0, 0 0, center center;
   background-attachment: fixed;
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, no-repeat;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -66,19 +65,20 @@ body::after {
 
 body::before {
   background:
-    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.68), transparent 20%),
-    radial-gradient(circle at 82% 62%, rgba(255,255,255,0.42), transparent 22%),
-    radial-gradient(circle at 50% 100%, rgba(31,79,224,0.055), transparent 30%);
+    radial-gradient(circle at 18% 28%, rgba(255,255,255,0.42), transparent 20%),
+    radial-gradient(circle at 82% 62%, rgba(255,255,255,0.30), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(31,79,224,0.045), transparent 30%);
   filter: blur(24px);
+  opacity: 0.78;
   animation: selo-breathe 16s ease-in-out infinite alternate;
 }
 
 body::after {
   background:
-    linear-gradient(115deg, transparent 22%, rgba(255,255,255,0.24) 46%, transparent 68%),
-    radial-gradient(circle at 50% 0%, rgba(31,79,224,0.035), transparent 38%);
+    linear-gradient(115deg, transparent 22%, rgba(255,255,255,0.18) 46%, transparent 68%),
+    radial-gradient(circle at 50% 0%, rgba(31,79,224,0.025), transparent 38%);
   transform: translateX(-12%);
-  opacity: 0.8;
+  opacity: 0.65;
   animation: selo-sweep 20s var(--selo-ease) infinite;
 }
 
@@ -518,7 +518,7 @@ header nav button {
 @media (max-width: 640px) {
   body {
     background-attachment: scroll;
-    background-size: auto, auto, auto, auto, auto, auto, auto, auto;
+    background-size: auto, auto, auto, auto, 38px 38px, 38px 38px, cover;
   }
 
   main {

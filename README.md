@@ -4,10 +4,6 @@
   <img src="public/logo.png" width="140" alt="Allopal Logo - Blended PayPal Monogram and Allow Verification Shield" style="border-radius: 24px;" />
 </p>
 
-<p align="center">
-  <img src="public/landing_page.png" alt="Allopal Landing Page" style="border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);" />
-</p>
-
 > **Deterministic Spending Authorization Layer for PayPal Agentic Commerce**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)](https://www.typescriptlang.org/)

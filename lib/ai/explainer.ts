@@ -89,7 +89,7 @@ Explain clearly to the human account holder what happened according to the polic
  */
 export function deterministicExplanation(decision: DecisionExplanationInput): string {
   if (decision.status === "ALLOWED") {
-    const amount = `${(decision.amount / 100).toFixed(2)}`;
+    const amount = "$" + (decision.amount / 100).toFixed(2);
 
     if (decision.paymentStatus === "CREATED") {
       return `The ${amount} purchase at ${decision.merchant} passed the spending policy and a PayPal order is waiting for payer approval.`;

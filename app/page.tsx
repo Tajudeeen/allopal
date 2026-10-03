@@ -13,6 +13,8 @@ import { VisualPolicyGate, GateEvaluationState } from "@/components/gate/VisualP
 import { DecisionLedger } from "@/components/ledger/DecisionLedger";
 import { AiMandateModal } from "@/components/mandate/AiMandateModal";
 import { Footer } from "@/components/Footer";
+import { ScrollReveal } from "@/components/ScrollReveal";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import {
   ArrowRight,
   Cpu,
@@ -236,6 +238,9 @@ export default function Home() {
         }
       />
 
+      {/* Animated Background mimicking TryVeir graphics */}
+      {isDark && <AnimatedBackground />}
+
       {/* Floating Navbar with Background Color & Contrast Controller */}
       <Navbar
         onResetDemo={handleResetDemo}
@@ -253,7 +258,7 @@ export default function Home() {
         {/* ================= HERO SECTION ================= */}
         <section id="hero" className="pt-8 pb-4 text-center sm:text-left">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-            <div className="max-w-3xl space-y-4">
+            <ScrollReveal className="max-w-3xl space-y-4">
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold backdrop-blur-md transition-colors ${
                   isDark
@@ -329,10 +334,10 @@ export default function Home() {
                   <span>Draft Mandate with AI</span>
                 </button>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Right Side Stats / Subtext */}
-            <div className="lg:text-right space-y-2 lg:max-w-xs">
+            <ScrollReveal className="lg:text-right space-y-2 lg:max-w-xs">
               <p
                 className={`text-xs uppercase tracking-widest font-semibold ${
                   isDark ? "text-slate-400" : "text-slate-500"
@@ -354,13 +359,13 @@ export default function Home() {
               >
                 Policy engine evaluates 8 checks in order. Denied payments result in zero PayPal API calls.
               </p>
-            </div>
+            </ScrollReveal>
           </div>
         </section>
 
         {/* ================= INVARIANT FORMULA BANNER ================= */}
         <section id="invariant">
-          <div
+          <ScrollReveal
             className={`rounded-3xl p-8 sm:p-12 border shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center backdrop-blur-2xl transition-all ${
               isDark
                 ? "bg-slate-950/85 border-slate-800/80 text-white shadow-black/60"
@@ -425,12 +430,12 @@ export default function Home() {
                 <span>Atomic double-spend prevention</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </section>
 
         {/* ================= CONSOLE STAGE APPLICATION WINDOW ================= */}
         <section id="console" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <ScrollReveal className="flex items-center justify-between">
             <div>
               <h2
                 className={`text-2xl font-light tracking-tight ${
@@ -461,10 +466,10 @@ export default function Home() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>PAYPAL SANDBOX READY</span>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Desktop App Shell Window */}
-          <div
+          <ScrollReveal
             className={`rounded-3xl border shadow-2xl overflow-hidden backdrop-blur-2xl transition-all ${
               isDark
                 ? "bg-slate-950/90 border-slate-800/90 shadow-black/80 text-white"
@@ -527,12 +532,12 @@ export default function Home() {
                 />
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </section>
 
         {/* ================= VISUAL POLICY GATE ================= */}
         <section id="gate" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <ScrollReveal className="flex items-center justify-between">
             <div>
               <h2
                 className={`text-2xl font-light tracking-tight ${
@@ -555,20 +560,22 @@ export default function Home() {
                 Server-side ordered check evaluation and real-time execution telemetry
               </p>
             </div>
-          </div>
+          </ScrollReveal>
 
-          <VisualPolicyGate
-            evaluation={evaluation}
-            loading={loading}
-            isDark={isDark}
-          />
+          <ScrollReveal>
+            <VisualPolicyGate
+              evaluation={evaluation}
+              loading={loading}
+              isDark={isDark}
+            />
+          </ScrollReveal>
         </section>
 
         {/* ================= THREE SPECIFICATION CARDS ================= */}
         <section className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1 */}
-            <div
+            <ScrollReveal
               className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
                   ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
@@ -603,10 +610,10 @@ export default function Home() {
               >
                 0% LLM authorization hallucination
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Card 2 */}
-            <div
+            <ScrollReveal
               className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
                   ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
@@ -641,10 +648,10 @@ export default function Home() {
               >
                 Integer cents monetary precision
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Card 3 */}
-            <div
+            <ScrollReveal
               className={`rounded-3xl p-8 border shadow-2xl flex flex-col justify-between space-y-6 backdrop-blur-2xl transition-all ${
                 isDark
                   ? "bg-slate-900/85 border-slate-800/80 text-white shadow-black/50"
@@ -679,13 +686,13 @@ export default function Home() {
               >
                 Fail-closed rollback protection
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </section>
 
         {/* ================= DECISION AUDIT LEDGER ================= */}
         <section id="ledger" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <ScrollReveal className="flex items-center justify-between">
             <div>
               <h2
                 className={`text-2xl font-light tracking-tight ${
@@ -708,9 +715,11 @@ export default function Home() {
                 Immutable SQLite record of evaluated payments and real PayPal sandbox Order IDs
               </p>
             </div>
-          </div>
+          </ScrollReveal>
 
-          <DecisionLedger decisions={decisions} isDark={isDark} />
+          <ScrollReveal>
+            <DecisionLedger decisions={decisions} isDark={isDark} />
+          </ScrollReveal>
         </section>
       </main>
 

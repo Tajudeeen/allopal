@@ -40,7 +40,7 @@ export default function WelcomePage() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-7 sm:px-8 sm:py-10">
         <header className="flex items-center justify-between">
           <Link href="/" className="group flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-white/60 shadow-sm backdrop-blur-xl transition-transform group-hover:scale-[1.04]">
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[linear-gradient(145deg,#181a1e,#0d0f12)] shadow-[0_16px_44px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-transform group-hover:scale-[1.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Allopal" className="h-full w-full object-contain p-1" />
             </div>
@@ -96,11 +96,11 @@ export default function WelcomePage() {
 
             <div className="relative">
               <div className="absolute -inset-10 rounded-full bg-[#1f4fe0]/10 blur-3xl" />
-              <div className="relative overflow-hidden rounded-[30px] selo-shell border border-black/10 bg-white/72 p-5 shadow-[0_35px_100px_rgba(27,28,31,0.14)] backdrop-blur-xl sm:p-6">
+              <div className="relative overflow-hidden rounded-[30px] launch-card selo-shell border border-white/10 bg-[linear-gradient(145deg,#181a1e,#0d0f12)] p-5 shadow-[0_35px_100px_rgba(27,28,31,0.14)] backdrop-blur-xl sm:p-6">
                 <div className="flex items-center justify-between border-b border-black/10 pb-4">
                   <div>
-                    <p className="text-[9px] font-mono font-bold uppercase tracking-[0.18em] text-blue-300">runtime boundary</p>
-                    <p className="mt-1 text-lg font-bold tracking-tight">one controlled path</p>
+                    <p className="text-[9px] font-mono font-bold uppercase tracking-[0.18em] text-[#7f9cff]">runtime boundary</p>
+                    <p className="mt-1 text-lg font-bold tracking-tight text-white">one controlled path</p>
                   </div>
                   <span className="rounded-full border border-emerald-600/15 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
                     protected
@@ -113,19 +113,19 @@ export default function WelcomePage() {
                     ["02", "Policy engine", "checks every request"],
                     ["03", "PayPal", "executes only after approval"],
                   ].map(([n, title, body]) => (
-                    <div key={n} className="rounded-2xl border border-black/10 bg-black/[0.025] p-4">
+                    <div key={n} className="rounded-2xl launch-card border border-white/10 bg-[linear-gradient(145deg,#15171a,#0d0e11)] p-4">
                       <div className="flex items-start gap-3">
                         <span className="text-[10px] font-mono font-bold text-[#5f626a]/70">{n}</span>
                         <div className="min-w-0">
-                          <p className="text-sm font-bold">{title}</p>
-                          <p className="mt-1 text-xs leading-5 text-[#5f626a]/80">{body}</p>
+                          <p className="text-sm font-bold text-white">{title}</p>
+                          <p className="mt-1 text-xs leading-5 text-slate-300/70">{body}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-5 rounded-2xl border border-blue-600/15 bg-blue-500/[0.055] p-4">
+                <div className="mt-5 rounded-2xl launch-card border border-blue-400/15 bg-[linear-gradient(145deg,rgba(25,35,62,0.96),rgba(12,15,23,0.98))] p-4">
                   <p className="text-[9px] font-mono font-bold uppercase tracking-[0.16em] text-[#1f4fe0]">core invariant</p>
                   <p className="mt-2 text-sm font-semibold leading-6 text-[#17181b]">
                     a denied request never crosses the PayPal execution boundary.
@@ -140,7 +140,7 @@ export default function WelcomePage() {
           {points.map((point) => {
             const Icon = point.icon;
             return (
-              <div key={point.title} className="rounded-2xl border border-black/10 bg-white/48 p-4 shadow-sm backdrop-blur-md">
+              <div key={point.title} className="launch-card rounded-2xl border border-white/10 bg-[linear-gradient(145deg,#15171a,#0d0e11)] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.20)] backdrop-blur-md">
                 <Icon className="h-4 w-4 text-[#1f4fe0]" />
                 <p className="mt-3 text-sm font-bold">{point.title}</p>
                 <p className="mt-1 text-xs leading-5 text-white/48">{point.body}</p>

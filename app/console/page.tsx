@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Activity, ArrowRight, Bot, Database, Repeat2, ShieldCheck } from "lucide-react";
 import { ProductShell } from "@/components/ProductShell";
 import { AgentConsole } from "@/components/payment/AgentConsole";
+import { AgentRunner } from "@/components/payment/AgentRunner";
 import { VisualPolicyGate } from "@/components/gate/VisualPolicyGate";
 import { useAllopalRuntime } from "@/hooks/useAllopalRuntime";
 
@@ -17,6 +18,8 @@ export default function ConsolePage() {
     notice,
     handleAuthorize,
     handleExecutePayment,
+    handleAgentRequest,
+    agentRun,
   } = useAllopalRuntime();
 
   return (
@@ -32,7 +35,7 @@ export default function ConsolePage() {
               this is where an agent request becomes a payment decision.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              Choose a canonical cart, run the deterministic policy gate, or execute the PayPal flow. The runtime state below comes from the server, not the browser.
+              Give an AI agent a natural-language shopping task. The agent selects a real server-side cart, then Allopal makes the authorization decision before PayPal can move money.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -70,16 +73,22 @@ export default function ConsolePage() {
           </div>
 
           <div className="grid gap-6 p-4 sm:p-6 lg:p-8">
+            <AgentRunner
+              onRunAgent={handleAgentRequest}
+              loading={loading}
+              agentRun={agentRun}
+            />
+
             <AgentConsole
               carts={carts}
               mandateId={mandate?.id || null}
               onAuthorize={handleAuthorize}
               onExecutePayment={handleExecutePayment}
               loading={loading}
-              isDark={false}
+              isDark={true}
             />
 
-            <VisualPolicyGate evaluation={evaluation} loading={loading} isDark={false} />
+            <VisualPolicyGate evaluation={evaluation} loading={loading} isDark={true} />
           </div>
         </section>
 

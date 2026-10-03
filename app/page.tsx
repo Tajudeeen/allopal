@@ -197,6 +197,23 @@ export default function Home() {
         return;
       }
 
+      if (!res.ok && data.status !== "DENIED") {
+        setEvaluation({
+          status: "FAILED",
+          amount: data.amount || 0,
+          merchant: data.merchant || "Unknown merchant",
+          category: data.category || "Unknown category",
+          reason: data.message || data.error || "Payment request failed.",
+          failedCheck: data.failedCheck || null,
+          paypalCalled: Boolean(data.paypalCalled),
+          paypalOrderId: data.paypalOrderId || null,
+          paypalCaptureId: data.paypalCaptureId || null,
+          checks: data.checks,
+        });
+        await loadState();
+        return;
+      }
+
       let aiExplanation = "";
       try {
         const explainRes = await fetch("/api/decisions/explain", {

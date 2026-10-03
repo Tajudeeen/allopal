@@ -3,11 +3,6 @@
 import React from "react";
 import { ArrowUp, ExternalLink, ShieldCheck } from "lucide-react";
 
-interface FooterProps {
-  onOpenAiModal?: () => void;
-  isDark?: boolean;
-}
-
 interface FooterLink {
   readonly label: string;
   readonly href?: string;
@@ -15,24 +10,24 @@ interface FooterLink {
   readonly external?: boolean;
 }
 
-export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
+export function Footer() {
   const columns: readonly { readonly title: string; readonly items: readonly FooterLink[] }[] = [
     {
       title: "Product",
       items: [
-        { label: "How it works", href: "#hero" },
-        { label: "Invariant Gate", href: "#invariant" },
-        { label: "Agent Console", href: "#console" },
-        { label: "Policy Engine", href: "#gate" },
+        { label: "Overview", href: "/" },
+        { label: "Mandate", href: "/mandate" },
+        { label: "Agent Console", href: "/console" },
+        { label: "Policy Engine", href: "/policy" },
       ],
     },
     {
       title: "Security",
       items: [
-        { label: "Deterministic Checks", href: "#gate" },
-        { label: "Audit Decision Ledger", href: "#ledger" },
-        { label: "Zero-Bypass Boundary", href: "#invariant" },
-        { label: "Atomic Concurrency", href: "#console" },
+        { label: "Deterministic Checks", href: "/policy" },
+        { label: "Audit Decision Ledger", href: "/ledger" },
+        { label: "Zero-Bypass Boundary", href: "/policy#boundary" },
+        { label: "Atomic Concurrency", href: "/console#replay-safety" },
       ],
     },
     {
@@ -40,11 +35,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
       items: [
         { label: "GitHub Repository", href: "https://github.com/Tajudeeen/allopal", external: true },
         { label: "PayPal Sandbox API", href: "https://developer.paypal.com", external: true },
-        {
-          label: "Draft AI Mandate",
-          onClick: onOpenAiModal ? onOpenAiModal : undefined,
-          href: !onOpenAiModal ? "#hero" : undefined,
-        },
+        { label: "Draft AI Mandate", href: "/mandate#draft" },
       ],
     },
   ];
@@ -131,19 +122,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
                   <ul className="flex flex-col gap-2.5">
                     {column.items.map((item) => (
                       <li key={item.label}>
-                        {item.onClick ? (
-                          <button
-                            type="button"
-                            onClick={item.onClick}
-                            className={`text-left text-xs sm:text-sm transition-colors ${
-                              isDark
-                                ? "text-slate-400 hover:text-white"
-                                : "text-slate-600 hover:text-slate-950"
-                            }`}
-                          >
-                            {item.label}
-                          </button>
-                        ) : (
+                        (
                           <a
                             href={item.href}
                             target={item.external ? "_blank" : undefined}
@@ -164,7 +143,7 @@ export function Footer({ onOpenAiModal, isDark = true }: FooterProps) {
                             )}
                           </a>
                         )}
-                      </li>
+                        </li>
                     ))}
                   </ul>
                 </div>

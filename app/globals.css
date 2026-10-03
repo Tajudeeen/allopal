@@ -987,3 +987,67 @@ header nav button {
 .text-gray-400 {
   color: #6a6d74 !important;
 }
+
+
+/* ambient background motion */
+.fx-ambient__orb {
+  opacity: 0.28;
+  filter: blur(54px);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+}
+
+.fx-ambient__orb-a {
+  background: rgba(77, 114, 255, 0.22);
+  animation: ambient-float-a 18s ease-in-out infinite alternate;
+}
+
+.fx-ambient__orb-b {
+  background: rgba(255, 255, 255, 0.10);
+  animation: ambient-float-b 24s ease-in-out infinite alternate;
+}
+
+.fx-ambient__orb-c {
+  background: rgba(59, 130, 246, 0.14);
+  animation: ambient-float-c 21s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-float-a {
+  0% {
+    transform: translate3d(-8%, -4%, 0) scale(0.92);
+  }
+  100% {
+    transform: translate3d(12%, 10%, 0) scale(1.08);
+  }
+}
+
+@keyframes ambient-float-b {
+  0% {
+    transform: translate3d(8%, -6%, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-10%, 8%, 0) scale(1.12);
+  }
+}
+
+@keyframes ambient-float-c {
+  0% {
+    transform: translate3d(-6%, 8%, 0) scale(1.04);
+  }
+  100% {
+    transform: translate3d(10%, -8%, 0) scale(0.94);
+  }
+}
+
+@media (max-width: 640px) {
+  .fx-ambient__orb {
+    opacity: 0.20;
+    filter: blur(44px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-ambient__orb {
+    animation: none !important;
+  }
+}

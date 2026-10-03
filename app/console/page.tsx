@@ -11,6 +11,7 @@ import { useAllopalRuntime } from "@/hooks/useAllopalRuntime";
 
 export default function ConsolePage() {
   const {
+    paypalMode,
     mandate,
     carts,
     evaluation,
@@ -68,7 +69,7 @@ export default function ConsolePage() {
             </div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
               <Activity className="h-3 w-3" />
-              sandbox runtime
+              {paypalMode === "PAYPAL_SANDBOX" ? "PayPal Sandbox" : paypalMode === "PAYPAL" ? "PayPal live mode" : "PayPal simulated"}
             </span>
           </div>
 
@@ -102,7 +103,7 @@ export default function ConsolePage() {
             {
               icon: ShieldCheck,
               title: "Execution boundary",
-              body: "A denied request creates no PayPal order. A real order requires payer approval before capture.",
+              body: "A denied request creates no PayPal order. A real PayPal order requires payer approval before server-side capture.",
             },
             {
               icon: Repeat2,

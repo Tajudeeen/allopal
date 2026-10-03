@@ -157,7 +157,7 @@ Dry-run policy evaluation. Verifies if a mandate allows a cart purchase without 
 ---
 
 ### 2. `POST /api/payments/pay`
-Authoritative payment execution route. Evaluates policy, creates PayPal sandbox order, captures funds, increments mandate spent budget, and records complete audit trail.
+Authoritative payment execution route. Evaluates policy, reserves mandate budget, and executes PayPal sandbox payment. In mock/test mode it completes deterministically. With real PayPal credentials it creates an order and returns a payer approval URL; capture occurs only after the payer returns from PayPal.
 
 * **Request Body**:
   ```json
@@ -166,6 +166,17 @@ Authoritative payment execution route. Evaluates policy, creates PayPal sandbox 
     "cartId": "cart-case-a"
   }
   ```
+* **Response (Payer Approval Required)**:
+  ```json
+  {
+    "status": "PENDING_APPROVAL",
+    "paypalCalled": true,
+    "paypalOrderId": "ORDER-123",
+    "approvalUrl": "https://www.sandbox.paypal.com/checkoutnow?token=ORDER-123",
+    "paypalCaptureId": null
+  }
+  ```
+
 * **Response (Completed)**:
   ```json
   {
@@ -192,7 +203,15 @@ Authoritative payment execution route. Evaluates policy, creates PayPal sandbox 
 
 ---
 
-### 3. `GET /api/health`
+### 3. `GET /api/payments/paypal/return?token=<orderId>`
+PayPal return endpoint. Re-checks that the mandate is still active before capture, captures the approved order with a PayPal idempotency key, updates the PayPal transaction ledger, and redirects back to the app with the payment outcome.
+
+### 4. `GET /api/payments/paypal/cancel?token=<orderId>`
+PayPal cancellation endpoint. Marks the pending transaction as failed and releases the reserved mandate budget before redirecting back to the app.
+
+---
+
+### 5. `GET /api/health`
 Health check and database ping.
 
 * **Response**:
@@ -269,14 +288,12 @@ npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design language of [usereins.xyz](https://usereins.xyz/), featuring:
-* **Adaptive Text Engine (WCAG AAA Relative Luminance)**: Every text element, heading, card, badge, and input dynamically calculates and adapts its foreground contrast against any active background color:
-  * **Mathematical Contrast Evaluation (`lib/theme/contrast.ts`)**: Evaluates relative luminance `L = 0.2126 * R + 0.7152 * G + 0.0722 * B` and contrast ratios in real time.
-  * **Preset Backgrounds**: Obsidian Void (`#05070d`), Alabaster Daylight (`#f8fafc`), PayPal Midnight (`#00133d`), Cyber Emerald (`#031c16`), Amethyst Deep (`#1a082b`), and Warm Amber (`#fffbeb`).
-  * **Interactive Custom Color Picker**: Users can pick any color via the HTML5 spectrum or enter any 6-digit hex code; all typography, glass cards, and badges immediately adapt with guaranteed readability.
-  * **Live WCAG Status Indicator**: In-navbar badge showing real-time luminance, contrast ratio (e.g., `15.2:1 AAA`), and active typography tokens (Crisp White `#FFFFFF` vs Deep Slate `#0F172A`).
-* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with real-time background color selector, live contrast stats, section anchors, and modal triggers.
+* **WCAG Contrast Utilities**: `lib/theme/contrast.ts` provides tested relative-luminance, contrast-ratio, background classification, and typography-token helpers. The utility is covered by automated tests, but there is no end-user theme/color-picker control in the current UI.
+* **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with section anchors and modal triggers.
 * **Editorial Hero & Invariant Banner**: Bold typography, italic serif accents, and high-contrast formula presentation (`MANDATE PASSES → PAYPAL CAPTURE`).
 * **Desktop Console Stage**: MacOS-style application container (`allopal-runtime-v1 // paypal-sandbox // policy-gate`) framing the live Mandate and Agent Commerce simulators.
+* **Responsive product UI**: Inner session cards, policy checks, ledger views, controls, and action surfaces adapt down to mobile layouts instead of simply shrinking the desktop interface.
+* **Smooth interaction system**: In-page anchor scrolling, intersection-based section reveals, tactile card/button motion, and reduced-motion support.
 * **Status Pipeline & Specification Cards**: Visual check chips (`ALLOWED`, `DENIED`, `RESERVED`) and gradient-accented security architecture cards.
 
 ---
@@ -289,7 +306,7 @@ Allopal maintains a comprehensive automated test suite testing every boundary, p
 npm test
 ```
 
-**Test Suite Health: 13 passed / 65 passed (100% pass rate)**
+The automated suite covers policy evaluation, database invariants, PayPal boundaries, idempotency, concurrency, AI proposal/lock flow, explanation fallback, failure recovery, end-to-end flow, security checks, and WCAG contrast math.
 
 ### Test Coverage Highlights
 
@@ -314,8 +331,10 @@ npm test
 
 1. **Client Price Tampering Defeated**: Prices sent in client payloads are strictly ignored. Product prices are looked up directly from the database using authoritative product IDs.
 2. **Revocation Immutability**: Once a mandate status is set to `REVOKED`, no evaluation can pass regardless of limit or remaining balance.
+3. **PayPal approval boundary**: In real PayPal mode, order creation does not imply capture. Capture requires payer approval and the return handler re-checks the mandate before money movement.
 3. **Exact Boundary Compliance**: A mandate with `$22.00` remaining allows an exact `$22.00` purchase and rejects a `$22.01` purchase.
 4. **Isolated Credentials**: All PayPal sandbox credentials and AI API keys remain exclusively on the server runtime.
+5. **Demo-scope limitation**: The current hackathon build has no multi-user authentication/session binding. The mandate and reset endpoints should be protected by account authentication before production deployment.
 
 ---
 

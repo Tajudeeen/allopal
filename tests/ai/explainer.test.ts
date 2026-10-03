@@ -27,6 +27,8 @@ describe("Step 9: AI Payment Decision Explanations Specification", () => {
       merchant: "Campus Books",
       category: "Electronics",
       remainingBudget: 4000,
+      paypalCalled: true,
+      paymentStatus: "COMPLETED",
     });
 
     expect(explanation.toLowerCase()).toContain("electronics");
@@ -112,4 +114,39 @@ describe("Step 9: AI Payment Decision Explanations Specification", () => {
 
     await prisma.decision.delete({ where: { id: decision.id } });
   });
+  it("ALLOWED dry-run explains that policy passed without money movement", async () => {
+    const explanation = await generateDecisionExplanation({
+      status: "ALLOWED",
+      reason: "All spending policy checks passed successfully.",
+      failedCheck: null,
+      amount: 1800,
+      merchant: "Campus Books",
+      category: "School Supplies",
+      remainingBudget: 4000,
+      paypalCalled: false,
+      paymentStatus: null,
+    });
+
+    expect(explanation.toLowerCase()).toContain("dry-run");
+    expect(explanation.toLowerCase()).toContain("not called");
+    expect(explanation.toLowerCase()).not.toContain("captured via paypal");
+  });
+
+  it("PENDING PayPal order explains that payer approval is still required", async () => {
+    const explanation = await generateDecisionExplanation({
+      status: "ALLOWED",
+      reason: "All spending policy checks passed successfully.",
+      failedCheck: null,
+      amount: 1800,
+      merchant: "Campus Books",
+      category: "School Supplies",
+      remainingBudget: 2200,
+      paypalCalled: true,
+      paymentStatus: "CREATED",
+    });
+
+    expect(explanation.toLowerCase()).toContain("waiting");
+    expect(explanation.toLowerCase()).toContain("payer approval");
+  });
+
 });

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { LaunchExperience } from "@/components/LaunchExperience";
 
 export const metadata: Metadata = {
@@ -19,7 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans"><LaunchExperience>{children}</LaunchExperience></body>
+      <body className="antialiased font-sans">
+        <AnimatedBackground />
+        <LaunchExperience>{children}</LaunchExperience>
+      </body>
     </html>
   );
 }

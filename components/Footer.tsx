@@ -69,7 +69,7 @@ export function Footer() {
               Autonomous AI agents get a locked mandate, never direct access to payment credentials.
             </p>
 
-            <div className="flex items-center gap-2 pt-1 text-xs font-mono text-slate-600">
+            <div className="flex items-center gap-2 pt-1 text-xs font-mono text-white/65">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
               <span>Strict Policy Evaluation · Integer-Cents Accuracy</span>
             </div>
@@ -108,7 +108,7 @@ export function Footer() {
           <button
             type="button"
             onClick={handleBackToTop}
-            className="group flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600 transition-colors hover:text-slate-950"
+            className="group flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/65 transition-colors hover:text-white"
           >
             <span>Back to top</span>
             <span className="flex size-6 items-center justify-center rounded-md border border-white/15 bg-white/5 transition-all group-hover:border-white/30 group-hover:bg-white/10">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,15 @@ export async function GET() {
       take: 20,
     });
 
+    const paypalMode =
+      env.PAYPAL_CLIENT_ID.startsWith("mock_") || env.PAYPAL_CLIENT_SECRET.startsWith("mock_")
+        ? "SIMULATED"
+        : env.PAYPAL_API_BASE_URL.includes("sandbox")
+        ? "PAYPAL_SANDBOX"
+        : "PAYPAL";
+
     return NextResponse.json({
+      paypalMode,
       mandate: mandate
         ? {
             ...mandate,

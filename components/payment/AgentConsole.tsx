@@ -82,7 +82,7 @@ export function AgentConsole({
       }`}
     >
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-5">
+      <div className="flex items-start gap-3 mb-5">
         <div
           className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm flex-none border ${
             isDark
@@ -92,7 +92,7 @@ export function AgentConsole({
         >
           <Bot className="w-5 h-5" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h2
             className={`text-lg font-bold tracking-tight ${
               isDark ? "text-white" : "text-slate-900"
@@ -134,9 +134,9 @@ export function AgentConsole({
                   : "bg-slate-50/70 border-slate-200 hover:bg-slate-100/80"
               }`}
             >
-              <div className="flex justify-between items-start mb-1">
+              <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
                 <span
-                  className={`text-xs font-bold ${
+                  className={`min-w-0 break-words text-xs font-bold ${
                     isSelected
                       ? isDark
                         ? "text-blue-300"
@@ -149,7 +149,7 @@ export function AgentConsole({
                   {meta.label}
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                  className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                     meta.badge.includes("Pass")
                       ? isDark
                         ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
@@ -184,7 +184,7 @@ export function AgentConsole({
           }`}
         >
           <div
-            className={`flex items-center justify-between mb-3 pb-2 border-b ${
+            className={`flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b ${
               isDark ? "border-slate-800" : "border-slate-200/80"
             }`}
           >
@@ -203,7 +203,7 @@ export function AgentConsole({
               </span>
             </div>
             <span
-              className={`text-xs font-mono font-bold ${
+              className={`shrink-0 text-xs font-mono font-bold ${
                 isDark ? "text-blue-300" : "text-slate-900"
               }`}
             >
@@ -215,11 +215,11 @@ export function AgentConsole({
             {selectedCart.items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between text-xs py-1"
+                className="flex flex-wrap items-start justify-between gap-2 text-xs py-1"
               >
-                <div>
+                <div className="min-w-0">
                   <span
-                    className={`font-semibold ${
+                    className={`break-words font-semibold ${
                       isDark ? "text-white" : "text-slate-800"
                     }`}
                   >

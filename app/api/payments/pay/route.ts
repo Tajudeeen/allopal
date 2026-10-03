@@ -236,8 +236,8 @@ export async function POST(req: NextRequest) {
     }
 
     const origin = new URL(req.url).origin;
-    const returnUrl = `${origin}/api/payments/paypal/return?next=/console`;
-    const cancelUrl = `${origin}/api/payments/paypal/cancel?next=/console`;
+    const returnUrl = `${origin}/api/payments/paypal/return`;
+    const cancelUrl = `${origin}/api/payments/paypal/cancel`;
 
     // PayPal's own idempotency key is distinct for create/capture operations.
     const createRequestId = `${operationId}-create`;

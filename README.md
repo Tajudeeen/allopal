@@ -287,7 +287,7 @@ npm run prisma:seed
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design language of [usereins.xyz](https://usereins.xyz/), featuring:
+Visit [http://localhost:3000](http://localhost:3000). The frontend layout is modeled after the design direction of [useselo.xyz](https://useselo.xyz/), featuring:
 * **WCAG Contrast Utilities**: `lib/theme/contrast.ts` provides tested relative-luminance, contrast-ratio, background classification, and typography-token helpers. The utility is covered by automated tests, but there is no end-user theme/color-picker control in the current UI.
 * **Floating Glass Pill Navigation**: Translucent backdrop-filtered navbar with section anchors and modal triggers.
 * **Editorial Hero & Invariant Banner**: Bold typography, italic serif accents, and high-contrast formula presentation (`MANDATE PASSES → PAYPAL CAPTURE`).
@@ -332,9 +332,9 @@ The automated suite covers policy evaluation, database invariants, PayPal bounda
 1. **Client Price Tampering Defeated**: Prices sent in client payloads are strictly ignored. Product prices are looked up directly from the database using authoritative product IDs.
 2. **Revocation Immutability**: Once a mandate status is set to `REVOKED`, no evaluation can pass regardless of limit or remaining balance.
 3. **PayPal approval boundary**: In real PayPal mode, order creation does not imply capture. Capture requires payer approval and the return handler re-checks the mandate before money movement.
-3. **Exact Boundary Compliance**: A mandate with `$22.00` remaining allows an exact `$22.00` purchase and rejects a `$22.01` purchase.
-4. **Isolated Credentials**: All PayPal sandbox credentials and AI API keys remain exclusively on the server runtime.
-5. **Demo-scope limitation**: The current hackathon build has no multi-user authentication/session binding. The mandate and reset endpoints should be protected by account authentication before production deployment.
+4. **Exact Boundary Compliance**: A mandate with `$22.00` remaining allows an exact `$22.00` purchase and rejects a `$22.01` purchase.
+5. **Isolated Credentials**: All PayPal sandbox credentials and AI API keys remain exclusively on the server runtime.
+6. **Demo-scope limitation**: The current hackathon build has no multi-user authentication/session binding. The mandate and reset endpoints should be protected by account authentication before production deployment.
 
 ---
 

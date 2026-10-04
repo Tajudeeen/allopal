@@ -32,8 +32,18 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
   });
 
   it("Case A: executes PayPal order creation & capture when mandate policy passes", async () => {
-    const createOrderSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureOrderSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createOrderSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
+      id: "PAYPAL-CONTRACT-ORDER",
+      status: "CREATED",
+      links: [],
+      requiresPayerApproval: false,
+    });
+    const captureOrderSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
+      id: "PAYPAL-CONTRACT-CAPTURE",
+      status: "COMPLETED",
+      orderId: "PAYPAL-CONTRACT-ORDER",
+      rawResponse: { status: "COMPLETED" },
+    });
 
     const req = createPayRequest({
       mandateId: "mandate-school-shopping",
@@ -46,8 +56,8 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
     expect(res.status).toBe(200);
     expect(data.status).toBe("COMPLETED");
     expect(data.paypalCalled).toBe(true);
-    expect(data.paypalOrderId).toBeDefined();
-    expect(data.paypalCaptureId).toBeDefined();
+    expect(data.paypalOrderId).toBe("PAYPAL-CONTRACT-ORDER");
+    expect(data.paypalCaptureId).toBe("PAYPAL-CONTRACT-CAPTURE");
     expect(data.amount).toBe(1800);
     expect(data.spentAmount).toBe(1800);
     expect(data.remainingBudget).toBe(2200); // 4000 - 1800 = 2200 ($22.00)

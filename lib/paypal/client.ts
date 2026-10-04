@@ -1,4 +1,4 @@
-import { env } from "@/lib/env";
+import { env, requirePayPalConfig } from "@/lib/env";
 import { centsToPayPalAmount } from "./money";
 
 interface CreateOrderOptions {
@@ -39,8 +39,8 @@ export class PayPalApiError extends Error {
 }
 
 export class PayPalClient {
-  private clientId: string;
-  private clientSecret: string;
+  private clientId: string | undefined;
+  private clientSecret: string | undefined;
   private baseUrl: string;
   private cachedAccessToken: string | null = null;
   private tokenExpiresAt = 0;
@@ -55,25 +55,26 @@ export class PayPalClient {
     this.baseUrl = baseUrl.replace(/\/$/, "");
   }
 
-  private isMock(): boolean {
-    return (
-      this.clientId.startsWith("mock_") ||
-      this.clientSecret.startsWith("mock_")
-    );
-  }
-
   async getAccessToken(): Promise<string> {
-    if (this.isMock()) {
-      return "mock_sandbox_access_token";
-    }
+    const config =
+      this.clientId && this.clientSecret
+        ? {
+            clientId: this.clientId,
+            clientSecret: this.clientSecret,
+            baseUrl: this.baseUrl,
+          }
+        : requirePayPalConfig();
 
     const now = Date.now();
     if (this.cachedAccessToken && this.tokenExpiresAt > now + 60_000) {
       return this.cachedAccessToken;
     }
 
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64");
-    const response = await fetch(`${this.baseUrl}/v1/oauth2/token`, {
+    const auth = Buffer.from(
+      `${config.clientId}:${config.clientSecret}`
+    ).toString("base64");
+
+    const response = await fetch(`${config.baseUrl}/v1/oauth2/token`, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
@@ -87,7 +88,10 @@ export class PayPalClient {
     }
 
     const data = await response.json();
-    if (typeof data.access_token !== "string" || typeof data.expires_in !== "number") {
+    if (
+      typeof data.access_token !== "string" ||
+      typeof data.expires_in !== "number"
+    ) {
       throw new Error("PayPal OAuth returned an invalid token response.");
     }
 
@@ -99,33 +103,16 @@ export class PayPalClient {
   async createOrder(options: CreateOrderOptions): Promise<PayPalOrderResponse> {
     const amountStr = centsToPayPalAmount(options.amountInCents);
     const currency = options.currency || "USD";
-
-    if (this.isMock()) {
-      const mockOrderId =
-        `PAYPAL-SANDBOX-ORD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-
-      return {
-        id: mockOrderId,
-        status: "CREATED",
-        links: [
-          {
-            href: `${this.baseUrl}/checkoutnow?token=${mockOrderId}`,
-            rel: "approve",
-            method: "GET",
-          },
-        ],
-        approvalUrl: `${this.baseUrl}/checkoutnow?token=${mockOrderId}`,
-        requiresPayerApproval: false,
-      };
-    }
-
     const token = await this.getAccessToken();
+
     const payload = {
       intent: "CAPTURE",
       purchase_units: [
         {
           reference_id: options.referenceId || "default",
-          description: options.description || "Allopal Agentic Spending Mandate Order",
+          description:
+            options.description ||
+            "Allopal Agentic Spending Mandate Order",
           amount: {
             currency_code: currency,
             value: amountStr,
@@ -148,6 +135,7 @@ export class PayPalClient {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
+
     if (options.requestId) {
       headers["PayPal-Request-Id"] = options.requestId;
     }
@@ -159,17 +147,23 @@ export class PayPalClient {
     });
 
     if (!response.ok) {
-      throw new PayPalApiError("createOrder", response.status, await response.text());
+      throw new PayPalApiError(
+        "createOrder",
+        response.status,
+        await response.text()
+      );
     }
 
     const data = await response.json();
+
     if (typeof data.id !== "string" || typeof data.status !== "string") {
       throw new Error("PayPal createOrder returned an invalid order response.");
     }
 
     const approvalUrl = data.links?.find(
       (link: { rel?: string; href?: string }) =>
-        (link.rel === "approve" || link.rel === "payer-action") && typeof link.href === "string"
+        (link.rel === "approve" || link.rel === "payer-action") &&
+        typeof link.href === "string"
     )?.href;
 
     return {
@@ -181,29 +175,17 @@ export class PayPalClient {
     };
   }
 
-  async captureOrder(orderId: string, requestId?: string): Promise<PayPalCaptureResponse> {
-    if (this.isMock()) {
-      const mockCaptureId =
-        `PAYPAL-SANDBOX-CAP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-
-      return {
-        id: mockCaptureId,
-        status: "COMPLETED",
-        orderId,
-        rawResponse: {
-          id: orderId,
-          status: "COMPLETED",
-          capture_id: mockCaptureId,
-          simulated: true,
-        },
-      };
-    }
-
+  async captureOrder(
+    orderId: string,
+    requestId?: string
+  ): Promise<PayPalCaptureResponse> {
     const token = await this.getAccessToken();
+
     const headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
+
     if (requestId) {
       headers["PayPal-Request-Id"] = requestId;
     }
@@ -217,11 +199,16 @@ export class PayPalClient {
     );
 
     if (!response.ok) {
-      throw new PayPalApiError("captureOrder", response.status, await response.text());
+      throw new PayPalApiError(
+        "captureOrder",
+        response.status,
+        await response.text()
+      );
     }
 
     const data = await response.json();
-    const captureDetails = data.purchase_units?.[0]?.payments?.captures?.[0];
+    const captureDetails =
+      data.purchase_units?.[0]?.payments?.captures?.[0];
 
     if (typeof data.status !== "string") {
       throw new Error("PayPal captureOrder returned an invalid response.");
@@ -236,24 +223,29 @@ export class PayPalClient {
   }
 
   async getOrder(orderId: string): Promise<{ id: string; status: string }> {
-    if (this.isMock()) {
-      return { id: orderId, status: "COMPLETED" };
-    }
-
     const token = await this.getAccessToken();
-    const response = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+
+    const response = await fetch(
+      `${this.baseUrl}/v2/checkout/orders/${orderId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
-      throw new PayPalApiError("getOrder", response.status, await response.text());
+      throw new PayPalApiError(
+        "getOrder",
+        response.status,
+        await response.text()
+      );
     }
 
     const data = await response.json();
+
     if (typeof data.id !== "string" || typeof data.status !== "string") {
       throw new Error("PayPal getOrder returned an invalid response.");
     }

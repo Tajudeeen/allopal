@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/agent/act/route";
 import { prisma } from "@/lib/db/prisma";
@@ -15,6 +15,22 @@ function createRequest(body: unknown): NextRequest {
 }
 
 describe("Allopal guarded AI agent action", () => {
+  beforeEach(() => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {
+      const body = String(init?.body ?? "");
+      const isGaming = body.toLowerCase().includes("gaming headset");
+      const selection = {
+        cartId: isGaming ? "cart-case-b" : "cart-case-a",
+        reason: "Selected a server-authoritative catalog cart that best matches the request."
+      };
+      return new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(selection) }] } }] }),
+        { status: 200 }
+      );
+    });
+  });
+
+  afterEach(() => vi.restoreAllMocks());
   beforeAll(async () => {
     await seed();
   });
@@ -39,8 +55,18 @@ describe("Allopal guarded AI agent action", () => {
   });
 
   it("runs the selected cart through the deterministic policy boundary", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
+      id: "PAYPAL-CONTRACT-ORDER",
+      status: "CREATED",
+      links: [],
+      requiresPayerApproval: false,
+    });
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
+      id: "PAYPAL-CONTRACT-CAPTURE",
+      status: "COMPLETED",
+      orderId: "PAYPAL-CONTRACT-ORDER",
+      rawResponse: { status: "COMPLETED" },
+    });
 
     const response = await POST(
       createRequest({
@@ -81,8 +107,8 @@ describe("Allopal guarded AI agent action", () => {
     expect(data.agent.selectedCartId).toBe("cart-case-a");
     expect(data.result.status).toBe("COMPLETED");
     expect(data.result.paypalCalled).toBe(true);
-    expect(data.result.paypalOrderId).toContain("PAYPAL-SANDBOX-ORD-");
-    expect(data.result.paypalCaptureId).toContain("PAYPAL-SANDBOX-CAP-");
+    expect(data.result.paypalOrderId).toBe("PAYPAL-CONTRACT-ORDER");
+    expect(data.result.paypalCaptureId).toBe("PAYPAL-CONTRACT-CAPTURE");
     expect(createSpy).toHaveBeenCalledTimes(1);
     expect(captureSpy).toHaveBeenCalledTimes(1);
 

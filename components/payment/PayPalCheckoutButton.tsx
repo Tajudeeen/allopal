@@ -168,6 +168,7 @@ export function PayPalCheckoutButton({
               { presentationMode: "auto" },
               Promise.resolve({ orderId })
             );
+            if (!cancelled) setStatus("ready");
           } catch (error) {
             setStatus("error");
             setMessage(
@@ -175,8 +176,6 @@ export function PayPalCheckoutButton({
                 ? error.message
                 : "Unable to start PayPal checkout."
             );
-          } finally {
-            if (!cancelled) setStatus("ready");
           }
         });
 

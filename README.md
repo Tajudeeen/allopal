@@ -17,12 +17,15 @@
 
 A human creates the mandate. The server evaluates every request. PayPal is only reached when the policy passes. The decision ledger records what happened.
 
+> Hackathon submission status: the codebase contains the PayPal sandbox integration, AI agent path, setup documentation, tests, and source assets required by the challenge. The GitHub repository must be made public before submission, and the final Devpost submission still needs the hosted/locally runnable demo, public YouTube video, and tool descriptions.
+
 ---
 
 ## Contents
 
 - [The problem](#the-problem)
 - [What Allopal does](#what-allopal-does)
+- [PayPal AI hackathon readiness](#paypal-ai-hackathon-readiness)
 - [The core invariant](#the-core-invariant)
 - [How it works](#how-it-works)
 - [The eight checks](#the-eight-checks)
@@ -44,6 +47,49 @@ A human creates the mandate. The server evaluates every request. PayPal is only 
 - [Project layout](#project-layout)
 - [Known limitations](#known-limitations)
 - [Documentation rule](#documentation-rule)
+
+---
+
+## PayPal AI hackathon readiness
+
+The project is designed around the challenge's two mandatory technologies: PayPal Developer Platform + AI.
+
+| Requirement | Current state |
+|:---|:---|
+| Meaningful PayPal technology | Implemented · PayPal Sandbox order creation, payer approval, return/cancel handling, capture, transaction state |
+| Meaningful AI | Implemented · Gemini 2.5 Flash structures mandate intent, selects a concrete shopping cart, and explains recorded decisions |
+| Working prototype | Implemented · Next.js product with live UI, server APIs, deterministic policy engine, database, and payment lifecycle |
+| Documentation | Implemented · setup, architecture, API, scenarios, evidence/claims, tests, and limitations are documented in this repo |
+| Public GitHub repository | ACTION REQUIRED · repository visibility is currently private and must be changed to public |
+| Open-source license | READY · MIT LICENSE file is present at the repository root |
+| Functional demo | READY FOR FINAL DEMO · local setup is documented; a hosted URL is optional because the rules accept complete setup/run instructions |
+| Demo video | ACTION REQUIRED · public YouTube video, under 3 minutes |
+| Tools disclosure | IMPLEMENTED IN REPO · see the tool table below; repeat the same information in the Devpost submission |
+| Official rules | SUBMISSION TASK · final entrant/team eligibility and rule compliance must be completed by the entrant |
+
+### Tools used
+
+| Tool | How Allopal uses it |
+|:---|:---|
+| PayPal Developer Platform / Sandbox | Creates PayPal checkout orders, receives payer approval, handles return/cancel flows, and captures approved payments |
+| Google Gemini 2.5 Flash | Converts natural-language mandates into structured proposals, selects candidate carts for agent shopping tasks, and generates read-only decision explanations |
+| Next.js / React / TypeScript | Product UI, server routes, runtime orchestration, and the guarded agent experience |
+| Prisma / SQLite | Stores mandates, carts, products, decisions, reservations, and payment transactions |
+| Zod | Validates AI output and API payloads before they can cross trusted boundaries |
+| Vitest | Covers policy decisions, payment boundaries, concurrency/idempotency, AI safety boundaries, and failure recovery |
+
+### Judge demo path
+
+The clearest end-to-end demonstration is:
+
+1. Open the product and show the human-owned School Shopping mandate.
+2. Ask the agent to buy a gaming headset. The agent selects the catalog item, but Allopal denies it and shows PayPal not called.
+3. Ask the agent to find school supplies under $20. The agent selects the notebook bundle, the policy passes, and the PayPal execution path becomes available.
+4. In PayPal Sandbox, approve the payment and return to Allopal.
+5. Show the ledger with the decision and PayPal transaction state.
+6. Revoke the mandate and repeat a purchase attempt to show the authorization boundary holding after revocation.
+
+This demonstrates the problem, the AI behavior, the PayPal integration, the policy boundary, and the final audit trail in one short flow.
 
 ---
 
@@ -316,7 +362,7 @@ FIRST-RUN WALKTHROUGH MODAL ─────→ PRODUCT
 
 The splash and walkthrough share the product visual language:
 
-- the preserved public/bg.png asset is the single backdrop across the app shell and launch surfaces, with no page-level underlay or wash;
+- the preserved public/bg.jpg asset is the single backdrop across the app shell and launch surfaces, with no page-level underlay or wash;
 - launch surfaces use the same dark-gradient card treatment as the runtime;
 - the splash logo card has no ambient blue glow;
 - the first-run walkthrough is a modal with three short steps covering the human mandate, deterministic policy gate, and controlled PayPal execution;
@@ -344,7 +390,7 @@ flowchart TB
     end
 
     DB[("Prisma / SQLite")]
-    PayPal["PayPal Sandbox / real-mode integration"]
+    PayPal["PayPal Sandbox integration"]
 
     Client --> UI
     UI --> Runtime
@@ -539,7 +585,7 @@ The /api/agent/act endpoint supports DRY_RUN and EXECUTE modes so the same agent
 | Data | Prisma 5 + SQLite |
 | Validation | Zod |
 | Icons | Lucide React |
-| Payments | PayPal Sandbox / real-mode integration |
+| Payments | PayPal Sandbox integration |
 | Testing | Vitest |
 | Tooling | npm, TypeScript, ESLint, Prisma |
 

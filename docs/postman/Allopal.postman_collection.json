@@ -1,0 +1,210 @@
+{
+  "info": {
+    "name": "Allopal API",
+    "_postman_id": "allopal-paypal-ai-hackathon",
+    "description": "Real Allopal API flow for PayPal Sandbox + Gemini. Import into Postman, set baseUrl, and use the seeded mandate/cart IDs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "mandateId",
+      "value": "mandate-school-shopping"
+    },
+    {
+      "key": "allowedCartId",
+      "value": "cart-case-a"
+    },
+    {
+      "key": "deniedCartId",
+      "value": "cart-case-b"
+    },
+    {
+      "key": "budgetCartId",
+      "value": "cart-case-c"
+    },
+    {
+      "key": "revokedCartId",
+      "value": "cart-case-d"
+    },
+    {
+      "key": "idempotencyKey",
+      "value": "allopal-postman-demo-001"
+    }
+  ],
+  "item": [
+    {
+      "name": "State",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/state",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "name": "AI Mandate Proposal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Give my shopping agent $40 for school supplies from Campus Books for the next 7 days.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/mandates/propose",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "mandates",
+            "propose"
+          ]
+        }
+      }
+    },
+    {
+      "name": "AI Agent - Denied Gaming Headset",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"buy me a gaming headset\",\n  \"mode\": \"DRY_RUN\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/agent/act",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "agent",
+            "act"
+          ]
+        }
+      }
+    },
+    {
+      "name": "AI Agent - Real PayPal Execution",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"buy a notebook for me\",\n  \"mode\": \"EXECUTE\",\n  \"idempotencyKey\": \"{{idempotencyKey}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/agent/act",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "agent",
+            "act"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Authorize - Allowed Cart",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mandateId\": \"{{mandateId}}\",\n  \"cartId\": \"{{allowedCartId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/authorize",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "authorize"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Authorize - Denied Category",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mandateId\": \"{{mandateId}}\",\n  \"cartId\": \"{{deniedCartId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/authorize",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "authorize"
+          ]
+        }
+      }
+    },
+    {
+      "name": "PayPal Browser Config",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/paypal/config",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "paypal",
+            "config"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -53,6 +53,12 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
 
   it("Failure Mode 2: PayPal capture network failure -> fails closed and restores mandate balance", async () => {
     // createOrder succeeds, but captureOrder fails
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
+      id: "PAYPAL-FAIL-ORDER",
+      status: "CREATED",
+      links: [],
+      requiresPayerApproval: false,
+    });
     const captureSpy = vi
       .spyOn(payPalClient, "captureOrder")
       .mockRejectedValueOnce(new Error("PayPal Capture Declined by Risk Engine (500)"));
@@ -80,6 +86,7 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     expect(refreshedMandate?.spentAmount).toBe(initialSpent);
 
     captureSpy.mockRestore();
+    createSpy.mockRestore();
   });
 
   it("Failure Mode 3: AI interpretation service failure or garbage output -> fails safely without creating phantom mandate", async () => {
@@ -102,7 +109,8 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     }
   });
 
-  it("Failure Mode 4: Decision explainer failure -> degrades gracefully to fallback explanation", async () => {
+  it("Failure Mode 4: Decision explainer failure -> fails clearly when Gemini is unavailable", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Gemini unavailable"));
     const req = createJsonRequest("http://localhost:3000/api/decisions/explain", {
       decision: {
         status: "DENIED",
@@ -117,10 +125,9 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     const res = await explainPOST(req);
     const data = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(data.isReadOnly).toBe(true);
-    expect(data.explanation).toBeDefined();
-    expect(typeof data.explanation).toBe("string");
+    expect(res.status).toBe(500);
+    expect(data.error).toBe("EXPLANATION_FAILED");
+    fetchSpy.mockRestore();
   });
 
   it("Failure Mode 5: Expired mandate fails closed with zero PayPal execution", async () => {

@@ -117,7 +117,7 @@ Allopal treats a PayPal purchase as a controlled execution path rather than lett
 2. **Lock the mandate.** The mandate becomes the authoritative spending boundary.
 3. **Evaluate the cart.** The server reloads authoritative cart and product data and runs the policy engine.
 4. **Reserve budget.** A passing request reserves the required amount before provider execution.
-5. **Cross the PayPal boundary.** Mock mode completes deterministically. Real mode creates an order and waits for payer approval before capture.
+5. **Cross the PayPal boundary.** Development and production both use the real PayPal API. Development and the hackathon deployment should point to PayPal Sandbox; production can point to PayPal Live when live credentials are provisioned.
 6. **Record the result.** Decisions, provider transaction state, and budget effects remain inspectable in the ledger.
 
 AI can structure a mandate proposal, choose a candidate cart for a shopping task, and explain a finalized decision. It never becomes the authorization authority.
@@ -285,7 +285,7 @@ The seeded demo uses one human-owned mandate:
 
 | Case | Request | Expected policy result | PayPal |
 |:---|:---|:---|:---|
-| **A** | Notebook Bundle · $18.00 | **ALLOW** | Mock: create + capture · Real: approval → capture |
+| **A** | Notebook Bundle · $18.00 | **ALLOW** | Real Sandbox: approval → capture |
 | **B** | Gaming Headset · $90.00 | **DENY** | Not called |
 | **C** | Heavy Notebook Bundle · $25.00 after Case A | **DENY** | Not called |
 | **D** | Supplementary Pens · $8.00 after revocation | **DENY** | Not called |
@@ -574,7 +574,7 @@ This creates the intended separation:
 - **Allopal policy engine:** owns the authorization decision.
 - **PayPal:** owns the payment execution lifecycle.
 
-The /api/agent/act endpoint supports DRY_RUN and EXECUTE modes so the same agent path can be demonstrated without or with payment execution.
+The /api/agent/act endpoint supports DRY_RUN and EXECUTE modes so the same agent path can be demonstrated as a policy-only check or a real PayPal execution.
 
 ## Tech stack
 
@@ -620,8 +620,8 @@ Example:
 DATABASE_URL="file:./prisma/dev.db"
 NODE_ENV="development"
 PORT=3000
-PAYPAL_CLIENT_ID="mock_client_id"
-PAYPAL_CLIENT_SECRET="mock_client_secret"
+PAYPAL_CLIENT_ID="your_paypal_sandbox_client_id"
+PAYPAL_CLIENT_SECRET="your_paypal_sandbox_client_secret"
 PAYPAL_API_BASE_URL="https://api-m.sandbox.paypal.com"
 ~~~
 

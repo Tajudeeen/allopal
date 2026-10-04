@@ -30,7 +30,7 @@ A claim is only marked PROVEN when there is a concrete, reproducible artifact be
 | AI decision explanations are read-only | **TEST-COVERED** | app/api/decisions/explain/route.ts, tests/ai/explainer.test.ts |
 | Canonical demo cases cover pass, category denial, budget denial, and revocation denial | **TEST-COVERED** | Seed data plus tests/e2e/allopal_full_flow.test.ts |
 | Splash and first-time intro are part of the product launch flow | **CODE-VERIFIED** | components/LaunchExperience.tsx, app/welcome/page.tsx |
-| The visual system preserves public/bg.jpg and uses shared dark-gradient cards | **CODE-VERIFIED** | app/globals.css, launch screens, product screens |
+| The visual system preserves public/bg.png and uses shared dark-gradient cards | **CODE-VERIFIED** | app/globals.css, launch screens, product screens |
 | Allopal has been independently verified on a live public PayPal deployment | **NOT LIVE-VERIFIED** | No external runtime evidence artifact is currently stored |
 | Allopal has processed real-money production payments for external users | **NOT LIVE-VERIFIED** | No external production transaction evidence is currently stored |
 

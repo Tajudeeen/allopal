@@ -316,7 +316,7 @@ FIRST-RUN WALKTHROUGH MODAL ─────→ PRODUCT
 
 The splash and walkthrough share the product visual language:
 
-- the preserved public/bg.jpg asset is the single backdrop across the app shell and launch surfaces, with no page-level underlay or wash;
+- the preserved public/bg.png asset is the single backdrop across the app shell and launch surfaces, with no page-level underlay or wash;
 - launch surfaces use the same dark-gradient card treatment as the runtime;
 - the splash logo card has no ambient blue glow;
 - the first-run walkthrough is a modal with three short steps covering the human mandate, deterministic policy gate, and controlled PayPal execution;

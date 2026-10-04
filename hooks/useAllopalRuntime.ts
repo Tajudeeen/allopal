@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { GateEvaluationState } from "@/components/gate/VisualPolicyGate";
 
 interface RuntimeState {
-  paypalMode: "SIMULATED" | "PAYPAL_SANDBOX" | "PAYPAL";
+  paypalMode: "PAYPAL_SANDBOX" | "PAYPAL";
   mandate: any;
   carts: any[];
   decisions: any[];
@@ -25,7 +25,7 @@ export interface AgentRunState {
 }
 
 export function useAllopalRuntime() {
-  const [paypalMode, setPaypalMode] = useState<RuntimeState["paypalMode"]>("SIMULATED");
+  const [paypalMode, setPaypalMode] = useState<RuntimeState["paypalMode"]>("PAYPAL_SANDBOX");
   const [mandate, setMandate] = useState<any>(null);
   const [carts, setCarts] = useState<any[]>([]);
   const [decisions, setDecisions] = useState<any[]>([]);
@@ -40,7 +40,7 @@ export function useAllopalRuntime() {
     const res = await fetch("/api/state", { cache: "no-store" });
     if (!res.ok) throw new Error("Unable to load Allopal state.");
     const data: RuntimeState = await res.json();
-    setPaypalMode(data.paypalMode || "SIMULATED");
+    setPaypalMode(data.paypalMode || "PAYPAL_SANDBOX");
     setMandate(data.mandate);
     setCarts(data.carts || []);
     setDecisions(data.decisions || []);

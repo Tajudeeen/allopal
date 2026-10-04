@@ -23,8 +23,18 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
   });
 
   it("Specification Concurrency Test: Remaining = $40, Request A = $25, Request B = $25 -> System NEVER captures $50", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
+      id: "PAYPAL-CONC-ORDER",
+      status: "CREATED",
+      links: [],
+      requiresPayerApproval: false,
+    });
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
+      id: "PAYPAL-CONC-CAPTURE",
+      status: "COMPLETED",
+      orderId: "PAYPAL-CONC-ORDER",
+      rawResponse: { status: "COMPLETED" },
+    });
 
     // Mandate is fresh with $40.00 limit and $0.00 spent.
     // Both Request A and Request B fire simultaneously trying to buy $25.00 Cart C.
@@ -66,8 +76,18 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
   });
 
   it("Idempotency Test: Repeated button clicks or replayed requests with the same key do NOT double-capture", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
+      id: "PAYPAL-IDEMP-ORDER",
+      status: "CREATED",
+      links: [],
+      requiresPayerApproval: false,
+    });
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
+      id: "PAYPAL-IDEMP-CAPTURE",
+      status: "COMPLETED",
+      orderId: "PAYPAL-IDEMP-ORDER",
+      rawResponse: { status: "COMPLETED" },
+    });
 
     // Reset mandate to have enough balance
     await prisma.mandate.update({

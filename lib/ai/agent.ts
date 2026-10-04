@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { env } from "@/lib/env";
+import { requireAiApiKey } from "@/lib/env";
 
 export interface AgentCatalogItem {
   cartId: string;
@@ -49,38 +49,8 @@ export async function selectCartForAgent(
     throw new Error("AGENT_CATALOG_EMPTY");
   }
 
-  const parsedTask = task.trim();
+  const apiKey = requireAiApiKey();
 
-  const isMock =
-    env.AI_API_KEY.startsWith("mock_") ||
-    process.env.NODE_ENV === "test";
-
-  let raw: unknown;
-
-  if (isMock) {
-    raw = deterministicAgentSelection(parsedTask, catalog);
-  } else {
-    try {
-      raw = await callGeminiAgent(parsedTask, catalog);
-    } catch {
-      raw = deterministicAgentSelection(parsedTask, catalog);
-    }
-  }
-
-  const selection = AgentSelectionSchema.parse(raw);
-  const selected = catalog.find((item) => item.cartId === selection.cartId);
-
-  if (!selected) {
-    throw new Error("AGENT_SELECTED_UNKNOWN_CART");
-  }
-
-  return selection;
-}
-
-async function callGeminiAgent(
-  task: string,
-  catalog: AgentCatalogItem[]
-): Promise<unknown> {
   const catalogText = catalog
     .map(
       (item) =>
@@ -89,7 +59,7 @@ async function callGeminiAgent(
     .join("\n");
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.AI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -127,47 +97,15 @@ ${catalogText}`,
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (typeof text !== "string") {
-    throw new Error("GEMINI_AGENT_EMPTY_RESPONSE");
+    throw new Error("Gemini agent returned an empty response.");
   }
 
-  return JSON.parse(text);
-}
+  const selection = AgentSelectionSchema.parse(JSON.parse(text));
+  const selected = catalog.find((item) => item.cartId === selection.cartId);
 
-function deterministicAgentSelection(
-  task: string,
-  catalog: AgentCatalogItem[]
-): AgentSelection {
-  const lower = task.toLowerCase();
-  const budgetMatch = lower.match(/(?:under|below|less than|up to|within)\s*\$?(\d+(?:\.\d{1,2})?)/);
-  const budgetCents = budgetMatch ? Math.round(Number(budgetMatch[1]) * 100) : Number.POSITIVE_INFINITY;
-
-  const scored = catalog
-    .map((item, index) => {
-      const haystack = `${item.productName} ${item.category} ${item.merchant}`.toLowerCase();
-      const terms = lower
-        .replace(/(?:under|below|less than|up to|within)\s*\$?(\d+(?:\.\d{1,2})?)/g, "")
-        .split(/[^a-z0-9]+/)
-        .filter((term) => term.length >= 3);
-
-      const matches = terms.filter((term) => haystack.includes(term)).length;
-      const budgetFit = item.amount <= budgetCents ? 3 : 0;
-      const amountPenalty = item.amount > budgetCents ? -2 : 0;
-
-      return {
-        item,
-        index,
-        score: matches * 5 + budgetFit + amountPenalty,
-      };
-    })
-    .sort((a, b) => b.score - a.score || a.index - b.index);
-
-  const selected = scored[0]?.item;
   if (!selected) {
-    throw new Error("AGENT_NO_CANDIDATE");
+    throw new Error("AGENT_SELECTED_UNKNOWN_CART");
   }
 
-  return {
-    cartId: selected.cartId,
-    reason: `Selected ${selected.productName} from ${selected.merchant} as the closest catalog match. Allopal policy authorization still decides whether it can be purchased.`,
-  };
+  return selection;
 }

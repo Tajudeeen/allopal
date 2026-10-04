@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { PayPalCheckoutButton } from "./PayPalCheckoutButton";
 import { ArrowRight, Bot, CheckCircle2, LockKeyhole, ShieldCheck, Sparkles, XCircle } from "lucide-react";
 
 interface AgentRun {
@@ -14,6 +15,7 @@ interface AgentRun {
   reasoning: string;
   finalDecision: string;
   paypalCalled: boolean;
+  paypalOrderId: string | null;
 }
 
 interface AgentRunnerProps {
@@ -157,7 +159,7 @@ export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps)
                 ["request", agentRun.task],
                 ["selected", agentRun.productName],
                 ["policy", agentRun.finalDecision],
-                ["PayPal", agentRun.paypalCalled ? "called" : "not called"],
+                ["PayPal", agentRun.paypalCalled ? (agentRun.finalDecision === "PENDING_APPROVAL" ? "order created" : "called") : "not called"],
               ].map(([label, value]) => (
                 <div key={label} className="min-w-0 rounded-xl border border-white/10 bg-white/[0.03] p-3">
                   <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">{label}</p>
@@ -165,6 +167,15 @@ export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps)
                 </div>
               ))}
             </div>
+
+            {agentRun.finalDecision === "PENDING_APPROVAL" && agentRun.paypalOrderId && (
+              <div className="mt-4">
+                <PayPalCheckoutButton
+                  orderId={agentRun.paypalOrderId}
+                  amount={agentRun.amount}
+                />
+              </div>
+            )}
 
             <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">

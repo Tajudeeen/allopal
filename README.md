@@ -597,6 +597,8 @@ The /api/agent/act endpoint supports DRY_RUN and EXECUTE modes so the same agent
 
 - Node.js 18 or 20
 - npm
+- A PayPal Developer account with Sandbox credentials for the full PayPal path
+- A Google Gemini API key for the full AI path
 
 ### Install
 
@@ -627,7 +629,7 @@ PAYPAL_API_BASE_URL="https://api-m.sandbox.paypal.com"
 
 ~~~bash
 npm run prisma:generate
-npm run prisma:migrate
+npx prisma db push
 npm run prisma:seed
 ~~~
 
@@ -725,6 +727,7 @@ allopal/
 ├── docs/
 │   ├── CLAIMS.md
 │   └── evidence/
+├── LICENSE
 └── SECURITY.md
 ~~~
 

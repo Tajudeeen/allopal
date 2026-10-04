@@ -22,6 +22,7 @@ export interface AgentRunState {
   reasoning: string;
   finalDecision: string;
   paypalCalled: boolean;
+  paypalOrderId: string | null;
 }
 
 export function useAllopalRuntime() {
@@ -112,12 +113,11 @@ export function useAllopalRuntime() {
         reasoning: data.agent.reasoning,
         finalDecision,
         paypalCalled: Boolean(result.paypalCalled),
+        paypalOrderId: result.paypalOrderId || null,
       });
 
-      if (result.status === "PENDING_APPROVAL" && result.approvalUrl) {
-        setNotice("Agent selected the cart and Allopal authorized it. Continue to PayPal for payer approval.");
-        window.location.assign(result.approvalUrl);
-        return;
+      if (result.status === "PENDING_APPROVAL") {
+        setNotice("Agent selected the cart and Allopal authorized it. Approve the order with PayPal below.");
       }
 
       if (!res.ok && result.status !== "DENIED") {

@@ -18,14 +18,37 @@ function createJsonRequest(url: string, body: unknown): NextRequest {
 }
 
 describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () => {
+  beforeAll(() => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: JSON.stringify({
+          name: "School Shopping",
+          weeklyLimit: 4000,
+          durationDays: 7,
+          allowedCategories: ["School Supplies"],
+          allowedMerchants: ["Campus Books"]
+        }) }] } }]
+      }), { status: 200 })
+    );
+  });
   beforeAll(async () => {
     // Start from a clean, seeded deterministic state
     await seed();
   });
 
   it("Executes the complete canonical Allopal 90-second primary demo flow", async () => {
-    const createOrderSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureOrderSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createOrderSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
+      id: "PAYPAL-E2E-ORDER",
+      status: "CREATED",
+      links: [],
+      requiresPayerApproval: false,
+    });
+    const captureOrderSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
+      id: "PAYPAL-E2E-CAPTURE",
+      status: "COMPLETED",
+      orderId: "PAYPAL-E2E-ORDER",
+      rawResponse: { status: "COMPLETED" },
+    });
 
     // 1. Natural Language Mandate Interpretation (Case E)
     const proposeReq = createJsonRequest("http://localhost:3000/api/mandates/propose", {
@@ -157,7 +180,7 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     const allowedDecisions = stateData.decisions.filter((d: any) => d.status === "ALLOWED");
     expect(allowedDecisions.length).toBeGreaterThanOrEqual(1);
     expect(allowedDecisions[0].paypalOrderId).not.toBeNull();
-    expect(allowedDecisions[0].paypalOrderId).toContain("PAYPAL-SANDBOX-ORD-");
+    expect(allowedDecisions[0].paypalOrderId).toBe("PAYPAL-E2E-ORDER");
 
     createOrderSpy.mockRestore();
     captureOrderSpy.mockRestore();

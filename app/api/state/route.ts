@@ -37,15 +37,17 @@ export async function GET() {
       take: 20,
     });
 
-    const paypalMode =
-      env.PAYPAL_CLIENT_ID.startsWith("mock_") || env.PAYPAL_CLIENT_SECRET.startsWith("mock_")
-        ? "SIMULATED"
-        : env.PAYPAL_API_BASE_URL.includes("sandbox")
-        ? "PAYPAL_SANDBOX"
-        : "PAYPAL";
+    const paypalMode = env.PAYPAL_API_BASE_URL.includes("sandbox")
+      ? "PAYPAL_SANDBOX"
+      : "PAYPAL";
+
+    const paypalConfigured = Boolean(
+      env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET
+    );
 
     return NextResponse.json({
       paypalMode,
+      paypalConfigured,
       mandate: mandate
         ? {
             ...mandate,

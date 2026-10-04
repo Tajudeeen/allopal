@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { POST as proposePOST } from "@/app/api/mandates/propose/route";
 import { POST as lockPOST } from "@/app/api/mandates/lock/route";
 import { interpretMandatePrompt } from "@/lib/ai/interpreter";
@@ -16,6 +16,21 @@ function createJsonRequest(url: string, body: unknown): NextRequest {
 }
 
 describe("Step 8: AI Mandate Interpretation & Human Approval Specification", () => {
+  beforeEach(() => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: JSON.stringify({
+          name: "School Shopping",
+          weeklyLimit: 4000,
+          durationDays: 7,
+          allowedCategories: ["School Supplies"],
+          allowedMerchants: ["Campus Books"]
+        }) }] } }]
+      }), { status: 200 })
+    );
+  });
+
+  afterEach(() => vi.restoreAllMocks());
   beforeAll(async () => {
     await seed();
   });

@@ -11,11 +11,10 @@ jobs:
 
     env:
       DATABASE_URL: file:./prisma/dev.db
-      PAYPAL_CLIENT_ID: mock_paypal_client_id
-      PAYPAL_CLIENT_SECRET: mock_paypal_client_secret
+      PAYPAL_CLIENT_ID: ci-contract-client
+      PAYPAL_CLIENT_SECRET: ci-contract-secret
       PAYPAL_API_BASE_URL: https://api-m.sandbox.paypal.com
-      AI_API_KEY: mock_ai_api_key
-      NODE_ENV: test
+      AI_API_KEY: ci-gemini-contract-key
 
     steps:
       - name: Checkout

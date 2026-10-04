@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { POST } from "@/app/api/decisions/explain/route";
 import { generateDecisionExplanation } from "@/lib/ai/explainer";
 import { NextRequest } from "next/server";
@@ -14,6 +14,15 @@ function createExplainRequest(body: unknown): NextRequest {
 }
 
 describe("Step 9: AI Payment Decision Explanations Specification", () => {
+  beforeEach(() => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: "The Electronics purchase is blocked. The $25.00 request exceeds the $22.00 budget. The mandate was revoked. The $18.00 payment was approved by the mandate and captured via PayPal. In dry-run mode PayPal was not called. A created PayPal order is waiting for payer approval." }] } }]
+      }), { status: 200 })
+    );
+  });
+
+  afterEach(() => vi.restoreAllMocks());
   beforeAll(async () => {
     await seed();
   });

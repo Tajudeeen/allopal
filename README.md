@@ -309,7 +309,7 @@ The repository has source-level and automated-test coverage for the authorizatio
 | Public production PayPal transaction | **NOT LIVE-VERIFIED** |
 | External production users | **NOT LIVE-VERIFIED** |
 
-See [docs/CLAIMS.md](docs/CLAIMS.md) for the claim-by-claim ledger and [docs/evidence/README.md](docs/evidence/README.md) for the evidence index.
+See [docs/CLAIMS.md](docs/CLAIMS.md) for the claim-by-claim ledger, [docs/evidence/README.md](docs/evidence/README.md) for the evidence index, and [docs/postman/Allopal.postman_collection.json](docs/postman/Allopal.postman_collection.json) for the API collection.
 
 This distinction is deliberate. A test file proves what a test is designed to cover. A captured runtime artifact proves what actually happened in a specific environment.
 
@@ -483,6 +483,7 @@ Money is stored as integer cents. The authoritative schema is in [prisma/schema.
 |:---|:---:|:---|
 | /api/health | GET | Health and database ping |
 | /api/state | GET | Shared live runtime state for the UI |
+| /api/paypal/config | GET | Browser-safe PayPal SDK v6 configuration |
 | /api/authorize | POST | Dry-run deterministic policy evaluation |
 | /api/payments/pay | POST | Authoritative policy and PayPal payment execution |
 | /api/agent/act | POST | AI agent selects a catalog cart, then routes it through dry-run authorization or PayPal execution |
@@ -568,6 +569,8 @@ PayPal not called   PayPal execution
 
 The agent receives a server-authoritative catalog and can select a cart that is later denied by policy. Its selection is treated as untrusted input. The payment route reloads the mandate and cart from the database, evaluates the deterministic checks, reserves budget, and only then reaches PayPal.
 
+When policy allows a real payment, the server creates the PayPal order first. The console then uses PayPal JavaScript SDK v6 to present the buyer approval session, while the existing server return/cancel handlers keep capture and reservation recovery on the server. PayPal's v6 guidance recommends server-side order creation, eligibility checks, and a payment session for one-time PayPal checkout. citeturn891164view0turn603577search1
+
 This creates the intended separation:
 
 - **AI agent:** understands the shopping request and proposes a concrete action.
@@ -585,7 +588,9 @@ The /api/agent/act endpoint supports DRY_RUN and EXECUTE modes so the same agent
 | Data | Prisma 5 + SQLite |
 | Validation | Zod |
 | Icons | Lucide React |
-| Payments | PayPal Sandbox integration |
+| Payments | PayPal Sandbox integration + JavaScript SDK v6 |
+| AI | Google Gemini 2.5 Flash |
+| API tooling | Postman collection |
 | Testing | Vitest |
 | Tooling | npm, TypeScript, ESLint, Prisma |
 
@@ -726,7 +731,9 @@ allopal/
 │   └── theme/
 ├── docs/
 │   ├── CLAIMS.md
-│   └── evidence/
+│   ├── evidence/
+│   └── postman/
+│       └── Allopal.postman_collection.json
 ├── LICENSE
 └── SECURITY.md
 ~~~

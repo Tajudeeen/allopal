@@ -1,3 +1,9 @@
+import { ProviderConfigurationError } from "@/lib/env";
+import {
+  requireWorkspace,
+  accessResponse,
+  AccessError,
+} from "@/lib/security/access";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { interpretMandatePrompt } from "@/lib/ai/interpreter";
@@ -10,6 +16,7 @@ const proposeSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const workspaceId = await requireWorkspace(req);
     const rawBody = await req.json();
     const parsed = proposeSchema.safeParse(rawBody);
 
@@ -19,7 +26,7 @@ export async function POST(req: NextRequest) {
           error: "INVALID_REQUEST",
           details: parsed.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,10 +36,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: "PROPOSAL_VALIDATION_FAILED",
-          message: result.error || "Failed to generate a valid mandate proposal.",
+          message:
+            result.error || "Failed to generate a valid mandate proposal.",
           rawResponse: result.rawResponse,
         },
-        { status: 422 }
+        { status: 422 },
       );
     }
 
@@ -42,16 +50,25 @@ export async function POST(req: NextRequest) {
       status: "PROPOSED",
       proposal: result.proposal,
       requiresHumanApproval: true,
-      message: "Mandate proposal generated. Human approval required to lock and activate.",
+      message:
+        "Mandate proposal generated. Human approval required to lock and activate.",
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    if (
+      error instanceof AccessError ||
+      error instanceof ProviderConfigurationError
+    )
+      return accessResponse(error);
+    const message =
+      error instanceof SyntaxError
+        ? "Invalid JSON request."
+        : "The service is currently unavailable.";
     return NextResponse.json(
       {
         error: "INTERPRETATION_ERROR",
         message,
       },
-      { status: 500 }
+      { status: error instanceof SyntaxError ? 400 : 500 },
     );
   }
 }

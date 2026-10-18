@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { payPalClient } from "@/lib/paypal/client";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { POST as authPOST } from "@/app/api/authorize/route";
 import { POST as payPOST } from "@/app/api/payments/pay/route";
 import { GET as stateGET } from "@/app/api/state/route";
@@ -10,7 +11,10 @@ import { env } from "@/lib/env";
 function createJsonRequest(url: string, body: unknown): NextRequest {
   return new NextRequest(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
     body: JSON.stringify(body),
   });
 }
@@ -65,17 +69,32 @@ describe("Step 13: Dedicated Technical Security Audit", () => {
   });
 
   it("Security Audit 3: Malformed JSON or negative amounts fail closed", async () => {
-    const reqNegative = createJsonRequest("http://localhost:3000/api/payments/pay", {
-      mandateId: "mandate-school-shopping",
-      cartId: "cart-case-a",
-      amount: -5000,
+    vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
+      id: "PAYPAL-TAMPER-ORDER",
+      status: "CREATED",
+      requiresPayerApproval: false,
     });
+    vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
+      id: "PAYPAL-TAMPER-CAPTURE",
+      status: "COMPLETED",
+    });
+    const reqNegative = createJsonRequest(
+      "http://localhost:3000/api/payments/pay",
+      {
+        mandateId: "mandate-school-shopping",
+        cartId: "cart-case-a",
+        amount: -5000,
+      },
+    );
 
     const res = await payPOST(reqNegative);
     // Payload should either process authoritative cart (and ignore amount) or fail schema validation
     expect([200, 400, 403]).toContain(res.status);
 
-    const reqEmpty = createJsonRequest("http://localhost:3000/api/payments/pay", {});
+    const reqEmpty = createJsonRequest(
+      "http://localhost:3000/api/payments/pay",
+      {},
+    );
     const resEmpty = await payPOST(reqEmpty);
     expect(resEmpty.status).toBe(400);
   });

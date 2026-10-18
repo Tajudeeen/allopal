@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: file:./prisma/dev.db
+      DATABASE_URL: file:./ci.db
       PAYPAL_CLIENT_ID: ci-contract-client
       PAYPAL_CLIENT_SECRET: ci-contract-secret
       PAYPAL_API_BASE_URL: https://api-m.sandbox.paypal.com
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
         run: npm run prisma:generate
 
       - name: Create test database
-        run: npx prisma db push --skip-generate
+        run: npm run db:deploy
 
       - name: Run tests
         run: npm test -- --run

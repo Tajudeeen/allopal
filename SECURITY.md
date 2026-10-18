@@ -1,57 +1,35 @@
-# Allopal Security Policy & Technical Audit
+# Security posture
 
-## Executive Security Model
+Allopal is a session-isolated Sandbox demonstration, not a production financial identity platform.
 
-Allopal enforces a deterministic authorization layer between autonomous AI agents and PayPal payment execution. The security architecture is designed under the principle of **defense-in-depth**, ensuring that even if an AI agent is compromised, manipulated via prompt injection, or behaves erratically, it can **never** exceed the locked financial boundaries established by the human account owner.
+## Trust boundaries
 
----
+- A high-entropy builder-issued demo access key opens an isolated, 24-hour workspace.
+- Session tokens are random, HttpOnly, SameSite=Lax, Secure in production, and stored only as hashes in SQLite.
+- Browser mutations require the current session and same-origin requests. Mandates and financial records are loaded with workspace ownership filters.
+- PayPal return/cancel requests require both the owner session and a per-attempt random state token.
+- Reset affects only the caller's workspace and is rejected while payments are unresolved.
+- The agent receives catalog data, not provider credentials or mandate-management tools. Its selection is untrusted until the deterministic policy checks it.
+- Payment attempts, policy decisions, operation keys, and budget reservations are persisted before provider execution.
+- Capture and cancellation have exclusive state claims. Revocation blocks unclaimed captures. In-flight captures may still settle.
+- Unknown provider results retain reservations until reconciliation. An HTTP error alone is not proof that money did not move.
+- Webhooks are verified by PayPal and reconciled against authenticated provider state. The scheduler uses its own server-side bearer secret.
+- State and evidence responses omit raw payer responses and callback secrets. Runtime evidence is private and uncached.
 
-### Core Security Invariants
+## Operations
 
-1. **Deterministic Execution Gate (Zero-Bypass Invariant)**
-   * PayPal Order Creation and Capture APIs are **only** accessible from the server-side payment handler (`app/api/payments/pay/route.ts`).
-   * No PayPal API call can be initiated without first passing all 8 ordered checks in the deterministic policy engine (`lib/policy/engine.ts`).
-   * Every failed policy check results in zero money movement and **0 calls** to PayPal.
+Use HTTPS, a persistent single-host SQLite volume, backups, and a supervised recovery worker. Keep `.env`, database files, cookies, provider tokens, and access keys out of Git. Rotate the demo key if it is shared beyond its intended audience. Existing sessions remain valid until expiry unless their session row is removed by an operator.
 
-2. **Server-Authoritative Data Lookup**
-   * The client only transmits resource identifiers (`mandateId`, `cartId`).
-   * Product prices, categories, merchants, and available mandate budgets are loaded exclusively from authoritative database records on the server.
-   * Any client-supplied prices, categories, merchants, or status parameters are strictly stripped and discarded via Zod schema parsers.
+Tests create an isolated disposable database and block unmocked network access. Never run the old demo-reset seed against a customer database.
 
-3. **Strict Monetary Precision (Integer Cents)**
-   * All monetary limits, expenditures, product prices, and cart totals are represented as non-negative integer cents (`4000 = $40.00`).
-   * Floating-point arithmetic is forbidden in the core domain to eliminate rounding drift and precision exploits.
+Legacy pending orders require operator review after migration. `REVIEW_REQUIRED` is a deliberate hold, not a successful payment or an instruction to refund budget. Compare the provider order/capture status before correcting a reservation. Do not replay an unknown operation with a fresh provider request ID.
 
-4. **Zero AI Financial Authority**
-   * AI models (Gemini) are strictly isolated to **interpretation** (drafting proposals) and **read-only explanation**.
-   * AI cannot authorize money movement, activate mandates, modify locked parameters, increase limits, or bypass policy checks.
-   * All proposed mandates are emitted in a `PROPOSED` state and require explicit human review and locking via `/api/mandates/lock`.
+A runtime snapshot is not signed proof. It contains inspectable financial identifiers and must be reviewed before publication.
 
-5. **Concurrency & Race Condition Hardening**
-   * Parallel payment requests against the same mandate are serialized using atomic database transactions.
-   * Budget reservation is validated in real time before PayPal API execution; if remaining budget is insufficient, the second request fails closed (`BUDGET_SUFFICIENT` failure).
-   * Double-spend and parallel exhaustion attacks are impossible.
+## Limits
 
-6. **Replay & Idempotency Protection**
-   * Every payment request supports an `Idempotency-Key` header or payload attribute.
-   * Duplicate requests or repeated button clicks return the cached transaction response without initiating redundant PayPal charges.
+The shared access key does not establish legal identity, provide durable account recovery, or replace customer authentication. A holder can create new demo sessions and use provider quota. The app has no production fraud detection, fulfillment, settlement ledger, refund initiation, or operational case-management system. Keep it on Sandbox until those requirements are designed and independently reviewed.
 
-7. **Server-Side Secret Isolation**
-   * `PAYPAL_CLIENT_SECRET`, `PAYPAL_CLIENT_ID`, and `AI_API_KEY` are isolated to server environments.
-   * No API credentials, tokens, or database connection strings are exposed in client bundles or public endpoints.
-   * Sensitive responses from PayPal are sanitized before persistence.
+## Reporting
 
----
-
-### Audit Verification Checklist
-
-| Risk Area | Mitigation | Verification Test |
-|:---|:---|:---|
-| **Client Price Tampering** | Server loads authoritative products from DB | `tests/api/authorize.test.ts` |
-| **Category Bypass** | Deterministic whitelist evaluation | `tests/policy/engine.test.ts` |
-| **Over-Budget Exploit** | Exact cent boundary verification | `tests/payments/security_boundary.test.ts` |
-| **PayPal API Bypass** | Spied 0-call proof on all denials | `tests/payments/security_boundary.test.ts` |
-| **Race Conditions** | Atomic transaction budget reservation | `tests/payments/concurrency.test.ts` |
-| **Replay Attacks** | Idempotency key tracking table | `tests/payments/concurrency.test.ts` |
-| **Prompt Injection** | Zod schema validation on AI output | `tests/ai/proposal.test.ts` |
-| **Mandate Tampering** | Human locking gate required | `tests/ai/proposal.test.ts` |
+Report a suspected issue privately to the repository owner through the contact on their GitHub profile. Include the affected commit, a minimal reproduction using synthetic data, expected/actual behavior, and impact. Do not include live credentials, payer personal information, cookies, or private financial data in public issues.

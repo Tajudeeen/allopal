@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Shield, Ban, Calendar, Store, Tag, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Shield,
+  Ban,
+  Calendar,
+  Store,
+  Tag,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 
 interface MandateData {
   id: string;
@@ -21,7 +29,11 @@ interface MandateCardProps {
   isDark?: boolean;
 }
 
-export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardProps) {
+export function MandateCard({
+  mandate,
+  onRevoke,
+  isDark = true,
+}: MandateCardProps) {
   const [revoking, setRevoking] = useState(false);
 
   if (!mandate) {
@@ -39,14 +51,17 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
   }
 
   const remaining = Math.max(0, mandate.weeklyLimit - mandate.spentAmount);
-  const percentSpent = Math.min(100, Math.round((mandate.spentAmount / mandate.weeklyLimit) * 100));
+  const percentSpent = Math.min(
+    100,
+    Math.round((mandate.spentAmount / mandate.weeklyLimit) * 100),
+  );
   const isRevoked = mandate.status === "REVOKED";
   const isActive = mandate.status === "ACTIVE";
 
   const handleRevoke = async () => {
     if (
       !confirm(
-        `Are you sure you want to revoke the "${mandate.name}" mandate? This will immediately prevent all agent spending.`
+        `Are you sure you want to revoke the "${mandate.name}" mandate? This blocks new requests and captures that have not started. A capture already in progress may still settle.`,
       )
     ) {
       return;
@@ -86,8 +101,8 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
                   ? "bg-blue-950/80 text-blue-400 border border-blue-800/60"
                   : "bg-blue-50 text-blue-700 border border-blue-200"
                 : isDark
-                ? "bg-rose-950/80 text-rose-400 border border-rose-800/60"
-                : "bg-rose-50 text-rose-600 border border-rose-200"
+                  ? "bg-rose-950/80 text-rose-400 border border-rose-800/60"
+                  : "bg-rose-50 text-rose-600 border border-rose-200"
             }`}
           >
             <Shield className="w-6 h-6" />
@@ -108,8 +123,8 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
                       ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
                       : "bg-emerald-100 text-emerald-800 border-emerald-300"
                     : isDark
-                    ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
-                    : "bg-rose-100 text-rose-800 border-rose-300"
+                      ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
+                      : "bg-rose-100 text-rose-800 border-rose-300"
                 }`}
               >
                 {mandate.status}
@@ -203,8 +218,8 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
               percentSpent > 90
                 ? "bg-rose-500"
                 : percentSpent > 50
-                ? "bg-amber-500"
-                : "bg-emerald-500"
+                  ? "bg-amber-500"
+                  : "bg-emerald-500"
             }`}
             style={{ width: `${percentSpent}%` }}
           />
@@ -296,7 +311,9 @@ export function MandateCard({ mandate, onRevoke, isDark = true }: MandateCardPro
       >
         <div className="flex items-center flex-wrap gap-1 min-w-0">
           <Calendar className="w-3.5 h-3.5 opacity-60" />
-          <span>Valid through: {new Date(mandate.validUntil).toLocaleDateString()}</span>
+          <span>
+            Valid through: {new Date(mandate.validUntil).toLocaleDateString()}
+          </span>
         </div>
         <div className="flex items-center space-x-1 font-semibold">
           {isActive ? (

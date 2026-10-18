@@ -1,4 +1,12 @@
-import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeAll,
+  beforeEach,
+  afterEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/agent/act/route";
 import { prisma } from "@/lib/db/prisma";
@@ -17,15 +25,24 @@ function createRequest(body: unknown): NextRequest {
 describe("Allopal guarded AI agent action", () => {
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {
-      const body = String(init?.body ?? "");
+      const payload = JSON.parse(String(init?.body ?? "{}"));
+      const body =
+        payload.contents?.[0]?.parts?.[0]?.text?.split(
+          "Server-authoritative catalog:",
+        )[0] ?? "";
       const isGaming = body.toLowerCase().includes("gaming headset");
       const selection = {
         cartId: isGaming ? "cart-case-b" : "cart-case-a",
-        reason: "Selected a server-authoritative catalog cart that best matches the request."
+        reason:
+          "Selected a server-authoritative catalog cart that best matches the request.",
       };
       return new Response(
-        JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(selection) }] } }] }),
-        { status: 200 }
+        JSON.stringify({
+          candidates: [
+            { content: { parts: [{ text: JSON.stringify(selection) }] } },
+          ],
+        }),
+        { status: 200 },
       );
     });
   });
@@ -48,7 +65,7 @@ describe("Allopal guarded AI agent action", () => {
         amount: cart.totalAmount,
         merchant: cart.merchant,
         category: cart.items[0]?.product.category || "Unknown",
-      }))
+      })),
     );
 
     expect(selection.cartId).toBe("cart-case-b");
@@ -61,19 +78,21 @@ describe("Allopal guarded AI agent action", () => {
       links: [],
       requiresPayerApproval: false,
     });
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
-      id: "PAYPAL-CONTRACT-CAPTURE",
-      status: "COMPLETED",
-      orderId: "PAYPAL-CONTRACT-ORDER",
-      rawResponse: { status: "COMPLETED" },
-    });
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONTRACT-CAPTURE",
+        status: "COMPLETED",
+        orderId: "PAYPAL-CONTRACT-ORDER",
+        rawResponse: { status: "COMPLETED" },
+      });
 
     const response = await POST(
       createRequest({
         task: "find the gaming headset and try to buy it",
         mode: "EXECUTE",
         idempotencyKey: "agent-test-key-001",
-      })
+      }),
     );
 
     const data = await response.json();
@@ -90,15 +109,26 @@ describe("Allopal guarded AI agent action", () => {
   });
 
   it("executes a permitted agent-selected purchase through PayPal", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONTRACT-ORDER",
+        status: "CREATED",
+        requiresPayerApproval: false,
+      });
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONTRACT-CAPTURE",
+        status: "COMPLETED",
+      });
 
     const response = await POST(
       createRequest({
         task: "buy a notebook for me",
         mode: "EXECUTE",
         idempotencyKey: "agent-test-key-002",
-      })
+      }),
     );
 
     const data = await response.json();
@@ -115,8 +145,12 @@ describe("Allopal guarded AI agent action", () => {
     createSpy.mockRestore();
     captureSpy.mockRestore();
 
-    await prisma.payPalTransaction.deleteMany({ where: { mandateId: "mandate-school-shopping" } });
-    await prisma.decision.deleteMany({ where: { mandateId: "mandate-school-shopping" } });
+    await prisma.payPalTransaction.deleteMany({
+      where: { mandateId: "mandate-school-shopping" },
+    });
+    await prisma.decision.deleteMany({
+      where: { mandateId: "mandate-school-shopping" },
+    });
     await prisma.mandate.update({
       where: { id: "mandate-school-shopping" },
       data: { spentAmount: 0, status: "ACTIVE" },
@@ -131,7 +165,7 @@ describe("Allopal guarded AI agent action", () => {
       createRequest({
         task: "buy school supplies under $20",
         mode: "DRY_RUN",
-      })
+      }),
     );
 
     const data = await response.json();
@@ -148,6 +182,8 @@ describe("Allopal guarded AI agent action", () => {
     createSpy.mockRestore();
     captureSpy.mockRestore();
 
-    await prisma.decision.deleteMany({ where: { cartId: "cart-case-a" } });
+    await prisma.decision.deleteMany({
+      where: { cartId: "cart-case-a", mandateId: "mandate-school-shopping" },
+    });
   });
 });

@@ -2,7 +2,15 @@
 
 import React, { useState } from "react";
 import { PayPalCheckoutButton } from "./PayPalCheckoutButton";
-import { ArrowRight, Bot, CheckCircle2, LockKeyhole, ShieldCheck, Sparkles, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+  XCircle,
+} from "lucide-react";
 
 interface AgentRun {
   task: string;
@@ -16,6 +24,7 @@ interface AgentRun {
   finalDecision: string;
   paypalCalled: boolean;
   paypalOrderId: string | null;
+  approvalToken?: string | null;
 }
 
 interface AgentRunnerProps {
@@ -30,7 +39,11 @@ const examples = [
   "get the best notebook for me",
 ];
 
-export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps) {
+export function AgentRunner({
+  onRunAgent,
+  loading,
+  agentRun,
+}: AgentRunnerProps) {
   const [task, setTask] = useState("find school supplies under $20");
 
   const handleSubmit = async (mode: "DRY_RUN" | "EXECUTE") => {
@@ -39,7 +52,9 @@ export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps)
     await onRunAgent(trimmed, mode);
   };
 
-  const passed = agentRun?.finalDecision === "ALLOWED" || agentRun?.finalDecision === "COMPLETED";
+  const passed =
+    agentRun?.finalDecision === "ALLOWED" ||
+    agentRun?.finalDecision === "COMPLETED";
   const denied = agentRun?.finalDecision === "DENIED";
 
   return (
@@ -65,7 +80,9 @@ export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps)
                 tell the agent what to buy
               </h2>
               <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-300/75">
-                The agent searches only the server catalog and selects a candidate cart. Allopal still makes the final spending decision before PayPal.
+                The agent searches only the server catalog and selects a
+                candidate cart. Allopal still makes the final spending decision
+                before PayPal.
               </p>
             </div>
           </div>
@@ -142,14 +159,16 @@ export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps)
                   agent trace
                 </span>
               </div>
-              <span className={
-                "rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider " +
-                (passed
-                  ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
-                  : denied
-                  ? "border-rose-500/25 bg-rose-500/10 text-rose-300"
-                  : "border-amber-500/25 bg-amber-500/10 text-amber-300")
-              }>
+              <span
+                className={
+                  "rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider " +
+                  (passed
+                    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                    : denied
+                      ? "border-rose-500/25 bg-rose-500/10 text-rose-300"
+                      : "border-amber-500/25 bg-amber-500/10 text-amber-300")
+                }
+              >
                 {agentRun.finalDecision}
               </span>
             </div>
@@ -159,32 +178,56 @@ export function AgentRunner({ onRunAgent, loading, agentRun }: AgentRunnerProps)
                 ["request", agentRun.task],
                 ["selected", agentRun.productName],
                 ["policy", agentRun.finalDecision],
-                ["PayPal", agentRun.paypalCalled ? (agentRun.finalDecision === "PENDING_APPROVAL" ? "order created" : "called") : "not called"],
+                [
+                  "PayPal",
+                  agentRun.paypalCalled
+                    ? agentRun.finalDecision === "PENDING_APPROVAL"
+                      ? "order created"
+                      : "called"
+                    : "not called",
+                ],
               ].map(([label, value]) => (
-                <div key={label} className="min-w-0 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">{label}</p>
-                  <p className="mt-1 break-words text-xs font-semibold text-white">{value}</p>
+                <div
+                  key={label}
+                  className="min-w-0 rounded-xl border border-white/10 bg-white/[0.03] p-3"
+                >
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">
+                    {label}
+                  </p>
+                  <p className="mt-1 break-words text-xs font-semibold text-white">
+                    {value}
+                  </p>
                 </div>
               ))}
             </div>
 
-            {agentRun.finalDecision === "PENDING_APPROVAL" && agentRun.paypalOrderId && (
-              <div className="mt-4">
-                <PayPalCheckoutButton
-                  orderId={agentRun.paypalOrderId}
-                  amount={agentRun.amount}
-                />
-              </div>
-            )}
+            {agentRun.finalDecision === "PENDING_APPROVAL" &&
+              agentRun.paypalOrderId && (
+                <div className="mt-4">
+                  <PayPalCheckoutButton
+                    orderId={agentRun.paypalOrderId}
+                    amount={agentRun.amount}
+                    approvalToken={agentRun.approvalToken}
+                  />
+                </div>
+              )}
 
             <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">agent reasoning</p>
-                <p className="mt-1 text-xs leading-5 text-slate-300">{agentRun.reasoning}</p>
+                <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">
+                  agent reasoning
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-300">
+                  {agentRun.reasoning}
+                </p>
               </div>
               <div className="rounded-xl border border-blue-400/15 bg-blue-400/[0.06] p-3 sm:min-w-44">
-                <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-blue-300/70">candidate</p>
-                <p className="mt-1 text-xs font-bold text-white">{agentRun.merchant}</p>
+                <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-blue-300/70">
+                  candidate
+                </p>
+                <p className="mt-1 text-xs font-bold text-white">
+                  {agentRun.merchant}
+                </p>
                 <p className="mt-0.5 text-[11px] text-slate-300">
                   {agentRun.category} · ${(agentRun.amount / 100).toFixed(2)}
                 </p>

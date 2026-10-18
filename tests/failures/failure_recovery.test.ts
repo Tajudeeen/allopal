@@ -10,7 +10,10 @@ import { payPalClient } from "@/lib/paypal/client";
 function createJsonRequest(url: string, body: unknown): NextRequest {
   return new NextRequest(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
     body: JSON.stringify(body),
   });
 }
@@ -20,10 +23,12 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     await seed();
   });
 
-  it("Failure Mode 1: PayPal order creation network failure -> fails closed and rolls back reserved budget", async () => {
+  it("Failure Mode 1: PayPal order creation network failure -> keeps the budget reserved until the unknown creation result is reconciled", async () => {
     const createSpy = vi
       .spyOn(payPalClient, "createOrder")
-      .mockRejectedValueOnce(new Error("PayPal Upstream Network Timeout (504 Gateway Timeout)"));
+      .mockRejectedValueOnce(
+        new Error("PayPal Upstream Network Timeout (504 Gateway Timeout)"),
+      );
 
     const initialMandate = await prisma.mandate.findUnique({
       where: { id: "mandate-school-shopping" },
@@ -38,30 +43,37 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     const res = await payPOST(req);
     const data = await res.json();
 
-    expect(res.status).toBe(500);
-    expect(data.error).toBe("PAYMENT_EXECUTION_FAILED");
-    expect(data.paypalCalled).toBe(false);
+    expect(res.status).toBe(200);
+    expect(data.status).toBe("PENDING");
+    expect(data.paypalCalled).toBe(true);
 
-    // CRITICAL: Mandate budget MUST NOT remain deducted
+    // Unknown external results MUST retain their budget reservation.
     const refreshedMandate = await prisma.mandate.findUnique({
       where: { id: "mandate-school-shopping" },
     });
-    expect(refreshedMandate?.spentAmount).toBe(initialSpent);
+    expect(refreshedMandate?.spentAmount).toBe(initialSpent + 1800);
 
     createSpy.mockRestore();
   });
 
-  it("Failure Mode 2: PayPal capture network failure -> fails closed and restores mandate balance", async () => {
+  it("Failure Mode 2: PayPal capture network failure -> keeps the reservation until capture is reconciled", async () => {
+    vi.spyOn(payPalClient, "getOrder").mockRejectedValueOnce(
+      new Error("Provider unavailable"),
+    );
     // createOrder succeeds, but captureOrder fails
-    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
-      id: "PAYPAL-FAIL-ORDER",
-      status: "CREATED",
-      links: [],
-      requiresPayerApproval: false,
-    });
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValueOnce({
+        id: "PAYPAL-FAIL-ORDER",
+        status: "CREATED",
+        links: [],
+        requiresPayerApproval: false,
+      });
     const captureSpy = vi
       .spyOn(payPalClient, "captureOrder")
-      .mockRejectedValueOnce(new Error("PayPal Capture Declined by Risk Engine (500)"));
+      .mockRejectedValueOnce(
+        new Error("PayPal Capture Declined by Risk Engine (500)"),
+      );
 
     const initialMandate = await prisma.mandate.findUnique({
       where: { id: "mandate-school-shopping" },
@@ -76,24 +88,35 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     const res = await payPOST(req);
     const data = await res.json();
 
-    expect(res.status).toBe(500);
-    expect(data.error).toBe("PAYMENT_EXECUTION_FAILED");
+    expect(res.status).toBe(200);
+    expect(data.status).toBe("PENDING");
 
-    // Mandate spent amount must be restored to initial
+    // An ambiguous capture is not proof that money did not move.
     const refreshedMandate = await prisma.mandate.findUnique({
       where: { id: "mandate-school-shopping" },
     });
-    expect(refreshedMandate?.spentAmount).toBe(initialSpent);
+    expect(refreshedMandate?.spentAmount).toBe(initialSpent + 1800);
 
     captureSpy.mockRestore();
     createSpy.mockRestore();
   });
 
   it("Failure Mode 3: AI interpretation service failure or garbage output -> fails safely without creating phantom mandate", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ text: "{}" }] } }],
+        }),
+        { status: 200 },
+      ),
+    );
     // Malicious or nonsensical garbage prompt
-    const req = createJsonRequest("http://localhost:3000/api/mandates/propose", {
-      prompt: "asdkfjhalkjsdfh 99999999999999999999999999999999999999",
-    });
+    const req = createJsonRequest(
+      "http://localhost:3000/api/mandates/propose",
+      {
+        prompt: "asdkfjhalkjsdfh 99999999999999999999999999999999999999",
+      },
+    );
 
     const res = await proposePOST(req);
     expect([200, 422]).toContain(res.status);
@@ -110,17 +133,22 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
   });
 
   it("Failure Mode 4: Decision explainer failure -> fails clearly when Gemini is unavailable", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Gemini unavailable"));
-    const req = createJsonRequest("http://localhost:3000/api/decisions/explain", {
-      decision: {
-        status: "DENIED",
-        reason: "Category not permitted",
-        failedCheck: "CATEGORY_ALLOWED",
-        amount: 9000,
-        merchant: "Campus Books",
-        category: "Electronics",
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValueOnce(new Error("Gemini unavailable"));
+    const req = createJsonRequest(
+      "http://localhost:3000/api/decisions/explain",
+      {
+        decision: {
+          status: "DENIED",
+          reason: "Category not permitted",
+          failedCheck: "CATEGORY_ALLOWED",
+          amount: 9000,
+          merchant: "Campus Books",
+          category: "Electronics",
+        },
       },
-    });
+    );
 
     const res = await explainPOST(req);
     const data = await res.json();

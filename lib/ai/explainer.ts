@@ -19,7 +19,7 @@ export interface DecisionExplanationInput {
  * user-facing explanation. The AI result is read-only.
  */
 export async function generateDecisionExplanation(
-  decision: DecisionExplanationInput
+  decision: DecisionExplanationInput,
 ): Promise<string> {
   const apiKey = requireAiApiKey();
 
@@ -47,6 +47,7 @@ Explain clearly to the human account holder what happened according to the final
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
+      signal: AbortSignal.timeout(15000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -56,7 +57,7 @@ Explain clearly to the human account holder what happened according to the final
           maxOutputTokens: 150,
         },
       }),
-    }
+    },
   );
 
   if (!response.ok) {

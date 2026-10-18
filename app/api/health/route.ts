@@ -12,14 +12,14 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = "Database unavailable";
     return NextResponse.json(
       {
         status: "UNHEALTHY",
         database: "DISCONNECTED",
         error: message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

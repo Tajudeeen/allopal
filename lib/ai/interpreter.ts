@@ -12,7 +12,7 @@ import { MandateProposalSchema, AIInterpretationResult } from "./types";
  * AI can NEVER activate, lock, or modify a mandate directly.
  */
 export async function interpretMandatePrompt(
-  prompt: string
+  prompt: string,
 ): Promise<AIInterpretationResult> {
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
     return {
@@ -64,10 +64,10 @@ Return JSON matching:
 }
 `;
 
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
+    signal: AbortSignal.timeout(15000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

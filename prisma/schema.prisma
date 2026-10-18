@@ -16,6 +16,7 @@ model SystemHealth {
 model Mandate {
   id                String              @id @default(uuid())
   name              String
+  workspaceId       String @default("demo")
   weeklyLimit       Int                 // In integer cents ($40.00 = 4000)
   spentAmount       Int      @default(0)// In integer cents
   validFrom         DateTime
@@ -30,6 +31,7 @@ model Mandate {
   transactions      PayPalTransaction[]
 
   @@index([status])
+  @@index([workspaceId])
 }
 
 model Product {
@@ -93,13 +95,25 @@ model Decision {
 
 model PayPalTransaction {
   id            String   @id @default(uuid())
-  orderId       String   @unique // PayPal Order ID
+  orderId       String?  @unique // PayPal Order ID
   captureId     String?  @unique // PayPal Capture ID
   mandateId     String
   decisionId    String   @unique
   amount        Int      // Integer cents
   currency      String   @default("USD")
   status        String   // CREATED | COMPLETED | FAILED
+  origin        String @default("http://localhost:3000")
+  returnToken   String @default(uuid())
+  approvalUrl   String?
+  providerCalled Boolean @default(false)
+  payerApproved Boolean @default(false)
+  cancelRequested Boolean @default(false)
+  captureStarted Boolean @default(false)
+  reservationReleased Boolean @default(false)
+  leaseUntil    DateTime?
+  expiresAt     DateTime @default(now())
+  errorCode     String?
+  updatedAt     DateTime @updatedAt
   rawResponse   String?  // Sanitized raw PayPal JSON response for auditing
   createdAt     DateTime @default(now())
 
@@ -111,6 +125,10 @@ model PayPalTransaction {
 }
 
 model IdempotencyRecord {
+  workspaceId   String @default("demo")
+  transactionId String?
+  taskHash      String?
+  httpStatus    Int @default(200)
   key           String   @id // Idempotency key from client header or request hash
   mandateId     String
   cartId        String
@@ -120,4 +138,18 @@ model IdempotencyRecord {
   updatedAt     DateTime @updatedAt
 
   @@index([key])
+}
+
+
+model DemoSession {
+  tokenHash   String @id
+  workspaceId String @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  @@index([expiresAt])
+}
+
+model WebhookReceipt {
+  eventId String @id
+  receivedAt DateTime @default(now())
 }

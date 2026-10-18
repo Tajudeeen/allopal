@@ -1,3 +1,8 @@
+import {
+  requireWorkspace,
+  accessResponse,
+  AccessError,
+} from "@/lib/security/access";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
@@ -12,6 +17,7 @@ const authorizeSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const workspaceId = await requireWorkspace(req);
     const rawBody = await req.json();
 
     // 1. Strict validation of input identifiers only
@@ -23,15 +29,15 @@ export async function POST(req: NextRequest) {
           error: "INVALID_REQUEST",
           details: parsed.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const { mandateId, cartId } = parsed.data;
 
     // 2. Server loads authoritative mandate from database
-    const mandate = await prisma.mandate.findUnique({
-      where: { id: mandateId },
+    const mandate = await prisma.mandate.findFirst({
+      where: { id: mandateId, workspaceId },
     });
 
     // 3. Server loads authoritative cart and product prices from database
@@ -82,13 +88,17 @@ export async function POST(req: NextRequest) {
       paypalOrderId: null,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    if (error instanceof AccessError) return accessResponse(error);
+    const message =
+      error instanceof SyntaxError
+        ? "Invalid JSON request."
+        : "The service is currently unavailable.";
     return NextResponse.json(
       {
         error: "INTERNAL_ERROR",
         message,
       },
-      { status: 500 }
+      { status: error instanceof SyntaxError ? 400 : 500 },
     );
   }
 }

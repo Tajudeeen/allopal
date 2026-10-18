@@ -1,17 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { seed } from "@/prisma/seed";
-
+import { requireWorkspace, accessResponse } from "@/lib/security/access";
 export const dynamic = "force-dynamic";
-
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    await seed();
+    await seed(await requireWorkspace(req), true);
     return NextResponse.json({
       status: "RESET_COMPLETED",
-      message: "Database successfully reset to deterministic hackathon demo state.",
+      message: "Your demo workspace has been reset.",
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Reset failed";
-    return NextResponse.json({ error: "RESET_FAILED", message }, { status: 500 });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "PENDING_PAYMENTS_PREVENT_RESET"
+    )
+      return NextResponse.json(
+        {
+          error: error.message,
+          message: "Resolve pending payments before resetting your workspace.",
+        },
+        { status: 409 },
+      );
+    return accessResponse(error);
   }
 }

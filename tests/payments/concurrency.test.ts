@@ -147,7 +147,7 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
           requiresPayerApproval: false,
         };
       });
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({ id: "PAYPAL-CONCURRENT-CAPTURE", status: "COMPLETED" });
 
     await prisma.mandate.update({
       where: { id: "mandate-school-shopping" },
@@ -187,3 +187,4 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
   });
 
 });
+

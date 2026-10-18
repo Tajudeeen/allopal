@@ -90,6 +90,7 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
   });
 
   it("Failure Mode 3: AI interpretation service failure or garbage output -> fails safely without creating phantom mandate", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "{}" }] } }] }), { status: 200 }));
     // Malicious or nonsensical garbage prompt
     const req = createJsonRequest("http://localhost:3000/api/mandates/propose", {
       prompt: "asdkfjhalkjsdfh 99999999999999999999999999999999999999",
@@ -157,3 +158,4 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     });
   });
 });
+

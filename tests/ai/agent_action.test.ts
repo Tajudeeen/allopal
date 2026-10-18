@@ -17,7 +17,8 @@ function createRequest(body: unknown): NextRequest {
 describe("Allopal guarded AI agent action", () => {
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {
-      const body = String(init?.body ?? "");
+      const payload = JSON.parse(String(init?.body ?? "{}"));
+      const body = payload.contents?.[0]?.parts?.[0]?.text?.split("Server-authoritative catalog:")[0] ?? "";
       const isGaming = body.toLowerCase().includes("gaming headset");
       const selection = {
         cartId: isGaming ? "cart-case-b" : "cart-case-a",
@@ -90,8 +91,8 @@ describe("Allopal guarded AI agent action", () => {
   });
 
   it("executes a permitted agent-selected purchase through PayPal", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({ id: "PAYPAL-CONTRACT-ORDER", status: "CREATED", requiresPayerApproval: false });
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({ id: "PAYPAL-CONTRACT-CAPTURE", status: "COMPLETED" });
 
     const response = await POST(
       createRequest({
@@ -151,3 +152,4 @@ describe("Allopal guarded AI agent action", () => {
     await prisma.decision.deleteMany({ where: { cartId: "cart-case-a" } });
   });
 });
+

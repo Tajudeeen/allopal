@@ -15,11 +15,17 @@ function createExplainRequest(body: unknown): NextRequest {
 
 describe("Step 9: AI Payment Decision Explanations Specification", () => {
   beforeEach(() => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({
-        candidates: [{ content: { parts: [{ text: "The Electronics purchase is blocked. The $25.00 request exceeds the $22.00 budget. The mandate was revoked. The $18.00 payment was approved by the mandate and captured via PayPal. In dry-run mode PayPal was not called. A created PayPal order is waiting for payer approval." }] } }]
-      }), { status: 200 })
-    );
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
+      const prompt = JSON.parse(String(init?.body)).contents[0].parts[0].text as string;
+      const text = prompt.includes("Payment Status: Policy-only") && prompt.includes("Decision: ALLOWED")
+        ? "In dry-run mode policy passed. PayPal was not called."
+        : prompt.includes("Payment Status: CREATED")
+        ? "The order is waiting for payer approval."
+        : prompt.includes("Decision: ALLOWED")
+        ? "The $18.00 payment was approved and captured via PayPal."
+        : "The Electronics purchase is blocked. The $25.00 request exceeds the $22.00 budget. The mandate was revoked.";
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }), { status: 200 });
+    });
   });
 
   afterEach(() => vi.restoreAllMocks());
@@ -161,3 +167,4 @@ describe("Step 9: AI Payment Decision Explanations Specification", () => {
   });
 
 });
+

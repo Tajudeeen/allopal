@@ -120,8 +120,8 @@ describe("Step 6: Dedicated PayPal Authorization Security Boundary Proof", () =>
   });
 
   it("Boundary Proof 5: Valid purchase -> PayPal calls = 1 (Create + Capture)", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder");
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder");
+    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({ id: "PAYPAL-BOUNDARY-ORDER", status: "CREATED", requiresPayerApproval: false });
+    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({ id: "PAYPAL-BOUNDARY-CAPTURE", status: "COMPLETED" });
 
     // Restore valid active mandate window
     await prisma.mandate.update({
@@ -149,3 +149,4 @@ describe("Step 6: Dedicated PayPal Authorization Security Boundary Proof", () =>
     captureSpy.mockRestore();
   });
 });
+

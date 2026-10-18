@@ -1,71 +1,76 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { env } from "@/lib/env";
-
+import { requireWorkspace, accessResponse } from "@/lib/security/access";
 export const dynamic = "force-dynamic";
-
-export async function GET() {
+export async function GET(req?: NextRequest) {
   try {
-    // 1. Fetch current active or latest mandate
+    const workspaceId = await requireWorkspace(req);
     const mandate = await prisma.mandate.findFirst({
+      where: { workspaceId },
       orderBy: { createdAt: "desc" },
     });
-
-    // 2. Fetch carts with items and products
     const carts = await prisma.cart.findMany({
+      include: { items: { include: { product: true } } },
+    });
+    const decisions = await prisma.decision.findMany({
+      where: { mandate: { workspaceId } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
       include: {
-        items: {
-          include: {
-            product: true,
-          },
+        transaction: {
+          select: { status: true, captureId: true, providerCalled: true },
         },
       },
     });
-
-    // 3. Fetch decision ledger (latest 20)
-    const decisions = await prisma.decision.findMany({
+    const transactions = await prisma.payPalTransaction.findMany({
+      where: { mandate: { workspaceId } },
       orderBy: { createdAt: "desc" },
-      take: 20,
-      include: {
-        transaction: true,
+      take: 100,
+      select: {
+        id: true,
+        orderId: true,
+        captureId: true,
+        mandateId: true,
+        decisionId: true,
+        amount: true,
+        currency: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        errorCode: true,
+        approvalUrl: true,
       },
     });
-
-    // 4. Fetch PayPal transactions
-    const transactions = await prisma.payPalTransaction.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    });
-
-    const paypalMode = env.PAYPAL_API_BASE_URL.includes("sandbox")
-      ? "PAYPAL_SANDBOX"
-      : "PAYPAL";
-
-    const paypalConfigured = Boolean(
-      env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET
+    return NextResponse.json(
+      {
+        paypalMode: env.PAYPAL_API_BASE_URL.includes("sandbox")
+          ? "PAYPAL_SANDBOX"
+          : "PAYPAL",
+        aiConfigured: Boolean(env.AI_API_KEY),
+        paypalConfigured: Boolean(
+          env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET,
+        ),
+        mandate: mandate
+          ? {
+              ...mandate,
+              allowedCategories: JSON.parse(mandate.allowedCategories),
+              allowedMerchants: JSON.parse(mandate.allowedMerchants),
+            }
+          : null,
+        carts,
+        decisions: decisions.map((d) => ({
+          ...d,
+          checks: JSON.parse(d.checks),
+          paymentStatus: d.transaction?.status ?? null,
+          paypalCaptureId: d.transaction?.captureId ?? null,
+          paypalCalled: d.transaction?.providerCalled ?? false,
+        })),
+        transactions,
+      },
+      { headers: { "Cache-Control": "private, no-store" } },
     );
-
-    return NextResponse.json({
-      paypalMode,
-      paypalConfigured,
-      mandate: mandate
-        ? {
-            ...mandate,
-            allowedCategories: JSON.parse(mandate.allowedCategories || "[]"),
-            allowedMerchants: JSON.parse(mandate.allowedMerchants || "[]"),
-          }
-        : null,
-      carts,
-      decisions: decisions.map((d) => ({
-        ...d,
-        checks: JSON.parse(d.checks || "{}"),
-        paymentStatus: d.transaction?.status ?? null,
-        paypalCaptureId: d.transaction?.captureId ?? null,
-      })),
-      transactions,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Error";
-    return NextResponse.json({ error: "FAILED_TO_LOAD_STATE", message }, { status: 500 });
+  } catch (error) {
+    return accessResponse(error);
   }
 }

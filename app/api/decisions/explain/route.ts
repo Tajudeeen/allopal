@@ -1,3 +1,9 @@
+import { ProviderConfigurationError } from "@/lib/env";
+import {
+  requireWorkspace,
+  accessResponse,
+  AccessError,
+} from "@/lib/security/access";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
@@ -24,28 +30,29 @@ const explainSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const workspaceId = await requireWorkspace(req);
     const rawBody = await req.json();
     const parsed = explainSchema.safeParse(rawBody);
 
     if (!parsed.success) {
       return NextResponse.json(
         { error: "INVALID_REQUEST", details: parsed.error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     let decisionData;
 
     if (parsed.data.decisionId) {
-      const dbDecision = await prisma.decision.findUnique({
-        where: { id: parsed.data.decisionId },
+      const dbDecision = await prisma.decision.findFirst({
+        where: { id: parsed.data.decisionId, mandate: { workspaceId } },
         include: { mandate: true, transaction: true },
       });
 
       if (!dbDecision) {
         return NextResponse.json(
           { error: "DECISION_NOT_FOUND", message: "Decision ID not found." },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -66,8 +73,11 @@ export async function POST(req: NextRequest) {
       decisionData = parsed.data.decision;
     } else {
       return NextResponse.json(
-        { error: "INVALID_REQUEST", message: "Either decisionId or decision object is required." },
-        { status: 400 }
+        {
+          error: "INVALID_REQUEST",
+          message: "Either decisionId or decision object is required.",
+        },
+        { status: 400 },
       );
     }
 
@@ -81,10 +91,16 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Explanation Error";
+    if (
+      error instanceof AccessError ||
+      error instanceof ProviderConfigurationError
+    )
+      return accessResponse(error);
+    const message =
+      error instanceof Error ? error.message : "Internal Explanation Error";
     return NextResponse.json(
       { error: "EXPLANATION_FAILED", message },
-      { status: 500 }
+      { status: error instanceof SyntaxError ? 400 : 500 },
     );
   }
 }

@@ -1,11 +1,22 @@
 import { z } from "zod";
 
+const optionalSecret = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().min(1).optional(),
+);
+
 const envSchema = z.object({
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required").default("file:./prisma/dev.db"),
-  PAYPAL_CLIENT_ID: z.string().min(1).optional(),
-  PAYPAL_CLIENT_SECRET: z.string().min(1).optional(),
-  PAYPAL_API_BASE_URL: z.string().url().default("https://api-m.sandbox.paypal.com"),
-  AI_API_KEY: z.string().min(1).optional(),
+  DATABASE_URL: z
+    .string()
+    .min(1, "DATABASE_URL is required")
+    .default("file:./prisma/dev.db"),
+  PAYPAL_CLIENT_ID: optionalSecret,
+  PAYPAL_CLIENT_SECRET: optionalSecret,
+  PAYPAL_API_BASE_URL: z
+    .string()
+    .url()
+    .default("https://api-m.sandbox.paypal.com"),
+  AI_API_KEY: optionalSecret,
 });
 
 // Load .env in non-Next.js environments (like Vitest or CLI scripts).
@@ -25,10 +36,12 @@ export const env = envSchema.parse({
   AI_API_KEY: process.env.AI_API_KEY,
 });
 
+export class ProviderConfigurationError extends Error {}
+
 export function requirePayPalConfig() {
   if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_CLIENT_SECRET) {
-    throw new Error(
-      "PAYPAL_NOT_CONFIGURED: set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to real PayPal credentials."
+    throw new ProviderConfigurationError(
+      "PAYPAL_NOT_CONFIGURED: set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to real PayPal credentials.",
     );
   }
 
@@ -41,8 +54,8 @@ export function requirePayPalConfig() {
 
 export function requireAiApiKey() {
   if (!env.AI_API_KEY) {
-    throw new Error(
-      "AI_NOT_CONFIGURED: set AI_API_KEY to a real Gemini API key."
+    throw new ProviderConfigurationError(
+      "AI_NOT_CONFIGURED: set AI_API_KEY to a real Gemini API key.",
     );
   }
 

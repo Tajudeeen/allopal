@@ -4,7 +4,9 @@
  */
 export function centsToPayPalAmount(cents: number): string {
   if (!Number.isInteger(cents) || cents < 0) {
-    throw new Error(`Invalid amount in cents: ${cents}. Must be a positive integer.`);
+    throw new Error(
+      `Invalid amount in cents: ${cents}. Must be a positive integer.`,
+    );
   }
   return (cents / 100).toFixed(2);
 }
@@ -14,9 +16,11 @@ export function centsToPayPalAmount(cents: number): string {
  * Example: "18.00" -> 1800
  */
 export function payPalAmountToCents(amountStr: string): number {
-  const parsed = parseFloat(amountStr);
-  if (isNaN(parsed) || parsed < 0) {
-    throw new Error(`Invalid PayPal amount string: ${amountStr}`);
-  }
-  return Math.round(parsed * 100);
+  if (!/^\d+(?:\.\d{1,2})?$/.test(amountStr))
+    throw new Error("Invalid PayPal amount string");
+  const [whole, fraction = ""] = amountStr.split(".");
+  const cents = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
+  if (!Number.isSafeInteger(cents))
+    throw new Error("PayPal amount exceeds safe integer range");
+  return cents;
 }

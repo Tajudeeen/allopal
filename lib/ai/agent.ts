@@ -39,7 +39,7 @@ Do not invent products, prices, merchants, categories, or cart IDs.
 
 export async function selectCartForAgent(
   task: string,
-  catalog: AgentCatalogItem[]
+  catalog: AgentCatalogItem[],
 ): Promise<AgentSelection> {
   if (!task.trim()) {
     throw new Error("AGENT_TASK_REQUIRED");
@@ -54,13 +54,14 @@ export async function selectCartForAgent(
   const catalogText = catalog
     .map(
       (item) =>
-        `- cartId: ${item.cartId}; product: ${item.productName}; amountCents: ${item.amount}; merchant: ${item.merchant}; category: ${item.category}`
+        `- cartId: ${item.cartId}; product: ${item.productName}; amountCents: ${item.amount}; merchant: ${item.merchant}; category: ${item.category}`,
     )
     .join("\n");
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
+      signal: AbortSignal.timeout(15000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -86,7 +87,7 @@ ${catalogText}`,
           temperature: 0.1,
         },
       }),
-    }
+    },
   );
 
   if (!response.ok) {

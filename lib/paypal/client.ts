@@ -1,5 +1,5 @@
 import { env, requirePayPalConfig } from "@/lib/env";
-import { centsToPayPalAmount } from "./money";
+import { centsToPayPalAmount, payPalAmountToCents } from "./money";
 
 interface CreateOrderOptions {
   amountInCents: number;
@@ -24,6 +24,8 @@ interface PayPalCaptureResponse {
   status: string;
   orderId?: string;
   rawResponse?: Record<string, unknown>;
+  amountInCents?: number;
+  currency?: string;
 }
 
 export class PayPalApiError extends Error {
@@ -48,7 +50,7 @@ export class PayPalClient {
   constructor(
     clientId = env.PAYPAL_CLIENT_ID,
     clientSecret = env.PAYPAL_CLIENT_SECRET,
-    baseUrl = env.PAYPAL_API_BASE_URL
+    baseUrl = env.PAYPAL_API_BASE_URL,
   ) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
@@ -71,10 +73,11 @@ export class PayPalClient {
     }
 
     const auth = Buffer.from(
-      `${config.clientId}:${config.clientSecret}`
+      `${config.clientId}:${config.clientSecret}`,
     ).toString("base64");
 
     const response = await fetch(`${config.baseUrl}/v1/oauth2/token`, {
+      signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
@@ -111,8 +114,7 @@ export class PayPalClient {
         {
           reference_id: options.referenceId || "default",
           description:
-            options.description ||
-            "Allopal Agentic Spending Mandate Order",
+            options.description || "Allopal Agentic Spending Mandate Order",
           amount: {
             currency_code: currency,
             value: amountStr,
@@ -141,6 +143,7 @@ export class PayPalClient {
     }
 
     const response = await fetch(`${this.baseUrl}/v2/checkout/orders`, {
+      signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers,
       body: JSON.stringify(payload),
@@ -150,7 +153,7 @@ export class PayPalClient {
       throw new PayPalApiError(
         "createOrder",
         response.status,
-        await response.text()
+        await response.text(),
       );
     }
 
@@ -163,7 +166,7 @@ export class PayPalClient {
     const approvalUrl = data.links?.find(
       (link: { rel?: string; href?: string }) =>
         (link.rel === "approve" || link.rel === "payer-action") &&
-        typeof link.href === "string"
+        typeof link.href === "string",
     )?.href;
 
     return {
@@ -177,7 +180,7 @@ export class PayPalClient {
 
   async captureOrder(
     orderId: string,
-    requestId?: string
+    requestId?: string,
   ): Promise<PayPalCaptureResponse> {
     const token = await this.getAccessToken();
 
@@ -193,54 +196,75 @@ export class PayPalClient {
     const response = await fetch(
       `${this.baseUrl}/v2/checkout/orders/${orderId}/capture`,
       {
+        signal: AbortSignal.timeout(15_000),
         method: "POST",
         headers,
-      }
+      },
     );
 
     if (!response.ok) {
       throw new PayPalApiError(
         "captureOrder",
         response.status,
-        await response.text()
+        await response.text(),
       );
     }
 
     const data = await response.json();
-    const captureDetails =
-      data.purchase_units?.[0]?.payments?.captures?.[0];
+    const captureDetails = data.purchase_units?.[0]?.payments?.captures?.[0];
 
     if (typeof data.status !== "string") {
       throw new Error("PayPal captureOrder returned an invalid response.");
     }
 
+    if (
+      !captureDetails?.id ||
+      !captureDetails?.status ||
+      !captureDetails?.amount
+    ) {
+      throw new Error(
+        "PayPal capture response has no verifiable capture details.",
+      );
+    }
     return {
-      id: captureDetails?.id || data.id,
-      status: data.status,
+      id: captureDetails.id,
+      status: captureDetails.status,
+      amountInCents: payPalAmountToCents(captureDetails.amount.value),
+      currency: captureDetails.amount.currency_code,
       orderId,
       rawResponse: data,
     };
   }
 
-  async getOrder(orderId: string): Promise<{ id: string; status: string }> {
+  async getOrder(
+    orderId: string,
+  ): Promise<{
+    id: string;
+    status: string;
+    captureId?: string;
+    captureStatus?: string;
+    amountInCents?: number;
+    currency?: string;
+  }> {
     const token = await this.getAccessToken();
 
     const response = await fetch(
       `${this.baseUrl}/v2/checkout/orders/${orderId}`,
       {
+        signal: AbortSignal.timeout(15_000),
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
       throw new PayPalApiError(
         "getOrder",
         response.status,
-        await response.text()
+        await response.text(),
       );
     }
 
@@ -250,7 +274,57 @@ export class PayPalClient {
       throw new Error("PayPal getOrder returned an invalid response.");
     }
 
-    return { id: data.id, status: data.status };
+    const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
+    return {
+      id: data.id,
+      status: data.status,
+      captureId: capture?.id,
+      captureStatus: capture?.status,
+      amountInCents: capture?.amount?.value
+        ? payPalAmountToCents(capture.amount.value)
+        : undefined,
+      currency: capture?.amount?.currency_code,
+    };
+  }
+
+  async verifyWebhook(headers: Headers, event: unknown): Promise<boolean> {
+    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+    if (!webhookId) throw new Error("PAYPAL_WEBHOOK_NOT_CONFIGURED");
+    const fields = [
+      "auth-algo",
+      "cert-url",
+      "transmission-id",
+      "transmission-sig",
+      "transmission-time",
+    ];
+    if (fields.some((field) => !headers.get(`paypal-${field}`))) return false;
+    const response = await fetch(
+      `${this.baseUrl}/v1/notifications/verify-webhook-signature`,
+      {
+        method: "POST",
+        signal: AbortSignal.timeout(15_000),
+        headers: {
+          Authorization: `Bearer ${await this.getAccessToken()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          auth_algo: headers.get("paypal-auth-algo"),
+          cert_url: headers.get("paypal-cert-url"),
+          transmission_id: headers.get("paypal-transmission-id"),
+          transmission_sig: headers.get("paypal-transmission-sig"),
+          transmission_time: headers.get("paypal-transmission-time"),
+          webhook_id: webhookId,
+          webhook_event: event,
+        }),
+      },
+    );
+    if (!response.ok)
+      throw new PayPalApiError(
+        "verifyWebhook",
+        response.status,
+        "Signature verification unavailable",
+      );
+    return (await response.json()).verification_status === "SUCCESS";
   }
 }
 

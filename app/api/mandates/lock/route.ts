@@ -1,3 +1,8 @@
+import {
+  requireWorkspace,
+  accessResponse,
+  AccessError,
+} from "@/lib/security/access";
 import { NextRequest, NextResponse } from "next/server";
 import { MandateProposalSchema } from "@/lib/ai/types";
 import { prisma } from "@/lib/db/prisma";
@@ -6,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    const workspaceId = await requireWorkspace(req);
     const rawBody = await req.json();
 
     // Human confirmation payload must pass the strict schema
@@ -16,7 +22,7 @@ export async function POST(req: NextRequest) {
           error: "INVALID_PROPOSAL_SCHEMA",
           details: parsed.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,10 +30,13 @@ export async function POST(req: NextRequest) {
 
     // Create the authoritative locked Mandate in the database
     const now = new Date();
-    const validUntil = new Date(now.getTime() + proposal.durationDays * 24 * 60 * 60 * 1000);
+    const validUntil = new Date(
+      now.getTime() + proposal.durationDays * 24 * 60 * 60 * 1000,
+    );
 
     const lockedMandate = await prisma.mandate.create({
       data: {
+        workspaceId,
         name: proposal.name,
         weeklyLimit: proposal.weeklyLimit,
         spentAmount: 0,
@@ -55,13 +64,17 @@ export async function POST(req: NextRequest) {
       message: "Mandate explicitly reviewed, approved, and locked by human.",
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    if (error instanceof AccessError) return accessResponse(error);
+    const message =
+      error instanceof SyntaxError
+        ? "Invalid JSON request."
+        : "The service is currently unavailable.";
     return NextResponse.json(
       {
         error: "MANDATE_LOCKING_FAILED",
         message,
       },
-      { status: 500 }
+      { status: error instanceof SyntaxError ? 400 : 500 },
     );
   }
 }

@@ -9,12 +9,15 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "node scripts/test.mjs",
+    "test:watch": "node scripts/test.mjs --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node --loader ts-node/esm prisma/seed.ts || tsx prisma/seed.ts",
-    "demo:reset": "tsx prisma/seed.ts"
+    "prisma:seed": "node --import tsx prisma/seed.ts",
+    "demo:reset": "node --import tsx prisma/seed.ts",
+    "db:deploy": "prisma migrate deploy",
+    "worker": "node --import tsx scripts/reconcile.ts",
+    "worker:once": "node --import tsx scripts/reconcile.ts --once"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

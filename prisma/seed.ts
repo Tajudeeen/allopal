@@ -1,186 +1,123 @@
 import { PrismaClient } from "@prisma/client";
-
-// Ensure .env is loaded if running tsx
-if (!process.env.DATABASE_URL && typeof process.loadEnvFile === "function") {
-  try {
-    process.loadEnvFile();
-  } catch {}
-}
-
 const prisma = new PrismaClient();
 
-export async function seed() {
-  console.log(" Resetting and seeding deterministic Allopal data...");
-
-  // 1. Clean existing records in correct foreign key order atomically
-  await prisma.$transaction([
-    prisma.idempotencyRecord.deleteMany(),
-    prisma.payPalTransaction.deleteMany(),
-    prisma.decision.deleteMany(),
-    prisma.cartItem.deleteMany(),
-    prisma.cart.deleteMany(),
-    prisma.product.deleteMany(),
-    prisma.mandate.deleteMany(),
-    prisma.systemHealth.deleteMany(),
-  ]);
-
-  // 2. Deterministic School Shopping Mandate
-  // Limit: $40.00 (4000 cents), Duration: 7 days, School Supplies, Campus Books & Paper & Pencil
-  const now = new Date();
-  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-  const mandate = await prisma.mandate.create({
-    data: {
-      id: "mandate-school-shopping",
-      name: "School Shopping",
-      weeklyLimit: 4000, // $40.00
-      spentAmount: 0,
-      validFrom: now,
-      validUntil: sevenDaysFromNow,
-      status: "ACTIVE",
-      allowedCategories: JSON.stringify(["School Supplies"]),
-      allowedMerchants: JSON.stringify(["Campus Books", "Paper & Pencil"]),
-    },
-  });
-
-  // 3. Products
-  const notebook = await prisma.product.create({
-    data: {
-      id: "prod-notebook-bundle",
-      name: "Notebook Bundle",
-      price: 1800, // $18.00
-      merchant: "Campus Books",
-      category: "School Supplies",
-    },
-  });
-
-  const headset = await prisma.product.create({
-    data: {
-      id: "prod-gaming-headset",
-      name: "Gaming Headset",
-      price: 9000, // $90.00
-      merchant: "Campus Books",
-      category: "Electronics",
-    },
-  });
-
-  const deluxeNotebook = await prisma.product.create({
-    data: {
-      id: "prod-deluxe-notebook",
-      name: "Deluxe Notebook Pack",
-      price: 2500, // $25.00
-      merchant: "Campus Books",
-      category: "School Supplies",
-    },
-  });
-
-  const pocketNotebook = await prisma.product.create({
-    data: {
-      id: "prod-pocket-notebook",
-      name: "Pocket Notebook",
-      price: 800, // $8.00
-      merchant: "Campus Books",
-      category: "School Supplies",
-    },
-  });
-
-  const sketchpad = await prisma.product.create({
-    data: {
-      id: "prod-sketchpad-pencil",
-      name: "Sketchpad & Pencil Set",
-      price: 1200, // $12.00
-      merchant: "Paper & Pencil",
-      category: "School Supplies",
-    },
-  });
-
-  // 4. Deterministic Carts for Primary Demo Scenarios
-  // Case A Cart: $18 notebook bundle from Campus Books, School Supplies
-  const cartCaseA = await prisma.cart.create({
-    data: {
-      id: "cart-case-a",
-      merchant: "Campus Books",
-      totalAmount: 1800,
-      items: {
-        create: [
-          {
-            productId: notebook.id,
-            quantity: 1,
-            price: 1800,
+// Catalog data is shared and immutable in the demo. Financial data belongs to one workspace.
+export async function seed(workspaceId = "demo", protectPending = false) {
+  await prisma.$transaction(
+    async (db) => {
+      if (
+        protectPending &&
+        (await db.payPalTransaction.count({
+          where: {
+            mandate: { workspaceId },
+            status: {
+              notIn: [
+                "COMPLETED",
+                "FAILED",
+                "CANCELLED",
+                "REFUNDED",
+                "REVERSED",
+              ],
+            },
           },
-        ],
-      },
-    },
-  });
-
-  // Case B Cart: $90 gaming headset from Campus Books, Electronics
-  const cartCaseB = await prisma.cart.create({
-    data: {
-      id: "cart-case-b",
-      merchant: "Campus Books",
-      totalAmount: 9000,
-      items: {
-        create: [
-          {
-            productId: headset.id,
-            quantity: 1,
-            price: 9000,
+        }))
+      ) {
+        throw new Error("PENDING_PAYMENTS_PREVENT_RESET");
+      }
+      await db.idempotencyRecord.deleteMany({ where: { workspaceId } });
+      await db.payPalTransaction.deleteMany({
+        where: { mandate: { workspaceId } },
+      });
+      await db.decision.deleteMany({ where: { mandate: { workspaceId } } });
+      await db.mandate.deleteMany({ where: { workspaceId } });
+      const products = [
+        {
+          id: "prod-notebook-bundle",
+          name: "Notebook Bundle",
+          price: 1800,
+          merchant: "Campus Books",
+          category: "School Supplies",
+        },
+        {
+          id: "prod-gaming-headset",
+          name: "Gaming Headset",
+          price: 9000,
+          merchant: "Campus Books",
+          category: "Electronics",
+        },
+        {
+          id: "prod-deluxe-notebook",
+          name: "Deluxe Notebook Set",
+          price: 2500,
+          merchant: "Campus Books",
+          category: "School Supplies",
+        },
+        {
+          id: "prod-pocket-notebook",
+          name: "Pocket Notebook",
+          price: 800,
+          merchant: "Campus Books",
+          category: "School Supplies",
+        },
+        {
+          id: "prod-sketchpad-pencil",
+          name: "Sketchpad & Pencil Set",
+          price: 1200,
+          merchant: "Paper & Pencil",
+          category: "School Supplies",
+        },
+      ];
+      for (const product of products)
+        await db.product.upsert({
+          where: { id: product.id },
+          create: product,
+          update: {},
+        });
+      for (const [index, letter] of ["a", "b", "c", "d"].entries()) {
+        const product = products[index];
+        const id = `cart-case-${letter}`;
+        await db.cart.upsert({
+          where: { id },
+          update: {},
+          create: {
+            id,
+            merchant: product.merchant,
+            totalAmount: product.price,
+            items: {
+              create: [
+                { productId: product.id, quantity: 1, price: product.price },
+              ],
+            },
           },
-        ],
-      },
+        });
+      }
+      await db.mandate.create({
+        data: {
+          id:
+            workspaceId === "demo"
+              ? "mandate-school-shopping"
+              : `mandate-${workspaceId}`,
+          workspaceId,
+          name: "School Shopping",
+          weeklyLimit: 4000,
+          spentAmount: 0,
+          status: "ACTIVE",
+          validFrom: new Date(),
+          validUntil: new Date(Date.now() + 7 * 24 * 60 * 60_000),
+          allowedCategories: JSON.stringify(["School Supplies"]),
+          allowedMerchants: JSON.stringify(["Campus Books", "Paper & Pencil"]),
+        },
+      });
     },
-  });
-
-  // Case C Cart: $25 deluxe notebook purchase
-  const cartCaseC = await prisma.cart.create({
-    data: {
-      id: "cart-case-c",
-      merchant: "Campus Books",
-      totalAmount: 2500,
-      items: {
-        create: [
-          {
-            productId: deluxeNotebook.id,
-            quantity: 1,
-            price: 2500,
-          },
-        ],
-      },
-    },
-  });
-
-  // Case D Cart: $8 notebook purchase
-  const cartCaseD = await prisma.cart.create({
-    data: {
-      id: "cart-case-d",
-      merchant: "Campus Books",
-      totalAmount: 800,
-      items: {
-        create: [
-          {
-            productId: pocketNotebook.id,
-            quantity: 1,
-            price: 800,
-          },
-        ],
-      },
-    },
-  });
-
-  console.log(" Seeding complete:");
-  console.log(` - Mandate: ${mandate.name} ($${(mandate.weeklyLimit / 100).toFixed(2)})`);
-  console.log(` - Products: 5 items seeded`);
-  console.log(` - Carts: Cases A, B, C, D seeded`);
+    { timeout: 10_000 },
+  );
 }
-
 if (process.argv[1]?.endsWith("seed.ts")) {
   seed()
-    .then(async () => {
+    .then(() => prisma.$disconnect())
+    .catch(async (error) => {
+      console.error(error);
       await prisma.$disconnect();
-    })
-    .catch(async (e) => {
-      console.error(e);
-      await prisma.$disconnect();
-      process.exit(1);
+      process.exitCode = 1;
     });
 }

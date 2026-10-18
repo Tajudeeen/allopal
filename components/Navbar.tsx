@@ -28,7 +28,7 @@ export function Navbar() {
         const data = await res.json().catch(() => null);
         throw new Error(data?.message || "Reset failed");
       }
-      window.location.reload();
+      window.location.assign(window.location.pathname);
     } catch (error) {
       setResetError(error instanceof Error ? error.message : "Reset failed");
       setResetting(false);
@@ -41,10 +41,18 @@ export function Navbar() {
     <header className="fixed top-3 left-3 right-3 sm:top-5 sm:left-4 sm:right-4 max-w-7xl mx-auto z-50">
       <nav className="relative rounded-[18px] border border-black/[0.08] bg-white/82 shadow-[0_18px_48px_rgba(27,28,31,0.10)] backdrop-blur-2xl">
         <div className="min-h-14 sm:min-h-16 px-3 sm:px-5 flex items-center justify-between gap-3">
-          <Link href="/" onClick={closeMenu} className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+          <Link
+            href="/"
+            onClick={closeMenu}
+            className="flex items-center gap-2.5 sm:gap-3 group min-w-0"
+          >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[13px] overflow-hidden shadow-sm border border-black/10 flex items-center justify-center bg-white flex-none transition-transform duration-300 group-hover:scale-[1.04]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Allopal Logo" className="w-full h-full object-contain p-1" />
+              <img
+                src="/logo.png"
+                alt="Allopal Logo"
+                className="w-full h-full object-contain p-1"
+              />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -68,9 +76,11 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-2 rounded-xl transition-all ${active
-                    ? "text-[#18191c] bg-black/[0.055]"
-                    : "hover:text-[#18191c] hover:bg-black/[0.04]"}`}
+                  className={`px-3 py-2 rounded-xl transition-all ${
+                    active
+                      ? "text-[#18191c] bg-black/[0.055]"
+                      : "hover:text-[#18191c] hover:bg-black/[0.04]"
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -93,13 +103,21 @@ export function Navbar() {
               type="button"
               onClick={handleReset}
               disabled={resetting}
-              title={resetError || "Reset database to fresh canonical demo state"}
-              aria-label={resetError || (resetting ? "Resetting demo" : "Reset demo")}
+              title={resetError || "Reset your demo workspace"}
+              aria-label={
+                resetError || (resetting ? "Resetting demo" : "Reset demo")
+              }
               className="selo-button selo-button-secondary !min-h-[38px] !rounded-[12px] !px-2.5 sm:!px-3 disabled:opacity-50"
             >
-              <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#1f4fe0]" : "text-[#51545b]"}`} />
-              <span className="hidden lg:inline">{resetting ? "Resetting..." : "Reset Demo"}</span>
-              <span className="lg:hidden sr-only">{resetting ? "Resetting demo" : "Reset demo"}</span>
+              <RotateCcw
+                className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#1f4fe0]" : "text-[#51545b]"}`}
+              />
+              <span className="hidden lg:inline">
+                {resetting ? "Resetting..." : "Reset Demo"}
+              </span>
+              <span className="lg:hidden sr-only">
+                {resetting ? "Resetting demo" : "Reset demo"}
+              </span>
             </button>
 
             <button
@@ -107,12 +125,17 @@ export function Navbar() {
               onClick={() => setMenuOpen((open) => !open)}
               aria-expanded={menuOpen}
               aria-controls="allopal-mobile-menu"
-              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-label={
+                menuOpen ? "Close navigation menu" : "Open navigation menu"
+              }
               className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-[12px] border border-black/[0.08] bg-black/[0.025] text-[#2b2e33] hover:bg-black/[0.06] transition-colors"
             >
-              {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {menuOpen ? (
+                <X className="w-4 h-4" />
+              ) : (
+                <Menu className="w-4 h-4" />
+              )}
             </button>
-
           </div>
         </div>
 
@@ -129,12 +152,16 @@ export function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={closeMenu}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-[12px] text-sm font-semibold transition-colors ${active
-                      ? "bg-[#1f4fe0]/8 text-[#1736b8]"
-                      : "text-[#4c5057] hover:bg-black/[0.04] hover:text-[#18191c]"}`}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-[12px] text-sm font-semibold transition-colors ${
+                      active
+                        ? "bg-[#1f4fe0]/8 text-[#1736b8]"
+                        : "text-[#4c5057] hover:bg-black/[0.04] hover:text-[#18191c]"
+                    }`}
                   >
                     <span>{link.label}</span>
-                    <span className="text-[10px] uppercase tracking-wider opacity-45">open</span>
+                    <span className="text-[10px] uppercase tracking-wider opacity-45">
+                      open
+                    </span>
                   </Link>
                 );
               })}

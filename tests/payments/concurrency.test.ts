@@ -6,7 +6,10 @@ import { seed } from "@/prisma/seed";
 import { payPalClient } from "@/lib/paypal/client";
 
 function createPayRequest(body: unknown, idempotencyKey?: string): NextRequest {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "Idempotency-Key": crypto.randomUUID(),
+  };
   if (idempotencyKey) {
     headers["Idempotency-Key"] = idempotencyKey;
   }
@@ -29,12 +32,14 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
       links: [],
       requiresPayerApproval: false,
     });
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
-      id: "PAYPAL-CONC-CAPTURE",
-      status: "COMPLETED",
-      orderId: "PAYPAL-CONC-ORDER",
-      rawResponse: { status: "COMPLETED" },
-    });
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONC-CAPTURE",
+        status: "COMPLETED",
+        orderId: "PAYPAL-CONC-ORDER",
+        rawResponse: { status: "COMPLETED" },
+      });
 
     // Mandate is fresh with $40.00 limit and $0.00 spent.
     // Both Request A and Request B fire simultaneously trying to buy $25.00 Cart C.
@@ -82,12 +87,14 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
       links: [],
       requiresPayerApproval: false,
     });
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
-      id: "PAYPAL-IDEMP-CAPTURE",
-      status: "COMPLETED",
-      orderId: "PAYPAL-IDEMP-ORDER",
-      rawResponse: { status: "COMPLETED" },
-    });
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-IDEMP-CAPTURE",
+        status: "COMPLETED",
+        orderId: "PAYPAL-IDEMP-ORDER",
+        rawResponse: { status: "COMPLETED" },
+      });
 
     // Reset mandate to have enough balance
     await prisma.mandate.update({
@@ -147,7 +154,12 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
           requiresPayerApproval: false,
         };
       });
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({ id: "PAYPAL-CONCURRENT-CAPTURE", status: "COMPLETED" });
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONCURRENT-CAPTURE",
+        status: "COMPLETED",
+      });
 
     await prisma.mandate.update({
       where: { id: "mandate-school-shopping" },
@@ -185,6 +197,4 @@ describe("Step 7: Concurrency Safety & Idempotency Invariants", () => {
     createSpy.mockRestore();
     captureSpy.mockRestore();
   });
-
 });
-

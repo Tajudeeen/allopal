@@ -9,7 +9,10 @@ import { centsToPayPalAmount, payPalAmountToCents } from "@/lib/paypal/money";
 function createPayRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost:3000/api/payments/pay", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
     body: JSON.stringify(body),
   });
 }
@@ -32,18 +35,22 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
   });
 
   it("Case A: executes PayPal order creation & capture when mandate policy passes", async () => {
-    const createOrderSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
-      id: "PAYPAL-CONTRACT-ORDER",
-      status: "CREATED",
-      links: [],
-      requiresPayerApproval: false,
-    });
-    const captureOrderSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
-      id: "PAYPAL-CONTRACT-CAPTURE",
-      status: "COMPLETED",
-      orderId: "PAYPAL-CONTRACT-ORDER",
-      rawResponse: { status: "COMPLETED" },
-    });
+    const createOrderSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONTRACT-ORDER",
+        status: "CREATED",
+        links: [],
+        requiresPayerApproval: false,
+      });
+    const captureOrderSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-CONTRACT-CAPTURE",
+        status: "COMPLETED",
+        orderId: "PAYPAL-CONTRACT-ORDER",
+        rawResponse: { status: "COMPLETED" },
+      });
 
     const req = createPayRequest({
       mandateId: "mandate-school-shopping",
@@ -194,7 +201,7 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
     const client = new PayPalClient(
       "real-client-id",
       "real-client-secret",
-      "https://api-m.sandbox.paypal.com"
+      "https://api-m.sandbox.paypal.com",
     );
 
     const fetchSpy = vi
@@ -205,8 +212,8 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
             access_token: "access-token",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       )
       .mockResolvedValueOnce(
         new Response(
@@ -221,8 +228,8 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
               },
             ],
           }),
-          { status: 201 }
-        )
+          { status: 201 },
+        ),
       );
 
     const order = await client.createOrder({
@@ -237,17 +244,18 @@ describe("Step 5 & 6: PayPal Sandbox Integration & Authorization Boundary", () =
     expect(order.requiresPayerApproval).toBe(true);
     expect(order.approvalUrl).toContain("ORDER-REAL-1");
 
-    const createHeaders = new Headers(fetchSpy.mock.calls[1][1]?.headers as HeadersInit);
+    const createHeaders = new Headers(
+      fetchSpy.mock.calls[1][1]?.headers as HeadersInit,
+    );
     expect(createHeaders.get("Authorization")).toBe("Bearer access-token");
     expect(createHeaders.get("PayPal-Request-Id")).toBe("allopal-create-123");
 
     const createBody = JSON.parse(String(fetchSpy.mock.calls[1][1]?.body));
     expect(createBody.purchase_units[0].amount.value).toBe("18.00");
     expect(
-      createBody.payment_source.paypal.experience_context.return_url
+      createBody.payment_source.paypal.experience_context.return_url,
     ).toContain("/api/payments/paypal/return");
 
     fetchSpy.mockRestore();
   });
-
 });

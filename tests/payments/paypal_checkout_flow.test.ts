@@ -10,7 +10,10 @@ import { PayPalApiError, payPalClient } from "@/lib/paypal/client";
 function request(url: string, method = "POST", body?: unknown): NextRequest {
   return new NextRequest(url, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
 }
@@ -21,26 +24,31 @@ describe("PayPal approval lifecycle", () => {
   });
 
   it("creates a pending PayPal order, then captures it after payer approval", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
-      id: "PAYPAL-APPROVAL-ORDER",
-      status: "CREATED",
-      links: [],
-      approvalUrl: "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-APPROVAL-ORDER",
-      requiresPayerApproval: true,
-    });
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValueOnce({
+        id: "PAYPAL-APPROVAL-ORDER",
+        status: "CREATED",
+        links: [],
+        approvalUrl:
+          "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-APPROVAL-ORDER",
+        requiresPayerApproval: true,
+      });
 
-    const captureSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValueOnce({
-      id: "PAYPAL-CAPTURE-1",
-      status: "COMPLETED",
-      orderId: "PAYPAL-APPROVAL-ORDER",
-      rawResponse: { status: "COMPLETED", simulated: true },
-    });
+    const captureSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValueOnce({
+        id: "PAYPAL-CAPTURE-1",
+        status: "COMPLETED",
+        orderId: "PAYPAL-APPROVAL-ORDER",
+        rawResponse: { status: "COMPLETED", simulated: true },
+      });
 
     const paymentRes = await payPOST(
       request("http://localhost:3000/api/payments/pay", "POST", {
         mandateId: "mandate-school-shopping",
         cartId: "cart-case-a",
-      })
+      }),
     );
     const paymentData = await paymentRes.json();
 
@@ -62,14 +70,14 @@ describe("PayPal approval lifecycle", () => {
 
     const returnRes = await returnGET(
       request(
-        "http://localhost:3000/api/payments/paypal/return?token=PAYPAL-APPROVAL-ORDER",
-        "GET"
-      )
+        `http://localhost:3000/api/payments/paypal/return?token=PAYPAL-APPROVAL-ORDER&state=${(await prisma.payPalTransaction.findUniqueOrThrow({ where: { orderId: "PAYPAL-APPROVAL-ORDER" } })).returnToken}`,
+        "GET",
+      ),
     );
 
     expect(returnRes.status).toBe(307);
     const location = returnRes.headers.get("location");
-    expect(location).toContain("payment=completed");
+    expect(location).not.toContain("payment=");
     expect(location).toContain("order=PAYPAL-APPROVAL-ORDER");
     expect(captureSpy).toHaveBeenCalledTimes(1);
 
@@ -89,37 +97,44 @@ describe("PayPal approval lifecycle", () => {
   });
 
   it("releases a reserved budget when the payer cancels", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
+    vi.spyOn(payPalClient, "getOrder").mockResolvedValue({
       id: "PAYPAL-CANCEL-ORDER",
       status: "CREATED",
-      links: [],
-      approvalUrl: "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-CANCEL-ORDER",
-      requiresPayerApproval: true,
     });
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValueOnce({
+        id: "PAYPAL-CANCEL-ORDER",
+        status: "CREATED",
+        links: [],
+        approvalUrl:
+          "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-CANCEL-ORDER",
+        requiresPayerApproval: true,
+      });
 
     const paymentRes = await payPOST(
       request("http://localhost:3000/api/payments/pay", "POST", {
         mandateId: "mandate-school-shopping",
         cartId: "cart-case-a",
-      })
+      }),
     );
 
     expect(paymentRes.status).toBe(200);
 
     const cancelRes = await cancelGET(
       request(
-        "http://localhost:3000/api/payments/paypal/cancel?token=PAYPAL-CANCEL-ORDER",
-        "GET"
-      )
+        `http://localhost:3000/api/payments/paypal/cancel?token=PAYPAL-CANCEL-ORDER&state=${(await prisma.payPalTransaction.findUniqueOrThrow({ where: { orderId: "PAYPAL-CANCEL-ORDER" } })).returnToken}`,
+        "GET",
+      ),
     );
 
     expect(cancelRes.status).toBe(307);
-    expect(cancelRes.headers.get("location")).toContain("payment=cancelled");
+    expect(cancelRes.headers.get("location")).not.toContain("payment=");
 
     const cancelledTx = await prisma.payPalTransaction.findUnique({
       where: { orderId: "PAYPAL-CANCEL-ORDER" },
     });
-    expect(cancelledTx?.status).toBe("FAILED");
+    expect(cancelledTx?.status).toBe("CANCELLED");
 
     const restoredMandate = await prisma.mandate.findUnique({
       where: { id: "mandate-school-shopping" },
@@ -129,13 +144,16 @@ describe("PayPal approval lifecycle", () => {
     createSpy.mockRestore();
   });
   it("does not capture a pending order after the mandate is revoked", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
-      id: "PAYPAL-REVOKED-ORDER",
-      status: "CREATED",
-      links: [],
-      approvalUrl: "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-REVOKED-ORDER",
-      requiresPayerApproval: true,
-    });
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValueOnce({
+        id: "PAYPAL-REVOKED-ORDER",
+        status: "CREATED",
+        links: [],
+        approvalUrl:
+          "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-REVOKED-ORDER",
+        requiresPayerApproval: true,
+      });
 
     const captureSpy = vi.spyOn(payPalClient, "captureOrder");
 
@@ -143,7 +161,7 @@ describe("PayPal approval lifecycle", () => {
       request("http://localhost:3000/api/payments/pay", "POST", {
         mandateId: "mandate-school-shopping",
         cartId: "cart-case-a",
-      })
+      }),
     );
     expect(paymentRes.status).toBe(200);
 
@@ -154,19 +172,19 @@ describe("PayPal approval lifecycle", () => {
 
     const returnRes = await returnGET(
       request(
-        "http://localhost:3000/api/payments/paypal/return?token=PAYPAL-REVOKED-ORDER",
-        "GET"
-      )
+        `http://localhost:3000/api/payments/paypal/return?token=PAYPAL-REVOKED-ORDER&state=${(await prisma.payPalTransaction.findUniqueOrThrow({ where: { orderId: "PAYPAL-REVOKED-ORDER" } })).returnToken}`,
+        "GET",
+      ),
     );
 
     expect(returnRes.status).toBe(307);
-    expect(returnRes.headers.get("location")).toContain("payment=cancelled");
+    expect(returnRes.headers.get("location")).not.toContain("payment=");
     expect(captureSpy).toHaveBeenCalledTimes(0);
 
     const tx = await prisma.payPalTransaction.findUnique({
       where: { orderId: "PAYPAL-REVOKED-ORDER" },
     });
-    expect(tx?.status).toBe("FAILED");
+    expect(tx?.status).toBe("CANCELLED");
 
     const mandate = await prisma.mandate.findUnique({
       where: { id: "mandate-school-shopping" },
@@ -178,35 +196,45 @@ describe("PayPal approval lifecycle", () => {
   });
 
   it("releases the reservation on a terminal PayPal capture rejection", async () => {
-    const createSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValueOnce({
+    vi.spyOn(payPalClient, "getOrder").mockResolvedValue({
       id: "PAYPAL-DECLINED-ORDER",
-      status: "CREATED",
-      links: [],
-      approvalUrl: "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-DECLINED-ORDER",
-      requiresPayerApproval: true,
+      status: "COMPLETED",
+      captureStatus: "DENIED",
     });
+    const createSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValueOnce({
+        id: "PAYPAL-DECLINED-ORDER",
+        status: "CREATED",
+        links: [],
+        approvalUrl:
+          "https://www.sandbox.paypal.com/checkoutnow?token=PAYPAL-DECLINED-ORDER",
+        requiresPayerApproval: true,
+      });
 
     const captureSpy = vi
       .spyOn(payPalClient, "captureOrder")
-      .mockRejectedValueOnce(new PayPalApiError("captureOrder", 422, "ORDER_NOT_APPROVED"));
+      .mockRejectedValueOnce(
+        new PayPalApiError("captureOrder", 422, "ORDER_NOT_APPROVED"),
+      );
 
     const paymentRes = await payPOST(
       request("http://localhost:3000/api/payments/pay", "POST", {
         mandateId: "mandate-school-shopping",
         cartId: "cart-case-a",
-      })
+      }),
     );
     expect(paymentRes.status).toBe(200);
 
     const returnRes = await returnGET(
       request(
-        "http://localhost:3000/api/payments/paypal/return?token=PAYPAL-DECLINED-ORDER",
-        "GET"
-      )
+        `http://localhost:3000/api/payments/paypal/return?token=PAYPAL-DECLINED-ORDER&state=${(await prisma.payPalTransaction.findUniqueOrThrow({ where: { orderId: "PAYPAL-DECLINED-ORDER" } })).returnToken}`,
+        "GET",
+      ),
     );
 
     expect(returnRes.status).toBe(307);
-    expect(returnRes.headers.get("location")).toContain("payment=failed");
+    expect(returnRes.headers.get("location")).not.toContain("payment=");
     expect(captureSpy).toHaveBeenCalledTimes(1);
 
     const tx = await prisma.payPalTransaction.findUnique({
@@ -222,5 +250,4 @@ describe("PayPal approval lifecycle", () => {
     createSpy.mockRestore();
     captureSpy.mockRestore();
   });
-
 });

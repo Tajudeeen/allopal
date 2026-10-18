@@ -12,7 +12,10 @@ import { payPalClient } from "@/lib/paypal/client";
 function createJsonRequest(url: string, body: unknown): NextRequest {
   return new NextRequest(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+    },
     body: JSON.stringify(body),
   });
 }
@@ -20,15 +23,28 @@ function createJsonRequest(url: string, body: unknown): NextRequest {
 describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () => {
   beforeAll(() => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({
-        candidates: [{ content: { parts: [{ text: JSON.stringify({
-          name: "School Shopping",
-          weeklyLimit: 4000,
-          durationDays: 7,
-          allowedCategories: ["School Supplies"],
-          allowedMerchants: ["Campus Books"]
-        }) }] } }]
-      }), { status: 200 })
+      new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      name: "School Shopping",
+                      weeklyLimit: 4000,
+                      durationDays: 7,
+                      allowedCategories: ["School Supplies"],
+                      allowedMerchants: ["Campus Books"],
+                    }),
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
     );
   });
   beforeAll(async () => {
@@ -37,23 +53,31 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
   });
 
   it("Executes the complete canonical Allopal 90-second primary demo flow", async () => {
-    const createOrderSpy = vi.spyOn(payPalClient, "createOrder").mockResolvedValue({
-      id: "PAYPAL-E2E-ORDER",
-      status: "CREATED",
-      links: [],
-      requiresPayerApproval: false,
-    });
-    const captureOrderSpy = vi.spyOn(payPalClient, "captureOrder").mockResolvedValue({
-      id: "PAYPAL-E2E-CAPTURE",
-      status: "COMPLETED",
-      orderId: "PAYPAL-E2E-ORDER",
-      rawResponse: { status: "COMPLETED" },
-    });
+    const createOrderSpy = vi
+      .spyOn(payPalClient, "createOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-E2E-ORDER",
+        status: "CREATED",
+        links: [],
+        requiresPayerApproval: false,
+      });
+    const captureOrderSpy = vi
+      .spyOn(payPalClient, "captureOrder")
+      .mockResolvedValue({
+        id: "PAYPAL-E2E-CAPTURE",
+        status: "COMPLETED",
+        orderId: "PAYPAL-E2E-ORDER",
+        rawResponse: { status: "COMPLETED" },
+      });
 
     // 1. Natural Language Mandate Interpretation (Case E)
-    const proposeReq = createJsonRequest("http://localhost:3000/api/mandates/propose", {
-      prompt: "Give my shopping agent $40 for school supplies from Campus Books for the next 7 days.",
-    });
+    const proposeReq = createJsonRequest(
+      "http://localhost:3000/api/mandates/propose",
+      {
+        prompt:
+          "Give my shopping agent $40 for school supplies from Campus Books for the next 7 days.",
+      },
+    );
     const proposeRes = await proposePOST(proposeReq);
     const proposeData = await proposeRes.json();
 
@@ -67,7 +91,7 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     // 2. Human Review & Explicit Lock
     const lockReq = createJsonRequest(
       "http://localhost:3000/api/mandates/lock",
-      proposeData.proposal
+      proposeData.proposal,
     );
     const lockRes = await lockPOST(lockReq);
     const lockData = await lockRes.json();
@@ -78,10 +102,13 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     expect(activeMandateId).toBeDefined();
 
     // 3. Purchase Attempt Case A: $18.00 notebook bundle from Campus Books, School Supplies
-    const payAReq = createJsonRequest("http://localhost:3000/api/payments/pay", {
-      mandateId: activeMandateId,
-      cartId: "cart-case-a",
-    });
+    const payAReq = createJsonRequest(
+      "http://localhost:3000/api/payments/pay",
+      {
+        mandateId: activeMandateId,
+        cartId: "cart-case-a",
+      },
+    );
     const payARes = await payPOST(payAReq);
     const payAData = await payARes.json();
 
@@ -98,10 +125,13 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     expect(captureOrderSpy).toHaveBeenCalledTimes(1);
 
     // 4. Purchase Attempt Case B: $90.00 gaming headset from Campus Books, Electronics
-    const payBReq = createJsonRequest("http://localhost:3000/api/payments/pay", {
-      mandateId: activeMandateId,
-      cartId: "cart-case-b",
-    });
+    const payBReq = createJsonRequest(
+      "http://localhost:3000/api/payments/pay",
+      {
+        mandateId: activeMandateId,
+        cartId: "cart-case-b",
+      },
+    );
     const payBRes = await payPOST(payBReq);
     const payBData = await payBRes.json();
 
@@ -116,10 +146,13 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     expect(captureOrderSpy).toHaveBeenCalledTimes(1);
 
     // 5. Purchase Attempt Case C: $25.00 notebook when only $22.00 remaining
-    const payCReq = createJsonRequest("http://localhost:3000/api/payments/pay", {
-      mandateId: activeMandateId,
-      cartId: "cart-case-c",
-    });
+    const payCReq = createJsonRequest(
+      "http://localhost:3000/api/payments/pay",
+      {
+        mandateId: activeMandateId,
+        cartId: "cart-case-c",
+      },
+    );
     const payCRes = await payPOST(payCReq);
     const payCData = await payCRes.json();
 
@@ -134,9 +167,12 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     expect(captureOrderSpy).toHaveBeenCalledTimes(1);
 
     // 6. Explicit Mandate Revocation by Account Holder
-    const revokeReq = createJsonRequest("http://localhost:3000/api/mandates/revoke", {
-      mandateId: activeMandateId,
-    });
+    const revokeReq = createJsonRequest(
+      "http://localhost:3000/api/mandates/revoke",
+      {
+        mandateId: activeMandateId,
+      },
+    );
     const revokeRes = await revokePOST(revokeReq);
     const revokeData = await revokeRes.json();
 
@@ -144,10 +180,13 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     expect(revokeData.status).toBe("REVOKED");
 
     // 7. Purchase Attempt Case D: $8.00 notebook after mandate revoked
-    const payDReq = createJsonRequest("http://localhost:3000/api/payments/pay", {
-      mandateId: activeMandateId,
-      cartId: "cart-case-d",
-    });
+    const payDReq = createJsonRequest(
+      "http://localhost:3000/api/payments/pay",
+      {
+        mandateId: activeMandateId,
+        cartId: "cart-case-d",
+      },
+    );
     const payDRes = await payPOST(payDReq);
     const payDData = await payDRes.json();
 
@@ -171,13 +210,17 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     expect(stateData.decisions.length).toBeGreaterThanOrEqual(4);
 
     // Verify denied decisions in ledger have null PayPal Order IDs
-    const deniedDecisions = stateData.decisions.filter((d: any) => d.status === "DENIED");
+    const deniedDecisions = stateData.decisions.filter(
+      (d: any) => d.status === "DENIED",
+    );
     for (const d of deniedDecisions) {
       expect(d.paypalOrderId).toBeNull();
     }
 
     // Verify allowed decision in ledger has a real PayPal Order ID
-    const allowedDecisions = stateData.decisions.filter((d: any) => d.status === "ALLOWED");
+    const allowedDecisions = stateData.decisions.filter(
+      (d: any) => d.status === "ALLOWED",
+    );
     expect(allowedDecisions.length).toBeGreaterThanOrEqual(1);
     expect(allowedDecisions[0].paypalOrderId).not.toBeNull();
     expect(allowedDecisions[0].paypalOrderId).toBe("PAYPAL-E2E-ORDER");
@@ -186,7 +229,9 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     captureOrderSpy.mockRestore();
 
     // Clean up created test mandate
-    await prisma.payPalTransaction.deleteMany({ where: { mandateId: activeMandateId } });
+    await prisma.payPalTransaction.deleteMany({
+      where: { mandateId: activeMandateId },
+    });
     await prisma.decision.deleteMany({ where: { mandateId: activeMandateId } });
     await prisma.mandate.delete({ where: { id: activeMandateId } });
   });

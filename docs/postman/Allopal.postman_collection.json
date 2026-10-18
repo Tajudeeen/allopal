@@ -2,7 +2,7 @@
   "info": {
     "name": "Allopal API",
     "_postman_id": "allopal-paypal-ai-hackathon",
-    "description": "Real Allopal API flow for PayPal Sandbox + Gemini. Import into Postman, set baseUrl, and use the seeded mandate/cart IDs.",
+    "description": "Protected Allopal demo API. Start a session, use its cookie jar, and fetch State to set the workspace mandate ID. Set accessKey locally and never export secrets with the collection.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -33,24 +33,60 @@
     {
       "key": "idempotencyKey",
       "value": "allopal-postman-demo-001"
+    },
+    {
+      "key": "accessKey",
+      "value": ""
     }
   ],
   "item": [
+    {
+      "name": "Open isolated demo session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Origin",
+            "value": "{{baseUrl}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/demo/session",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"accessKey\": \"{{accessKey}}\"}"
+        }
+      }
+    },
     {
       "name": "State",
       "request": {
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/api/state",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "state"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "state"]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const state = pm.response.json();",
+              "if (state.mandate) pm.collectionVariables.set(\"mandateId\", state.mandate.id);"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "AI Mandate Proposal",
@@ -60,6 +96,14 @@
           {
             "key": "Content-Type",
             "value": "application/json"
+          },
+          {
+            "key": "Origin",
+            "value": "{{baseUrl}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
           }
         ],
         "body": {
@@ -68,14 +112,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/mandates/propose",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "mandates",
-            "propose"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "mandates", "propose"]
         }
       }
     },
@@ -87,6 +125,14 @@
           {
             "key": "Content-Type",
             "value": "application/json"
+          },
+          {
+            "key": "Origin",
+            "value": "{{baseUrl}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
           }
         ],
         "body": {
@@ -95,14 +141,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/agent/act",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "agent",
-            "act"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "agent", "act"]
         }
       }
     },
@@ -118,6 +158,10 @@
           {
             "key": "Idempotency-Key",
             "value": "{{idempotencyKey}}"
+          },
+          {
+            "key": "Origin",
+            "value": "{{baseUrl}}"
           }
         ],
         "body": {
@@ -126,14 +170,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/agent/act",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "agent",
-            "act"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "agent", "act"]
         }
       }
     },
@@ -145,6 +183,14 @@
           {
             "key": "Content-Type",
             "value": "application/json"
+          },
+          {
+            "key": "Origin",
+            "value": "{{baseUrl}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
           }
         ],
         "body": {
@@ -153,13 +199,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/authorize",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "authorize"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "authorize"]
         }
       }
     },
@@ -171,6 +212,14 @@
           {
             "key": "Content-Type",
             "value": "application/json"
+          },
+          {
+            "key": "Origin",
+            "value": "{{baseUrl}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{idempotencyKey}}"
           }
         ],
         "body": {
@@ -179,13 +228,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/authorize",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "authorize"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "authorize"]
         }
       }
     },
@@ -195,15 +239,16 @@
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/api/paypal/config",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "paypal",
-            "config"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "paypal", "config"]
         }
+      }
+    },
+    {
+      "name": "Export sanitized session evidence",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/evidence"
       }
     }
   ]

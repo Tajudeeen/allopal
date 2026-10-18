@@ -6,6 +6,7 @@ import { LoaderCircle, ShieldCheck } from "lucide-react";
 interface PayPalCheckoutButtonProps {
   orderId: string;
   amount: number;
+  approvalToken?: string | null;
 }
 
 interface PayPalSdkInstance {
@@ -22,7 +23,7 @@ interface PayPalSdkInstance {
   }): {
     start(
       options: { presentationMode: "auto" | "popup" | "redirect" },
-      order: Promise<{ orderId: string }>
+      order: Promise<{ orderId: string }>,
     ): Promise<void>;
   };
 }
@@ -51,7 +52,7 @@ function loadPayPalSdk(sdkUrl: string): Promise<PayPalSdkNamespace> {
 
   sdkLoadPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-allopal-paypal-v6="true"]'
+      'script[data-allopal-paypal-v6="true"]',
     );
 
     if (existing) {
@@ -60,7 +61,7 @@ function loadPayPalSdk(sdkUrl: string): Promise<PayPalSdkNamespace> {
         else reject(new Error("PayPal SDK loaded without a browser API."));
       });
       existing.addEventListener("error", () =>
-        reject(new Error("PayPal SDK failed to load."))
+        reject(new Error("PayPal SDK failed to load.")),
       );
       return;
     }
@@ -77,12 +78,17 @@ function loadPayPalSdk(sdkUrl: string): Promise<PayPalSdkNamespace> {
     document.head.appendChild(script);
   });
 
-  return sdkLoadPromise;
+  return sdkLoadPromise.catch((error) => {
+    sdkLoadPromise = null;
+    document.querySelector('script[data-allopal-paypal-v6="true"]')?.remove();
+    throw error;
+  });
 }
 
 export function PayPalCheckoutButton({
   orderId,
   amount,
+  approvalToken,
 }: PayPalCheckoutButtonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<
@@ -132,19 +138,21 @@ export function PayPalCheckoutButton({
           onApprove: async (data) => {
             window.location.assign(
               `/api/payments/paypal/return?token=${encodeURIComponent(
-                data.orderId
-              )}`
+                data.orderId,
+              )}&state=${encodeURIComponent(approvalToken || "")}`,
             );
           },
           onCancel: () => {
             window.location.assign(
-              `/api/payments/paypal/cancel?token=${encodeURIComponent(orderId)}`
+              `/api/payments/paypal/cancel?token=${encodeURIComponent(orderId)}&state=${encodeURIComponent(approvalToken || "")}`,
             );
           },
           onError: (error) => {
             setStatus("error");
             setMessage(
-              error.message || error.code || "PayPal checkout encountered an error."
+              error.message ||
+                error.code ||
+                "PayPal checkout encountered an error.",
             );
           },
         });
@@ -166,7 +174,7 @@ export function PayPalCheckoutButton({
             setStatus("loading");
             await session.start(
               { presentationMode: "auto" },
-              Promise.resolve({ orderId })
+              Promise.resolve({ orderId }),
             );
             if (!cancelled) setStatus("ready");
           } catch (error) {
@@ -174,7 +182,7 @@ export function PayPalCheckoutButton({
             setMessage(
               error instanceof Error
                 ? error.message
-                : "Unable to start PayPal checkout."
+                : "Unable to start PayPal checkout.",
             );
           }
         });
@@ -186,7 +194,7 @@ export function PayPalCheckoutButton({
         setMessage(
           error instanceof Error
             ? error.message
-            : "Unable to initialize PayPal checkout."
+            : "Unable to initialize PayPal checkout.",
         );
       }
     }
@@ -197,7 +205,7 @@ export function PayPalCheckoutButton({
       cancelled = true;
       paypalElement?.remove();
     };
-  }, [amount, orderId]);
+  }, [amount, orderId, approvalToken]);
 
   return (
     <div className="rounded-2xl border border-blue-400/15 bg-blue-400/[0.045] p-4">
@@ -207,7 +215,8 @@ export function PayPalCheckoutButton({
             payer approval
           </p>
           <p className="mt-1 text-sm font-bold text-white">
-            approve {"$"}{(amount / 100).toFixed(2)} with PayPal
+            approve {"$"}
+            {(amount / 100).toFixed(2)} with PayPal
           </p>
         </div>
         <ShieldCheck className="h-4 w-4 text-blue-300" />
@@ -232,7 +241,8 @@ export function PayPalCheckoutButton({
 
       {status === "ready" && (
         <p className="mt-2 text-[10px] leading-4 text-slate-400">
-          Allopal already authorized this order. PayPal handles the buyer approval.
+          Allopal already authorized this order. PayPal handles the buyer
+          approval.
         </p>
       )}
     </div>

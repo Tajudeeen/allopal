@@ -3,8 +3,40 @@ import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PrismaClient } from "@prisma/client";
+import { spawnSync } from "node:child_process";
 
 describe("Existing database migration", () => {
+  it("creates a missing SQLite file and preserves data when the deployment command is repeated", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "allopal-fresh-"));
+    const database = join(directory, "nested", "fresh.db");
+    const run = () =>
+      spawnSync(process.execPath, ["scripts/db-deploy.mjs"], {
+        env: { ...process.env, DATABASE_URL: `file:${database}` },
+        encoding: "utf8",
+      });
+    let db: PrismaClient | undefined;
+    try {
+      const first = run();
+      expect(first.status, first.stdout + first.stderr).toBe(0);
+      db = new PrismaClient({ datasourceUrl: `file:${database}` });
+      await db.systemHealth.create({
+        data: { id: "preserve-on-redeploy", status: "HEALTHY" },
+      });
+      await db.$disconnect();
+      const second = run();
+      expect(second.status, second.stdout + second.stderr).toBe(0);
+      expect(
+        (
+          await db.systemHealth.findUniqueOrThrow({
+            where: { id: "preserve-on-redeploy" },
+          })
+        ).status,
+      ).toBe("HEALTHY");
+    } finally {
+      await db?.$disconnect();
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
   it("preserves legacy financial rows and quarantines unbound pending approvals", async () => {
     const directory = mkdtempSync(join(tmpdir(), "allopal-migration-"));
     const database = join(directory, "legacy.db");

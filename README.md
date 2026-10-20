@@ -20,6 +20,9 @@ This is a protected, session-isolated hackathon demo. It is not a production acc
 - Signature-verified webhooks and a background recovery worker.
 - Isolated demo workspaces, server-side ownership checks, protected reset, and same-origin mutation checks.
 - Ledger, verified payment notices, and sanitized evidence export.
+- Session-owned spending insights powered by AG Studio, including a custom mandate widget, policy chart, interactive grids, and editable dashboard layout.
+- Read-only Gemini analysis with validated evidence IDs and no spending tools, available through both the accessible question form and Studio Agent Framework.
+- In-app reviewer guide at `/judge` and a configuration preflight with `npm run release:check`.
 
 Implementation is not the same as a live verification result. See [the evidence index](docs/evidence/README.md) and [claims ledger](docs/CLAIMS.md).
 
@@ -49,10 +52,13 @@ Configure these server variables for the external flows:
 | `PAYPAL_WEBHOOK_ID`                         | Registered webhook ID from the same PayPal app and environment      |
 | `AI_API_KEY`                                | Gemini key for drafting, cart selection, and explanations           |
 | `RECONCILE_TOKEN`                           | Optional bearer secret for the HTTP scheduler endpoint              |
+| `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY`         | Browser-visible sponsor trial/commercial AG Studio license, set before building |
 
 Generate access and scheduler keys locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Never commit `.env` or provider credentials.
 
 Manual catalog authorization works without AI credentials. External features return configuration errors when their provider is missing. Do not use real-money credentials for a shared hackathon demo.
+
+AG Studio 3.0.0 is a commercial dependency. Obtain a valid sponsor trial or commercial license via the [official sponsor page](https://paypalaihackathon.devpost.com/details/aggrid), configure the browser-visible license key before building, and ensure it covers judging. Without a key, the evaluation watermark remains visible. Our application source is MIT, while dependencies retain their own licenses.
 
 ## Verification
 
@@ -149,12 +155,16 @@ Browser-facing APIs require the HttpOnly demo-session cookie. Mutating browser r
 | `/api/internal/reconcile`        | POST       | Bearer-protected scheduler entry point                            |
 | `/api/decisions/explain`         | POST       | Read-only AI explanation                                          |
 | `/api/evidence`                  | GET        | Download sanitized session evidence                               |
+| `/api/analytics`                 | GET        | Session-owned analytics, totals, capped detail tables, and provider availability |
+| `/api/analytics/ask`             | POST       | Read-only Gemini answer grounded in server-selected records         |
 | `/api/demo/reset`                | POST       | Reset only the caller's workspace, blocked by unresolved payments |
 | `/api/health`                    | GET        | Database availability without internal error details              |
 
 The Postman collection in `docs/postman` includes session setup. Use the returned state to set your current mandate ID rather than assuming the old shared seed ID.
 
 ## Judge walkthrough
+
+Open `/judge` for the in-app steps and configuration status. See [submission and sponsor evidence](docs/SUBMISSION.md) for the official requirements, tools statement draft, and recording outline. Provider configuration is not proof of a successful external run.
 
 1. Open a demo session and review its $40 school-supplies mandate.
 2. Ask the agent for the $90 gaming headset. Show the category denial and zero PayPal execution.
@@ -163,6 +173,7 @@ The Postman collection in `docs/postman` includes session setup. Use the returne
 5. Attempt the $25 cart and show the budget denial.
 6. Revoke the mandate and attempt the $8 cart.
 7. Open the ledger and export sanitized evidence.
+8. Open Insights, customize its dashboard, and inspect a read-only AI answer with its cited records.
 
 See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining external checks. The repository is currently private. Public repository access, a public demo video, and the final submission remain release tasks.
 
@@ -171,5 +182,7 @@ See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining exter
 Sessions last 24 hours and use a shared builder-issued access key. This isolates demonstrations but does not establish real customer identity or production account recovery. The catalog is fixed. There is no fulfillment, tax/shipping calculation, refund initiation, subscription management, or automatic operator resolution of `REVIEW_REQUIRED` payments.
 
 Gemini structures intent and explains recorded outcomes. It never receives PayPal credentials or an authorization tool. Production payment operations need a separate identity, compliance, operational, and fulfillment design.
+
+Insights totals cover all records in the current workspace, with separate totals per currency. Detail tables contain the latest 500 records of each type. The analyst receives summary totals and the latest 50 individual records of each type, independent of dashboard filters. Repeated denials are counts, never represented as money saved. The latest mandate card does not include historical mandates' authority. AI answers are advisory text whose evidence IDs are checked, not an independent audit of every generated claim.
 
 MIT licensed. Reporting details are in [SECURITY.md](SECURITY.md).

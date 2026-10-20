@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Analytics has explicit light surfaces so global legacy heading styles cannot reduce contrast. */
+.selo-page.analytics-shell {
+  background: radial-gradient(ellipse at top left, #e6edff, transparent 50%), #f2f4f8;
+  text-shadow: none;
+}
+.selo-page.analytics-shell h1,
+.selo-page.analytics-shell h2 {
+  color: #0f172a !important;
+}
+.analytics-shell > header nav {
+  background: rgba(255, 255, 255, 0.96);
+}
+.selo-page.analytics-shell footer a {
+  color: #b9c3d3 !important;
+}
+
 :root {
   --color-canvas: #f2f1ed;
   --color-ink: #17181b;

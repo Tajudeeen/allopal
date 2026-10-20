@@ -9,7 +9,7 @@ const envSchema = z.object({
   DATABASE_URL: z
     .string()
     .min(1, "DATABASE_URL is required")
-    .default("file:./prisma/dev.db"),
+    .default("file:./dev.db"),
   PAYPAL_CLIENT_ID: optionalSecret,
   PAYPAL_CLIENT_SECRET: optionalSecret,
   PAYPAL_API_BASE_URL: z

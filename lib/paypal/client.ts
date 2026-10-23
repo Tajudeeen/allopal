@@ -1,4 +1,4 @@
-import { env, requirePayPalConfig } from "@/lib/env";
+import { env, requirePayPalConfig, ProviderConfigurationError } from "@/lib/env";
 import { centsToPayPalAmount, payPalAmountToCents } from "./money";
 
 interface CreateOrderOptions {
@@ -46,6 +46,7 @@ export class PayPalClient {
   private baseUrl: string;
   private cachedAccessToken: string | null = null;
   private tokenExpiresAt = 0;
+  private tokenRequest: Promise<string> | null = null;
 
   constructor(
     clientId = env.PAYPAL_CLIENT_ID,
@@ -55,9 +56,32 @@ export class PayPalClient {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.baseUrl = baseUrl.replace(/\/$/, "");
+    if (
+      !["https://api-m.sandbox.paypal.com", "https://api-m.paypal.com"].includes(
+        this.baseUrl,
+      )
+    ) {
+      throw new ProviderConfigurationError(
+        "PAYPAL_ORIGIN_UNSUPPORTED: use an official PayPal API origin.",
+      );
+    }
   }
 
   async getAccessToken(): Promise<string> {
+    if (this.cachedAccessToken && this.tokenExpiresAt > Date.now() + 60_000) {
+      return this.cachedAccessToken;
+    }
+    // Concurrent order/recovery requests share one refresh, including failures.
+    // Clear the settled promise so a failed refresh can be retried safely.
+    if (!this.tokenRequest) {
+      this.tokenRequest = this.refreshAccessToken().finally(() => {
+        this.tokenRequest = null;
+      });
+    }
+    return this.tokenRequest;
+  }
+
+  private async refreshAccessToken(): Promise<string> {
     const config =
       this.clientId && this.clientSecret
         ? {
@@ -68,15 +92,12 @@ export class PayPalClient {
         : requirePayPalConfig();
 
     const now = Date.now();
-    if (this.cachedAccessToken && this.tokenExpiresAt > now + 60_000) {
-      return this.cachedAccessToken;
-    }
-
     const auth = Buffer.from(
       `${config.clientId}:${config.clientSecret}`,
     ).toString("base64");
 
     const response = await fetch(`${config.baseUrl}/v1/oauth2/token`, {
+      redirect: "error",
       signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers: {
@@ -93,7 +114,11 @@ export class PayPalClient {
     const data = await response.json();
     if (
       typeof data.access_token !== "string" ||
-      typeof data.expires_in !== "number"
+      !data.access_token.trim() ||
+      typeof data.expires_in !== "number" ||
+      !Number.isFinite(data.expires_in) ||
+      data.expires_in <= 0 ||
+      !Number.isSafeInteger(now + data.expires_in * 1000)
     ) {
       throw new Error("PayPal OAuth returned an invalid token response.");
     }
@@ -143,6 +168,7 @@ export class PayPalClient {
     }
 
     const response = await fetch(`${this.baseUrl}/v2/checkout/orders`, {
+      redirect: "error",
       signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers,
@@ -196,6 +222,7 @@ export class PayPalClient {
     const response = await fetch(
       `${this.baseUrl}/v2/checkout/orders/${orderId}/capture`,
       {
+        redirect: "error",
         signal: AbortSignal.timeout(15_000),
         method: "POST",
         headers,
@@ -251,6 +278,7 @@ export class PayPalClient {
     const response = await fetch(
       `${this.baseUrl}/v2/checkout/orders/${orderId}`,
       {
+        redirect: "error",
         signal: AbortSignal.timeout(15_000),
         method: "GET",
         headers: {
@@ -301,6 +329,7 @@ export class PayPalClient {
     const response = await fetch(
       `${this.baseUrl}/v1/notifications/verify-webhook-signature`,
       {
+        redirect: "error",
         method: "POST",
         signal: AbortSignal.timeout(15_000),
         headers: {
@@ -329,3 +358,4 @@ export class PayPalClient {
 }
 
 export const payPalClient = new PayPalClient();
+

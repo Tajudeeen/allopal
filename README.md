@@ -1,5 +1,7 @@
 # Allopal
 
+[![verify](https://github.com/Tajudeeen/allopal/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Tajudeeen/allopal/actions/workflows/ci.yml)
+
 <p align="center"><img src="public/logo.png" width="130" alt="Allopal logo" /></p>
 
 Spending mandates before PayPal capture.
@@ -98,7 +100,7 @@ The included `Dockerfile` and `compose.yml` define a web process and recovery wo
 docker compose up --build -d
 ```
 
-The container recipe is provided for deployment preparation. Docker image execution has not been verified in this workspace.
+The CI pipeline builds the image and runs a health-check smoke test against the container. Check the verification badge above for the latest result.
 
 For a process manager on a persistent host:
 
@@ -164,7 +166,7 @@ The Postman collection in `docs/postman` includes session setup. Use the returne
 6. Revoke the mandate and attempt the $8 cart.
 7. Open the ledger and export sanitized evidence.
 
-See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining external checks. The repository is currently private. Public repository access, a public demo video, and the final submission remain release tasks.
+See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining external checks. The repository is public. A public demo video and the final submission remain release tasks.
 
 ## Limits
 

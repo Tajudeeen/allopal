@@ -63,6 +63,10 @@ export default function LedgerPage() {
           Export sanitized evidence
         </a>
 
+        <Link href="/insights" className="selo-button selo-button-secondary w-fit">
+          Explore spending insights <ArrowRight className="h-4 w-4" />
+        </Link>
+
         {notice && (
           <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">
             {notice}

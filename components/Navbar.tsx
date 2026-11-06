@@ -11,6 +11,7 @@ const links = [
   { label: "Agent Console", href: "/console" },
   { label: "Policy", href: "/policy" },
   { label: "Ledger", href: "/ledger" },
+  { label: "Insights", href: "/insights" },
 ];
 
 export function Navbar() {

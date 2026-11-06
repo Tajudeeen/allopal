@@ -22,6 +22,9 @@ This is a protected, session-isolated hackathon demo. It is not a production acc
 - Signature-verified webhooks and a background recovery worker.
 - Isolated demo workspaces, server-side ownership checks, protected reset, and same-origin mutation checks.
 - Ledger, verified payment notices, and sanitized evidence export.
+- Session-owned spending insights through AG Studio, including mandate health, policy visualization, interactive tables, and dashboard customization.
+- Read-only Gemini analysis grounded in workspace-owned records, with checked evidence references and no payment tools.
+- An in-app judge guide at `/judge` and release configuration preflight via `npm run release:check`.
 
 Implementation is not the same as a live verification result. See [the evidence index](docs/evidence/README.md) and [claims ledger](docs/CLAIMS.md).
 
@@ -41,18 +44,21 @@ Open http://localhost:3000. Local development can leave `ALLOPAL_DEMO_ACCESS_KEY
 
 Configure these server variables for the external flows:
 
-| Variable                                    | Purpose                                                             |
-| ------------------------------------------- | ------------------------------------------------------------------- |
-| `DATABASE_URL`                              | SQLite file on durable storage                                      |
-| `APP_BASE_URL`                              | Public HTTPS origin, required for production payment callbacks      |
-| `ALLOPAL_DEMO_ACCESS_KEY`                   | Random access key of at least 32 characters, required in production |
-| `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` | PayPal Sandbox application credentials                              |
-| `PAYPAL_API_BASE_URL`                       | Defaults to `https://api-m.sandbox.paypal.com`                      |
-| `PAYPAL_WEBHOOK_ID`                         | Registered webhook ID from the same PayPal app and environment      |
-| `AI_API_KEY`                                | Gemini key for drafting, cart selection, and explanations           |
-| `RECONCILE_TOKEN`                           | Optional bearer secret for the HTTP scheduler endpoint              |
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | SQLite file on durable storage |
+| `APP_BASE_URL` | Public HTTPS origin, required for production payment callbacks |
+| `ALLOPAL_DEMO_ACCESS_KEY` | Random access key of at least 32 characters, required in production |
+| `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` | PayPal Sandbox application credentials |
+| `PAYPAL_API_BASE_URL` | Defaults to `https://api-m.sandbox.paypal.com` |
+| `PAYPAL_WEBHOOK_ID` | Registered webhook ID from the same PayPal app and environment |
+| `AI_API_KEY` | Gemini key for drafting, cart selection, and explanations |
+| `RECONCILE_TOKEN` | Optional bearer secret for the HTTP scheduler endpoint |
+| `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` | Browser-visible AG Studio sponsor/commercial license, set before build |
 
 Generate access and scheduler keys locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Never commit `.env` or provider credentials.
+
+AG Studio 3.0.0 is commercial. Obtain a sponsor trial or commercial license from the [official sponsor page](https://paypalaihackathon.devpost.com/details/aggrid) and ensure it covers judging. Without a license, its evaluation watermark remains visible. The application source is MIT, while dependencies retain their own licenses.
 
 Manual catalog authorization works without AI credentials. External features return configuration errors when their provider is missing. Do not use real-money credentials for a shared hackathon demo.
 
@@ -63,26 +69,27 @@ npm test
 npm run typecheck
 npm run lint
 npm run build
+npm run release:check
 ```
 
 `npm test` creates and migrates a disposable database, uses synthetic provider credentials, blocks unmocked fetch calls, runs Vitest, and removes the database. It does not reset your application database or require internet access after dependencies are installed. `npm run test:watch` uses the same isolated setup.
 
-Tests cover policy denials, authoritative pricing, concurrent reservations, capture/cancel races, unknown provider outcomes, replay, session ownership, callback state, webhook authenticity, and legacy database migration. Current results and browser checks are recorded under `docs/evidence`.
+Tests cover policy denials, authoritative pricing, concurrent reservations, capture/cancel races, unknown provider outcomes, replay, session ownership, callback state, webhook authenticity, and legacy database migration. Analytics tests cover report calculations and migration behavior. Current results and browser checks are recorded under `docs/evidence`.
 
 ## Payment behavior
 
 A passing request atomically reserves budget and saves its decision, payment attempt, and operation key before contacting PayPal. `spentAmount` includes both captured money and unresolved reservations, so the UI cannot spend a pending reservation twice.
 
-| Internal state                  | Meaning                                                                                        |
-| ------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `CREATING` / `UNKNOWN_CREATE`   | Order creation is in flight or its result is uncertain                                         |
-| `CREATED`                       | Order exists and awaits payer approval                                                         |
-| `CAPTURING` / `UNKNOWN_CAPTURE` | Capture is in flight or its result needs reconciliation                                        |
-| `CANCELLING`                    | Cancellation owns the transaction while provider state is checked                              |
-| `COMPLETED`                     | Capture is confirmed                                                                           |
-| `FAILED` / `CANCELLED`          | Failure or cancellation is established and the reservation was released                        |
-| `REVIEW_REQUIRED`               | Automated recovery cannot safely decide. Keep the reservation for operator review              |
-| `REFUNDED` / `REVERSED`         | Provider reported a later change. The demo does not automatically replenish spending authority |
+| Internal state | Meaning |
+| --- | --- |
+| `CREATING` / `UNKNOWN_CREATE` | Order creation is in flight or its result is uncertain |
+| `CREATED` | Order exists and awaits payer approval |
+| `CAPTURING` / `UNKNOWN_CAPTURE` | Capture is in flight or its result needs reconciliation |
+| `CANCELLING` | Cancellation owns the transaction while provider state is checked |
+| `COMPLETED` | Capture is confirmed |
+| `FAILED` / `CANCELLED` | Failure or cancellation is established and the reservation was released |
+| `REVIEW_REQUIRED` | Automated recovery cannot safely decide. Keep the reservation for operator review |
+| `REFUNDED` / `REVERSED` | Provider reported a later change. The demo does not automatically replenish spending authority |
 
 Capture and cancellation claim mutually exclusive database states. Revocation blocks a capture that has not been claimed. A capture already in progress cannot be undone by revocation or a browser cancellation.
 
@@ -133,30 +140,34 @@ The upgrade preserves existing financial records and budget. Legacy pending orde
 
 Browser-facing APIs require the HttpOnly demo-session cookie. Mutating browser requests must be same-origin. Pass an `Origin` header when using Postman or another HTTP client. The PayPal webhook uses provider signature verification instead of a browser session. The internal scheduler uses its separate bearer secret.
 
-| Route                            | Method     | Purpose                                                           |
-| -------------------------------- | ---------- | ----------------------------------------------------------------- |
-| `/api/demo/session`              | GET / POST | Check or open a protected session                                 |
-| `/api/state`                     | GET        | Current workspace, catalog, decisions, transactions               |
-| `/api/mandates/propose`          | POST       | AI draft, never activates authority                               |
-| `/api/mandates/lock`             | POST       | Review/lock in the caller's workspace                             |
-| `/api/mandates/revoke`           | POST       | Revoke an owned mandate                                           |
-| `/api/authorize`                 | POST       | Policy-only evaluation, no PayPal call                            |
-| `/api/agent/act`                 | POST       | AI cart selection, then dry-run or guarded execution              |
-| `/api/payments/pay`              | POST       | Start/resume an idempotent payment operation                      |
-| `/api/payments/paypal/return`    | GET        | Validate session and callback state, then claim capture           |
-| `/api/payments/paypal/cancel`    | GET        | Validate session/state and request cancellation                   |
-| `/api/payments/status?order=...` | GET        | Verified stored payment state for its owner                       |
-| `/api/payments/reconcile`        | POST       | Refresh the caller's unresolved payments                          |
-| `/api/paypal/webhook`            | POST       | Verify a provider event and reconcile                             |
-| `/api/internal/reconcile`        | POST       | Bearer-protected scheduler entry point                            |
-| `/api/decisions/explain`         | POST       | Read-only AI explanation                                          |
-| `/api/evidence`                  | GET        | Download sanitized session evidence                               |
-| `/api/demo/reset`                | POST       | Reset only the caller's workspace, blocked by unresolved payments |
-| `/api/health`                    | GET        | Database availability without internal error details              |
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/demo/session` | GET / POST | Check or open a protected session |
+| `/api/state` | GET | Current workspace, catalog, decisions, transactions |
+| `/api/mandates/propose` | POST | AI draft, never activates authority |
+| `/api/mandates/lock` | POST | Review/lock in the caller's workspace |
+| `/api/mandates/revoke` | POST | Revoke an owned mandate |
+| `/api/authorize` | POST | Policy-only evaluation, no PayPal call |
+| `/api/agent/act` | POST | AI cart selection, then dry-run or guarded execution |
+| `/api/payments/pay` | POST | Start/resume an idempotent payment operation |
+| `/api/payments/paypal/return` | GET | Validate session and callback state, then claim capture |
+| `/api/payments/paypal/cancel` | GET | Validate session/state and request cancellation |
+| `/api/payments/status?order=...` | GET | Verified stored payment state for its owner |
+| `/api/payments/reconcile` | POST | Refresh the caller's unresolved payments |
+| `/api/paypal/webhook` | POST | Verify a provider event and reconcile |
+| `/api/internal/reconcile` | POST | Bearer-protected scheduler entry point |
+| `/api/decisions/explain` | POST | Read-only AI explanation |
+| `/api/evidence` | GET | Download sanitized session evidence |
+| `/api/analytics` | GET | Session-owned totals, capped detail records, provider availability |
+| `/api/analytics/ask` | POST | Read-only Gemini analysis grounded in server-selected records |
+| `/api/demo/reset` | POST | Reset only the caller's workspace, blocked by unresolved payments |
+| `/api/health` | GET | Database availability without internal error details |
 
 The Postman collection in `docs/postman` includes session setup. Use the returned state to set your current mandate ID rather than assuming the old shared seed ID.
 
 ## Judge walkthrough
+
+Open `/judge` for the in-app steps and configuration status. See [submission and sponsor evidence](docs/SUBMISSION.md) for the official requirements, tools statement draft, and recording outline. Provider configuration is not proof of a successful external run.
 
 1. Open a demo session and review its $40 school-supplies mandate.
 2. Ask the agent for the $90 gaming headset. Show the category denial and zero PayPal execution.
@@ -165,6 +176,7 @@ The Postman collection in `docs/postman` includes session setup. Use the returne
 5. Attempt the $25 cart and show the budget denial.
 6. Revoke the mandate and attempt the $8 cart.
 7. Open the ledger and export sanitized evidence.
+8. Open Insights, customize the dashboard, and inspect a read-only AI answer with its cited records.
 
 See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining external checks. The repository is public. A public demo video and the final submission remain release tasks.
 
@@ -172,6 +184,6 @@ See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining exter
 
 Sessions last 24 hours and use a shared builder-issued access key. This isolates demonstrations but does not establish real customer identity or production account recovery. The catalog is fixed. There is no fulfillment, tax/shipping calculation, refund initiation, subscription management, or automatic operator resolution of `REVIEW_REQUIRED` payments.
 
-Gemini structures intent and explains recorded outcomes. It never receives PayPal credentials or an authorization tool. Production payment operations need a separate identity, compliance, operational, and fulfillment design.
+Gemini structures intent and explains recorded outcomes. It never receives PayPal credentials or an authorization tool. Insights totals cover all records in the current workspace, separated by currency. Detail tables show the latest 500 records per type, while the analyst sees summary totals and the latest 50 of each type. AI answers are advisory text, and evidence IDs are checked rather than independently proving every claim. Production payment operations need a separate identity, compliance, operational, and fulfillment design.
 
 MIT licensed. Reporting details are in [SECURITY.md](SECURITY.md).

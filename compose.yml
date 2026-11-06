@@ -1,6 +1,9 @@
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY: ${NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY:-}
     env_file: .env
     environment:
       DATABASE_URL: file:/data/allopal.db
@@ -22,7 +25,10 @@ services:
       retries: 5
       start_period: 45s
   recovery:
-    build: .
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY: ${NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY:-}
     command: ["npm", "run", "worker"]
     env_file: .env
     environment:

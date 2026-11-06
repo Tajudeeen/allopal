@@ -15,12 +15,15 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node --import tsx prisma/seed.ts",
     "demo:reset": "node --import tsx prisma/seed.ts",
-    "db:deploy": "prisma migrate deploy",
+    "db:deploy": "node scripts/db-deploy.mjs",
     "worker": "node --import tsx scripts/reconcile.ts",
-    "worker:once": "node --import tsx scripts/reconcile.ts --once"
+    "worker:once": "node --import tsx scripts/reconcile.ts --once",
+    "release:check": "node scripts/release-check.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "ag-studio": "3.0.0",
+    "ag-studio-react": "3.0.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.454.0",
     "next": "^14.2.20",

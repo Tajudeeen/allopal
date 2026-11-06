@@ -11,8 +11,17 @@ export function DemoAccessGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     let disposed = false;
     fetch("/api/demo/session", { cache: "no-store" })
-      .then((res) => {
-        if (!disposed) setState(res.ok ? "ready" : "locked");
+      .then(async (res) => {
+        if (res.ok) {
+          if (!disposed) setState("ready");
+          return;
+        }
+        const opened = await fetch("/api/demo/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!disposed) setState(opened.ok ? "ready" : "locked");
       })
       .catch(() => {
         if (!disposed) {

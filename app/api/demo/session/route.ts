@@ -21,27 +21,30 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     assertSameOrigin(req);
+    const publicDemo = process.env.ALLOPAL_PUBLIC_DEMO === "true";
     const configured = process.env.ALLOPAL_DEMO_ACCESS_KEY;
-    if (
-      process.env.NODE_ENV === "production" &&
-      (!configured || configured.length < 32)
-    )
-      throw new AccessError(503, "DEMO_ACCESS_NOT_CONFIGURED");
-    let body: { accessKey?: unknown };
-    try {
-      body = await req.json();
-    } catch {
-      throw new AccessError(400, "INVALID_JSON");
+    if (!publicDemo) {
+      if (
+        process.env.NODE_ENV === "production" &&
+        (!configured || configured.length < 32)
+      )
+        throw new AccessError(503, "DEMO_ACCESS_NOT_CONFIGURED");
+      let body: { accessKey?: unknown };
+      try {
+        body = await req.json();
+      } catch {
+        throw new AccessError(400, "INVALID_JSON");
+      }
+      const supplied = typeof body.accessKey === "string" ? body.accessKey : "";
+      if (configured && !sameSecret(supplied, configured))
+        throw new AccessError(401, "ACCESS_KEY_INVALID");
+      // Local development may omit a key. Never allow this on a deployed production build.
+      if (
+        !configured &&
+        !["localhost", "127.0.0.1"].includes(new URL(req.url).hostname)
+      )
+        throw new AccessError(403, "LOCAL_DEVELOPMENT_ONLY");
     }
-    const supplied = typeof body.accessKey === "string" ? body.accessKey : "";
-    if (configured && !sameSecret(supplied, configured))
-      throw new AccessError(401, "ACCESS_KEY_INVALID");
-    // Local development may omit a key. Never allow this on a deployed production build.
-    if (
-      !configured &&
-      !["localhost", "127.0.0.1"].includes(new URL(req.url).hostname)
-    )
-      throw new AccessError(403, "LOCAL_DEVELOPMENT_ONLY");
     const session = await newSession();
     await seed(session.workspaceId);
     const response = NextResponse.json({ authenticated: true });

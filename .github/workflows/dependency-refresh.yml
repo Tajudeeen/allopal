@@ -1,0 +1,95 @@
+name: Dependency security refresh
+
+on:
+  push:
+    branches: ["fix/security-dependency-refresh-2026-11"]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      DATABASE_URL: file:./ci.db
+      PAYPAL_CLIENT_ID: ci-contract-client
+      PAYPAL_CLIENT_SECRET: ci-contract-secret
+      PAYPAL_API_BASE_URL: https://api-m.sandbox.paypal.com
+      AI_API_KEY: ci-gemini-contract-key
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Upgrade patched dependencies and regenerate lockfile
+        run: npm install --save-exact next@15.5.29 eslint-config-next@15.5.29 vitest@4.1.12 postcss@8.5.32 zod@4.6.7
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Deploy disposable database
+        run: npm run db:deploy
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+        env:
+          DATABASE_URL: file:./ci.db
+          NEXTAUTH_SECRET: ci-nextauth-secret
+
+      - name: Build Docker image
+        run: docker build -t allopal:security-refresh .
+
+      - name: Run Docker health smoke test
+        run: |
+          docker run -d --name allopal-security-refresh \
+            -e DATABASE_URL=file:/data/ci.db \
+            -e NEXTAUTH_SECRET=ci-secret \
+            -e PAYPAL_CLIENT_ID=ci \
+            -e PAYPAL_CLIENT_SECRET=ci \
+            -p 3000:3000 allopal:security-refresh
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/health; then exit 0; fi
+            sleep 2
+          done
+          docker logs allopal-security-refresh
+          exit 1
+
+      - name: Cleanup container
+        if: always()
+        run: docker rm -f allopal-security-refresh || true
+
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v2
+
+      - name: Commit dependency manifest and lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "fix: patch vulnerable dependencies"
+          git push origin HEAD
+
+      - name: Open pull request
+        run: gh pr create --base main --head fix/security-dependency-refresh-2026-11 --title "Fix vulnerable dependencies and restore CI" --body "## Security dependency refresh\n\n- Upgrade Next.js and eslint-config-next to patched 15.5.29 maintenance releases.\n- Upgrade Vitest to 4.1.12 for the patched mocker and worker dependencies.\n- Upgrade PostCSS to 8.5.32.\n- Upgrade Zod to 4.6.7 to address the reported high-severity advisory.\n- Regenerate package-lock.json from npm, then run audit, tests, typecheck, lint, production build, Docker health smoke test, and Gitleaks before opening this PR.\n\nNo forced npm audit fix was used."

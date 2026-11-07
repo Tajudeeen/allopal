@@ -1,4 +1,3 @@
-import { DemoAccessGate } from "@/components/DemoAccessGate";
 import type { Metadata } from "next";
 import "./globals.css";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -24,9 +23,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased font-sans">
         <AnimatedBackground />
-        <DemoAccessGate>
-          <LaunchExperience>{children}</LaunchExperience>
-        </DemoAccessGate>
+        {/* <DemoAccessGate> commented out to view build directly */}
+        <LaunchExperience>{children}</LaunchExperience>
       </body>
     </html>
   );

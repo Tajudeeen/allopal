@@ -60,7 +60,7 @@ jobs:
           NEXTAUTH_SECRET: ci-nextauth-secret
 
       - name: Upload build artifact
-        if: always() && hashFiles('.next/**') != ''
+        if: success() && hashFiles('.next/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: next-build-${{ github.sha }}

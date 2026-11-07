@@ -16,6 +16,8 @@ const envSchema = z.object({
     .string()
     .url()
     .default("https://api-m.sandbox.paypal.com"),
+  PAYPAL_WEBHOOK_ID: optionalSecret,
+  RECONCILE_TOKEN: optionalSecret,
   AI_API_KEY: optionalSecret,
 });
 
@@ -33,6 +35,8 @@ export const env = envSchema.parse({
   PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
   PAYPAL_API_BASE_URL: process.env.PAYPAL_API_BASE_URL,
+  PAYPAL_WEBHOOK_ID: process.env.PAYPAL_WEBHOOK_ID,
+  RECONCILE_TOKEN: process.env.RECONCILE_TOKEN,
   AI_API_KEY: process.env.AI_API_KEY,
 });
 
@@ -60,4 +64,13 @@ export function requireAiApiKey() {
   }
 
   return env.AI_API_KEY;
+}
+
+export function requireWebhookId() {
+  if (!env.PAYPAL_WEBHOOK_ID) {
+    throw new ProviderConfigurationError(
+      "PAYPAL_WEBHOOK_NOT_CONFIGURED: set PAYPAL_WEBHOOK_ID.",
+    );
+  }
+  return env.PAYPAL_WEBHOOK_ID;
 }

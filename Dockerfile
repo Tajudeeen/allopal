@@ -19,4 +19,4 @@ USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
   CMD curl -fsS http://127.0.0.1:3000/api/health || exit 1
-CMD ["sh", "-c", "npm run db:deploy && npm start"]
+CMD ["sh", "-c", "set -e; npm run db:deploy && exec npm start"]

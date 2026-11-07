@@ -1,4 +1,4 @@
-import { env, requirePayPalConfig, ProviderConfigurationError } from "@/lib/env";
+import { env, requirePayPalConfig, requireWebhookId, ProviderConfigurationError } from "@/lib/env";
 import { centsToPayPalAmount, payPalAmountToCents } from "./money";
 
 interface CreateOrderOptions {
@@ -316,8 +316,7 @@ export class PayPalClient {
   }
 
   async verifyWebhook(headers: Headers, event: unknown): Promise<boolean> {
-    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
-    if (!webhookId) throw new Error("PAYPAL_WEBHOOK_NOT_CONFIGURED");
+    const webhookId = requireWebhookId();
     const fields = [
       "auth-algo",
       "cert-url",

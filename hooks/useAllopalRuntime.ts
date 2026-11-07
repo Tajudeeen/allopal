@@ -175,7 +175,6 @@ export function useAllopalRuntime() {
           body: JSON.stringify({
             task,
             mode,
-            ...(idempotencyKey ? { idempotencyKey } : {}),
           }),
         });
 
@@ -365,7 +364,6 @@ export function useAllopalRuntime() {
           body: JSON.stringify({
             mandateId: mandate.id,
             cartId,
-            idempotencyKey,
           }),
         });
         const data = await res.json();

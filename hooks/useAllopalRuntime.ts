@@ -9,15 +9,71 @@ import { verifiedPaymentMessage } from "@/lib/payments/presentation";
 
 import { useCallback, useEffect, useState } from "react";
 import type { GateEvaluationState } from "@/components/gate/VisualPolicyGate";
+import { useTransactionPolling } from "./useTransactionPolling";
+
+interface MandateData {
+  id: string;
+  name: string;
+  status: string;
+  weeklyLimit: number;
+  spentAmount: number;
+  validFrom: string;
+  validUntil: string;
+  allowedCategories: string[];
+  allowedMerchants: string[];
+  workspaceId: string;
+}
+
+interface CartData {
+  id: string;
+  merchant: string;
+  totalAmount: number;
+  items: CartItemData[];
+}
+
+interface CartItemData {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  product: ProductData;
+}
+
+interface ProductData {
+  id: string;
+  name: string;
+  price: number;
+  merchant: string;
+  category: string;
+}
+
+interface TransactionData {
+  id: string;
+  status: string;
+  orderId?: string;
+  captureId?: string;
+  amount: number;
+  currency: string;
+}
+
+interface DecisionData {
+  id: string;
+  status: string;
+  amount: number;
+  merchant: string;
+  category: string;
+  reason: string;
+  createdAt: string;
+}
 
 interface RuntimeState {
   paypalMode: "PAYPAL_SANDBOX" | "PAYPAL";
   paypalConfigured: boolean;
   aiConfigured: boolean;
-  mandate: any;
-  carts: any[];
-  decisions: any[];
-  transactions: any[];
+  mandate: MandateData | null;
+  carts: CartData[];
+  decisions: DecisionData[];
+  transactions: TransactionData[];
 }
 
 export interface AgentRunState {
@@ -41,10 +97,10 @@ export function useAllopalRuntime() {
     useState<RuntimeState["paypalMode"]>("PAYPAL_SANDBOX");
   const [paypalConfigured, setPaypalConfigured] = useState(false);
   const [aiConfigured, setAiConfigured] = useState(false);
-  const [mandate, setMandate] = useState<any>(null);
-  const [carts, setCarts] = useState<any[]>([]);
-  const [decisions, setDecisions] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [mandate, setMandate] = useState<MandateData | null>(null);
+  const [carts, setCarts] = useState<CartData[]>([]);
+  const [decisions, setDecisions] = useState<DecisionData[]>([]);
+  const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [evaluation, setEvaluation] = useState<GateEvaluationState | null>(
     null,
   );
@@ -129,33 +185,11 @@ export function useAllopalRuntime() {
     };
   }, [transactions, evaluationAttemptId, agentAttemptId]);
 
-  useEffect(() => {
-    if (
-      !transactions.some(
-        (t) =>
-          ![
-            "COMPLETED",
-            "FAILED",
-            "CANCELLED",
-            "REFUNDED",
-            "REVERSED",
-            "REVIEW_REQUIRED",
-          ].includes(t.status),
-      )
-    )
-      return;
-    const timer = window.setInterval(async () => {
-      try {
-        await fetch("/api/payments/reconcile", { method: "POST" });
-        await loadState();
-      } catch {
-        setNotice(
-          "Status refresh unavailable. Your pending payment remains reserved.",
-        );
-      }
-    }, 15000);
-    return () => window.clearInterval(timer);
-  }, [transactions, loadState]);
+  useTransactionPolling(
+    transactions,
+    async () => { await loadState(); },
+    (msg) => setNotice(msg),
+  );
 
   const handleAgentRequest = useCallback(
     async (task: string, mode: "DRY_RUN" | "EXECUTE") => {

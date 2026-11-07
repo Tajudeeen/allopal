@@ -30,7 +30,19 @@ export function evaluateMandate(
 
   const amount = cart?.totalAmount ?? 0;
   const merchant = cart?.merchant ?? "UNKNOWN";
-  const primaryCategory = cart?.items?.[0]?.product?.category ?? "UNKNOWN";
+  const categories = Array.from(
+    new Set(
+      cart?.items
+        ?.map((i) => i.product?.category)
+        .filter((c): c is string => Boolean(c)) ?? []
+    )
+  );
+  const primaryCategory =
+    categories.length === 1
+      ? categories[0]
+      : categories.length > 1
+      ? `${categories[0]} +${categories.length - 1} more`
+      : "UNKNOWN";
   const mandateId = mandate?.id ?? null;
   const cartId = cart?.id ?? null;
 

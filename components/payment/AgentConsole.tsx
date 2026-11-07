@@ -50,25 +50,21 @@ export function AgentConsole({
   const selectedCart = carts.find((c) => c.id === selectedCartId) || carts[0];
 
   // Map carts to canonical demo test cases
-  const caseMap: Record<string, { label: string; badge: string; desc: string }> = {
+  const caseMap: Record<string, { label: string; desc: string }> = {
     "cart-case-a": {
       label: "Case A: Notebook Bundle",
-      badge: "$18.00 (Pass)",
       desc: "Campus Books • School Supplies • Within Budget",
     },
     "cart-case-b": {
       label: "Case B: Gaming Headset",
-      badge: "$90.00 (Blocked)",
       desc: "Campus Books • Electronics (Disallowed Category)",
     },
     "cart-case-c": {
       label: "Case C: Deluxe Notebook",
-      badge: "$25.00 (Blocked after Case A)",
       desc: "Campus Books • School Supplies • Exceeds Remaining",
     },
     "cart-case-d": {
       label: "Case D: Pocket Notebook",
-      badge: "$8.00 (Blocked if Revoked)",
       desc: "Campus Books • School Supplies • Revocation Test",
     },
   };
@@ -115,7 +111,6 @@ export function AgentConsole({
         {carts.map((cart) => {
           const meta = caseMap[cart.id] || {
             label: cart.id,
-            badge: `$${(cart.totalAmount / 100).toFixed(2)}`,
             desc: `${cart.merchant} • ${cart.items[0]?.product?.category || ""}`,
           };
           const isSelected = selectedCart?.id === cart.id;
@@ -150,16 +145,12 @@ export function AgentConsole({
                 </span>
                 <span
                   className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border ${
-                    meta.badge.includes("Pass")
-                      ? isDark
-                        ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/60"
-                        : "bg-emerald-100 text-emerald-800 border-emerald-300"
-                      : isDark
-                      ? "bg-rose-950/80 text-rose-300 border-rose-700/60"
-                      : "bg-rose-100 text-rose-800 border-rose-300"
+                    isDark
+                      ? "bg-slate-800/80 text-slate-300 border-slate-700/60"
+                      : "bg-slate-100 text-slate-700 border-slate-300"
                   }`}
                 >
-                  {meta.badge}
+                  ${(cart.totalAmount / 100).toFixed(2)}
                 </span>
               </div>
               <p

@@ -7,6 +7,7 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { interpretMandatePrompt } from "@/lib/ai/interpreter";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,13 @@ const proposeSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const workspaceId = await requireWorkspace(req);
+    const rl = checkRateLimit(`propose:${workspaceId}`, RATE_LIMITS.AI);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "RATE_LIMIT_EXCEEDED", message: "Too many mandate proposals. Please wait." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+      );
+    }
     const rawBody = await req.json();
     const parsed = proposeSchema.safeParse(rawBody);
 

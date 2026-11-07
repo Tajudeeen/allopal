@@ -10,6 +10,7 @@ import {
   paymentOrigin,
   accessResponse,
 } from "@/lib/security/access";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 export const dynamic = "force-dynamic";
 const schema = z.object({
   task: z.string().trim().min(3).max(500),
@@ -19,6 +20,13 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const workspaceId = await requireWorkspace(req);
+    const rl = checkRateLimit(`agent:${workspaceId}`, RATE_LIMITS.AI);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "RATE_LIMIT_EXCEEDED", message: "Too many agent requests. Please wait before trying again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+      );
+    }
     let body: unknown;
     try {
       body = await req.json();

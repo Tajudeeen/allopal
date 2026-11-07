@@ -6,6 +6,7 @@ import {
   paymentOrigin,
   accessResponse,
 } from "@/lib/security/access";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 export const dynamic = "force-dynamic";
 const schema = z.object({
   mandateId: z.string().min(1),
@@ -15,6 +16,13 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const workspace = await requireWorkspace(req);
+    const rl = checkRateLimit(`pay:${workspace}`, RATE_LIMITS.PAYMENT);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "RATE_LIMIT_EXCEEDED", message: "Too many payment requests. Please wait." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+      );
+    }
     let body: unknown;
     try {
       body = await req.json();

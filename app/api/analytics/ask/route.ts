@@ -8,6 +8,7 @@ import {
 import { ProviderConfigurationError } from "@/lib/env";
 import { getSpendingReport } from "@/lib/analytics/report";
 import { analyzeSpending } from "@/lib/ai/analyst";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 const schema = z
@@ -18,6 +19,13 @@ const requests = new Map<string, number[]>();
 export async function POST(req: NextRequest) {
   try {
     const workspaceId = await requireWorkspace(req);
+    const rl = checkRateLimit(`analytics:${workspaceId}`, RATE_LIMITS.AI);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "RATE_LIMIT_EXCEEDED", message: "Too many analysis requests. Please wait." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+      );
+    }
     let body: unknown;
     try {
       body = await req.json();

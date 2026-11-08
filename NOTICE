@@ -1,0 +1,27 @@
+Allopal
+Copyright (c) 2026 Tajudeen Owoeteniyan and Allopal Contributors.
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+==============================================================================
+Third-Party License Notice & Dependencies
+==============================================================================
+
+1. AG Studio & AG Grid Enterprise (ag-studio, ag-studio-react)
+   - The interactive analytics studio optionally utilizes AG Studio by AG Grid.
+   - AG Studio and AG Grid Enterprise are commercial software provided under
+     commercial license by AG Grid (https://www.ag-grid.com).
+   - For evaluation and hackathon judging environments, Allopal includes an
+     integrated zero-dependency Open-Source Standard Dashboard that runs
+     without any license key or commercial dependencies.
+   - When NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY is absent, Allopal automatically
+     activates the Open-Source Standard Dashboard with full spending analytics,
+     mandate health gauges, and decision audit logs.
+
+2. PayPal SDK & APIs
+   - Integrates with PayPal REST APIs and PayPal JavaScript SDK under standard
+     PayPal Developer Terms of Use (https://developer.paypal.com).
+
+3. Google Gemini API
+   - Integrates with Google Generative AI (Gemini) API under Google Cloud and
+     Google AI Terms of Service (https://ai.google.dev/terms).

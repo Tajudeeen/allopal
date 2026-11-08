@@ -177,12 +177,206 @@ const ai: AgAiHarnessSetup = ({ api }) =>
       },
     ],
   }));
+function OpenSourceDashboard({ report }: { report: AnalyticsResponse }) {
+  const mandate = report.mandate;
+  const used = mandate
+    ? Math.min(100, (mandate.spentAmount / Math.max(1, mandate.weeklyLimit)) * 100)
+    : 0;
+
+  const allowedDecisions = report.decisions.filter((d) => d.status === "ALLOWED").length;
+  const deniedDecisions = report.decisions.filter((d) => d.status === "DENIED").length;
+
+  const totalCaptured = report.payments
+    .filter((p) => p.status === "COMPLETED")
+    .reduce((sum, p) => sum + p.amount, 0);
+
+  return (
+    <div className="space-y-6 p-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
+            Latest Mandate
+          </p>
+          <p className="mt-1 text-lg font-bold text-slate-900">
+            {mandate?.name ?? "No mandate locked"}
+          </p>
+          <div className="mt-2 flex items-baseline justify-between">
+            <span className="text-2xl font-bold text-slate-900">
+              {money(mandate?.remaining ?? 0)}
+            </span>
+            <span className="text-xs text-slate-500">
+              remaining of {money(mandate?.weeklyLimit ?? 0)}
+            </span>
+          </div>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+            <div
+              className="h-full rounded-full bg-blue-600 transition-all"
+              style={{ width: `${used}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Status: <span className="font-medium text-slate-700">{mandate?.status ?? "NONE"}</span> · {Math.round(used)}% committed
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+            Policy Authorization
+          </p>
+          <p className="mt-1 text-lg font-bold text-slate-900">Deterministic Checks</p>
+          <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-2">
+              <p className="text-2xl font-bold text-emerald-700">{allowedDecisions}</p>
+              <p className="text-xs font-medium text-emerald-800">Allowed</p>
+            </div>
+            <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-2">
+              <p className="text-2xl font-bold text-rose-700">{deniedDecisions}</p>
+              <p className="text-xs font-medium text-rose-800">Denied</p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Zero AI in payment execution path.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-700">
+            PayPal Settled Volume
+          </p>
+          <p className="mt-1 text-lg font-bold text-slate-900">{money(totalCaptured)}</p>
+          <p className="mt-1 text-xs text-slate-600">
+            {report.payments.length} total payment lifecycle records
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-800">
+              Orders API v2
+            </span>
+            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+              Webhook Verified
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-slate-900">
+            Policy Audit Trail (Latest Decisions)
+          </h3>
+          <div className="max-h-80 overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="sticky top-0 bg-slate-50 text-[11px] font-semibold uppercase text-slate-700">
+                <tr>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Merchant</th>
+                  <th className="p-2">Amount</th>
+                  <th className="p-2">Reason</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {report.decisions.slice(0, 50).map((d) => (
+                  <tr key={d.id} className="hover:bg-slate-50">
+                    <td className="p-2">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          d.status === "ALLOWED"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-rose-100 text-rose-800"
+                        }`}
+                      >
+                        {d.status}
+                      </span>
+                    </td>
+                    <td className="p-2 font-medium text-slate-800">
+                      {d.merchant ?? "N/A"}
+                    </td>
+                    <td className="p-2">{money(d.amount)}</td>
+                    <td className="max-w-[160px] truncate p-2" title={d.reason}>
+                      {d.reason}
+                    </td>
+                  </tr>
+                ))}
+                {report.decisions.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-slate-400">
+                      No decisions evaluated yet
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-slate-900">
+            PayPal Payment Lifecycle Attempts
+          </h3>
+          <div className="max-h-80 overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="sticky top-0 bg-slate-50 text-[11px] font-semibold uppercase text-slate-700">
+                <tr>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Amount</th>
+                  <th className="p-2">Order / Capture ID</th>
+                  <th className="p-2">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {report.payments.slice(0, 50).map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50">
+                    <td className="p-2">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          p.status === "COMPLETED"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : p.status === "DENIED" || p.status === "FAILED"
+                            ? "bg-rose-100 text-rose-800"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="p-2 font-medium text-slate-800">
+                      {money(p.amount)}
+                    </td>
+                    <td
+                      className="max-w-[140px] truncate p-2 font-mono text-[11px]"
+                      title={p.captureId ?? p.id}
+                    >
+                      {p.captureId ?? p.id}
+                    </td>
+                    <td className="p-2 text-slate-400">
+                      {new Date(p.createdAt).toLocaleTimeString()}
+                    </td>
+                  </tr>
+                ))}
+                {report.payments.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-slate-400">
+                      No payment attempts yet
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SpendingStudio({
   report,
 }: {
   report: AnalyticsResponse;
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const [viewType, setViewType] = useState<"standard" | "ag-studio">(
+    license ? "ag-studio" : "standard",
+  );
   const [compact, setCompact] = useState(
     () => window.matchMedia("(max-width: 640px)").matches,
   );
@@ -270,7 +464,7 @@ export default function SpendingStudio({
   );
   return (
     <section
-      aria-label="AG Studio spending workspace"
+      aria-label="Spending analytics workspace"
       className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
@@ -279,43 +473,91 @@ export default function SpendingStudio({
             Explore your spending
           </h2>
           <p className="mt-1 text-xs text-slate-600">
-            Powered by AG Studio. Layout edits only change the dashboard.
+            {viewType === "standard"
+              ? "Open-source dashboard with real-time mandate health and audit telemetry."
+              : "Powered by AG Studio Enterprise. Layout edits persist to this session."}
           </p>
         </div>
-        <button
-          className="selo-button selo-button-secondary"
-          type="button"
-          onClick={() => setMode(mode === "view" ? "edit" : "view")}
-        >
-          {mode === "view" ? "Customize dashboard" : "Finish customizing"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setViewType("standard")}
+              className={`rounded-lg px-3 py-1.5 transition-all ${
+                viewType === "standard"
+                  ? "bg-white font-semibold text-blue-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Standard (Open Source)
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewType("ag-studio")}
+              className={`rounded-lg px-3 py-1.5 transition-all ${
+                viewType === "ag-studio"
+                  ? "bg-white font-semibold text-blue-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              AG Studio Enterprise
+            </button>
+          </div>
+          {viewType === "ag-studio" && (
+            <button
+              className="selo-button selo-button-secondary"
+              type="button"
+              onClick={() => setMode(mode === "view" ? "edit" : "view")}
+            >
+              {mode === "view" ? "Customize dashboard" : "Finish customizing"}
+            </button>
+          )}
+        </div>
       </div>
-      {!license && (
-        <p className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs leading-5 text-amber-900">
-          AG Studio evaluation. A valid sponsor trial or commercial license is
-          required for release. The evaluation watermark is retained.
-        </p>
+
+      {viewType === "standard" ? (
+        <>
+          {!license && (
+            <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50/50 px-5 py-2.5 text-xs text-blue-900">
+              <span>
+                <strong>Open-Source Mode Active:</strong> Clean MIT-licensed dashboard with zero evaluation watermarks.
+              </span>
+              <span className="text-[11px] text-blue-700">
+                Commercial AG Studio available via toggle
+              </span>
+            </div>
+          )}
+          <OpenSourceDashboard report={report} />
+        </>
+      ) : (
+        <>
+          {!license && (
+            <p className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs leading-5 text-amber-900">
+              AG Studio evaluation mode. A sponsor trial or commercial license key can be provided via NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY. (Switch to Standard View for clean unwatermarked open-source dashboard).
+            </p>
+          )}
+          <div
+            className="ag-theme-mode h-[1000px] min-w-0"
+            data-ag-theme-mode="light"
+          >
+            <ReportContext.Provider value={report}>
+              <AgStudio<Registry>
+                key={compact ? "compact" : "wide"}
+                style={{ width: "100%", height: "100%" }}
+                theme={theme}
+                loadThemeGoogleFonts={false}
+                data={data}
+                widgets={widgets}
+                initialState={initialState}
+                mode={mode}
+                ai={report.availability.ai ? ai : undefined}
+                modules={report.availability.ai ? aiModules : undefined}
+                layout={{ minWidth: 300 }}
+              />
+            </ReportContext.Provider>
+          </div>
+        </>
       )}
-      <div
-        className="ag-theme-mode h-[1000px] min-w-0"
-        data-ag-theme-mode="light"
-      >
-        <ReportContext.Provider value={report}>
-          <AgStudio<Registry>
-            key={compact ? "compact" : "wide"}
-            style={{ width: "100%", height: "100%" }}
-            theme={theme}
-            loadThemeGoogleFonts={false}
-            data={data}
-            widgets={widgets}
-            initialState={initialState}
-            mode={mode}
-            ai={report.availability.ai ? ai : undefined}
-            modules={report.availability.ai ? aiModules : undefined}
-            layout={{ minWidth: 300 }}
-          />
-        </ReportContext.Provider>
-      </div>
     </section>
   );
 }

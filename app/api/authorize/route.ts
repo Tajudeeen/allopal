@@ -74,9 +74,17 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const errorCode = !mandate
+      ? "MANDATE_NOT_FOUND"
+      : !cart
+      ? "CART_NOT_FOUND"
+      : undefined;
+
     return NextResponse.json({
       decisionId: savedDecision?.id ?? null,
       status: decisionResult.status,
+      code: errorCode,
+      error: errorCode,
       reason: decisionResult.reason,
       failedCheck: decisionResult.failedCheck,
       amount: decisionResult.amount,

@@ -180,6 +180,14 @@ Open `/judge` for the in-app steps and configuration status. See [submission and
 
 See [sandbox verification](docs/SANDBOX_VERIFICATION.md) for the remaining external checks. The repository is public. A public demo video and the final submission remain release tasks.
 
+## Production Path
+
+Allopal's architecture cleanly separates the authorization gateway from storage and infrastructure concerns. The deliberate demo constraints (SQLite, demo access key, in-memory rate limiting) have direct production upgrade paths:
+
+- **PostgreSQL & Horizontal Persistence**: Replace SQLite with PostgreSQL by switching Prisma's datasource provider (`provider = "postgresql"`). In production, state transitions (`beginPayment`, `claimCapture`, `recordAttempt`) run inside SERIALIZABLE or `SELECT FOR UPDATE` database transactions behind PgBouncer or Prisma Accelerate for zero-lock contention under heavy concurrent checkout loads. Read-heavy analytics (the `/insights` engine) point to read replicas, isolating operational payments from analytical queries.
+- **Per-Agent Identity & Machine Authentication**: Move from the shared demo access key to machine-to-machine identity using OAuth 2.0 Client Credentials (RFC 6749) with short-lived, cryptographically signed JWT tokens (RFC 9068) or mutual TLS (mTLS). Each autonomous agent receives a unique cryptographic principal (`agent_id`) mapped directly to its assigned mandate in the policy engine, enabling non-repudiable audit logging of every proposal and checkout attempt.
+- **Distributed Rate Limiting & Multi-Instance Lock Coordination**: Replace in-memory sliding-window maps with Redis-backed rate limiting (`rate-limiter-flexible` / Upstash Redis) keyed on `(agent_id, mandate_id, ip)`. High-throughput multi-region serverless instances use Redlock distributed primitives for millisecond-level atomic budget reservation and cross-instance webhook delivery deduplication.
+
 ## Limits
 
 Sessions last 24 hours and use a shared builder-issued access key. This isolates demonstrations but does not establish real customer identity or production account recovery. The catalog is fixed. There is no fulfillment, tax/shipping calculation, refund initiation, subscription management, or automatic operator resolution of `REVIEW_REQUIRED` payments.

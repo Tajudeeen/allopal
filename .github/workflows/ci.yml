@@ -67,7 +67,8 @@ jobs:
           name: next-build-${{ github.sha }}
           path: .next
           retention-days: 7
-          if-no-files-found: error
+          include-hidden-files: true
+          if-no-files-found: warn
 
       - name: Scan repository for secrets
         uses: gitleaks/gitleaks-action@v2

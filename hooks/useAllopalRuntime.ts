@@ -122,8 +122,28 @@ export function useAllopalRuntime() {
   const [agentRun, setAgentRun] = useState<AgentRunState | null>(null);
 
   const loadState = useCallback(async () => {
-    const res = await fetch("/api/state", { cache: "no-store" });
-    if (!res.ok) throw new Error("Unable to load Allopal state.");
+    let res = await fetch("/api/state", { cache: "no-store" });
+    if (res.status === 401) {
+      try {
+        const init = await fetch("/api/demo/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (init.ok) {
+          res = await fetch("/api/state", { cache: "no-store" });
+        }
+      } catch {}
+    }
+    if (!res.ok) {
+      let errMsg = "Unable to load Allopal state.";
+      try {
+        const errJson = await res.json();
+        if (errJson.message) errMsg = errJson.message;
+        else if (errJson.error) errMsg = `Allopal: ${errJson.error}`;
+      } catch {}
+      throw new Error(errMsg);
+    }
     const data: RuntimeState = await res.json();
     setPaypalMode(data.paypalMode || "PAYPAL_SANDBOX");
     setPaypalConfigured(Boolean(data.paypalConfigured));

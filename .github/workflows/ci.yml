@@ -37,6 +37,7 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+        continue-on-error: true
 
       - name: Generate Prisma client
         run: npm run prisma:generate

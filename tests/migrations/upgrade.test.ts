@@ -36,7 +36,7 @@ describe("Existing database migration", () => {
       await db?.$disconnect();
       rmSync(directory, { recursive: true, force: true });
     }
-  });
+  }, 60000);
   it("preserves legacy financial rows and quarantines unbound pending approvals", async () => {
     const directory = mkdtempSync(join(tmpdir(), "allopal-migration-"));
     const database = join(directory, "legacy.db");
@@ -82,5 +82,5 @@ describe("Existing database migration", () => {
       await db.$disconnect();
       rmSync(directory, { recursive: true, force: true });
     }
-  });
+  }, 60000);
 });

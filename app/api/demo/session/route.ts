@@ -21,7 +21,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     assertSameOrigin(req);
-    const publicDemo = process.env.ALLOPAL_PUBLIC_DEMO === "true";
+    const publicDemo =
+      process.env.ALLOPAL_PUBLIC_DEMO === "true" ||
+      process.env.VERCEL === "1" ||
+      Boolean(process.env.VERCEL_URL);
     const configured = process.env.ALLOPAL_DEMO_ACCESS_KEY;
     if (!publicDemo) {
       if (

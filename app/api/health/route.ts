@@ -12,7 +12,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    const message = "Database unavailable";
+    console.error("Health check error:", error);
+    const message = error instanceof Error ? error.message : "Database unavailable";
     return NextResponse.json(
       {
         status: "UNHEALTHY",

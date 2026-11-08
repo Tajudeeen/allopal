@@ -30,6 +30,7 @@ dist/
 *.sqlite-journal
 prisma/*.db
 prisma/*.db-journal
+!prisma/template.db
 
 # Logs
 npm-debug.log*

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 interface Transaction {
   id: string;
   status: string;
-  orderId?: string;
+  orderId?: string | null;
 }
 
 const TERMINAL = ["COMPLETED", "FAILED", "CANCELLED", "REFUNDED", "REVERSED", "REVIEW_REQUIRED"];

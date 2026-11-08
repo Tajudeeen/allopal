@@ -50,19 +50,32 @@ interface ProductData {
 interface TransactionData {
   id: string;
   status: string;
-  orderId?: string;
-  captureId?: string;
+  orderId?: string | null;
+  captureId?: string | null;
+  mandateId?: string;
+  decisionId?: string;
   amount: number;
   currency: string;
+  createdAt: string;
+  updatedAt?: string;
+  errorCode?: string | null;
+  approvalUrl?: string | null;
 }
 
 interface DecisionData {
   id: string;
+  mandateId: string;
+  cartId: string;
   status: string;
   amount: number;
   merchant: string;
   category: string;
   reason: string;
+  paypalOrderId: string | null;
+  paymentStatus?: string | null;
+  paypalCaptureId?: string | null;
+  paypalCalled?: boolean;
+  checks?: Record<string, unknown>;
   createdAt: string;
 }
 

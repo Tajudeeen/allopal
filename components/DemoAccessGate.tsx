@@ -1,18 +1,24 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 
 /**
- * DemoAccessGate - Bypassed/commented out to view the build directly.
- * Original access key form is preserved commented out below.
+ * DemoAccessGate - Bypassed to view the build directly.
+ * Automatically initializes demo session in the background so all APIs work.
  */
 export function DemoAccessGate({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    fetch("/api/demo/session", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) {
+          await fetch("/api/demo/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return <>{children}</>;
 }
-
-/*
-// Original gate code:
-// export function DemoAccessGate({ children }: { children: ReactNode }) {
-//   const [state, setState] = useState<"checking" | "locked" | "ready">("checking");
-//   ...
-// }
-*/

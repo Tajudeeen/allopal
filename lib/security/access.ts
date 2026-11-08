@@ -34,14 +34,15 @@ export function assertSameOrigin(req: NextRequest) {
     throw new AccessError(403, "ORIGIN_REQUIRED");
 }
 export async function requireWorkspace(req?: NextRequest) {
-  if (!req) return "demo";
+  if (!req) throw new AccessError(401, "SESSION_REQUIRED");
+  if (!["GET", "HEAD"].includes(req.method)) assertSameOrigin(req);
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  if (!token) return "demo";
+  if (!token) throw new AccessError(401, "SESSION_REQUIRED");
   const session = await prisma.demoSession.findUnique({
     where: { tokenHash: createHash("sha256").update(token).digest("hex") },
   });
   if (!session || session.expiresAt <= new Date())
-    return "demo";
+    throw new AccessError(401, "SESSION_EXPIRED");
   return session.workspaceId;
 }
 export async function newSession() {

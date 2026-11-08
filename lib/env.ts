@@ -67,10 +67,9 @@ export function requireAiApiKey() {
 }
 
 export function requireWebhookId() {
-  if (!env.PAYPAL_WEBHOOK_ID) {
-    throw new ProviderConfigurationError(
-      "PAYPAL_WEBHOOK_NOT_CONFIGURED: set PAYPAL_WEBHOOK_ID.",
-    );
+  const webhookId = process.env.PAYPAL_WEBHOOK_ID || env.PAYPAL_WEBHOOK_ID;
+  if (!webhookId) {
+    throw new Error("PAYPAL_WEBHOOK_NOT_CONFIGURED");
   }
-  return env.PAYPAL_WEBHOOK_ID;
+  return webhookId;
 }

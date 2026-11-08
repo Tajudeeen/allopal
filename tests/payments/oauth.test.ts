@@ -38,15 +38,19 @@ describe("PayPal credential transport and refresh", () => {
 
   it("coalesces refreshes when a cached token approaches expiry", async () => {
     vi.useFakeTimers();
-    const fetch = vi.spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(token("first"))
-      .mockResolvedValueOnce(token("second"));
-    const provider = client();
-    expect(await provider.getAccessToken()).toBe("first");
-    vi.advanceTimersByTime(3_550_000);
-    expect(await Promise.all([provider.getAccessToken(), provider.getAccessToken()]))
-      .toEqual(["second", "second"]);
-    expect(fetch).toHaveBeenCalledTimes(2);
+    try {
+      const fetch = vi.spyOn(globalThis, "fetch")
+        .mockResolvedValueOnce(token("first"))
+        .mockResolvedValueOnce(token("second"));
+      const provider = client();
+      expect(await provider.getAccessToken()).toBe("first");
+      vi.advanceTimersByTime(3_550_000);
+      expect(await Promise.all([provider.getAccessToken(), provider.getAccessToken()]))
+        .toEqual(["second", "second"]);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it.each(["https://example.com", "http://api-m.paypal.com", "https://api-m.paypal.com/path", "https://api-m.paypal.com?token=x", "https://user:pass@api-m.paypal.com"])

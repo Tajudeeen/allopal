@@ -2,6 +2,7 @@ import { mkdirSync, closeSync, openSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { prismaCli } from "./prisma-cli.mjs";
 
 try {
   process.loadEnvFile?.();
@@ -18,7 +19,7 @@ mkdirSync(dirname(filename), { recursive: true });
 closeSync(openSync(filename, "a")); // Create if absent, never truncate existing records.
 const result = spawnSync(
   process.execPath,
-  [resolve(root, "node_modules/prisma/build/index.js"), "migrate", "deploy"],
+  [prismaCli, "migrate", "deploy"],
   {
     cwd: root,
     env: { ...process.env, DATABASE_URL: url },

@@ -11,7 +11,10 @@ vi.stubGlobal(
   "fetch",
   vi.fn(() => Promise.reject(new Error("UNMOCKED_NETWORK_CALL"))),
 );
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
 
 vi.mock("@/lib/security/access", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/security/access")>();

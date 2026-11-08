@@ -2,6 +2,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { prismaCli } from "./prisma-cli.mjs";
 const directory = mkdtempSync(join(tmpdir(), "allopal-tests-"));
 const database = join(directory, "test.db");
 writeFileSync(database, "");
@@ -18,7 +19,7 @@ const env = {
 try {
   const migration = spawnSync(
     process.execPath,
-    ["node_modules/prisma/build/index.js", "migrate", "deploy"],
+    [prismaCli, "migrate", "deploy"],
     { env, stdio: "inherit" },
   );
   if (migration.status !== 0) process.exitCode = migration.status || 1;

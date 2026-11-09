@@ -1,0 +1,44 @@
+name: repair-lock-and-verify
+on:
+  push:
+    branches:
+      - repair/lock-and-verify
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/repair-lock-and-verify.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair/lock-and-verify
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Regenerate lockfile from package.json
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Commit corrected lockfile
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "fix: align package lock with Prisma 5.22"
+            git push origin repair/lock-and-verify
+          fi
+      - name: Clean dependency install
+        run: npm ci
+      - name: Unit and integration tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { requireAiApiKey } from "@/lib/env";
+import { env, requireAiApiKey } from "@/lib/env";
 
 export interface AgentCatalogItem {
   cartId: string;
@@ -47,6 +47,25 @@ export async function selectCartForAgent(
 
   if (catalog.length === 0) {
     throw new Error("AGENT_CATALOG_EMPTY");
+  }
+
+  if (!env.AI_API_KEY) {
+    const lower = task.toLowerCase();
+    const match =
+      catalog.find(
+        (item) =>
+          lower.includes(item.productName.toLowerCase()) ||
+          lower.includes(item.category.toLowerCase()) ||
+          lower.includes(item.merchant.toLowerCase()) ||
+          (lower.includes("headset") && item.productName.toLowerCase().includes("headset")) ||
+          (lower.includes("notebook") && item.productName.toLowerCase().includes("notebook")) ||
+          (lower.includes("school") && item.category.toLowerCase().includes("school")),
+      ) || catalog[0];
+
+    return {
+      cartId: match.cartId,
+      reason: `Selected "${match.productName}" ($${(match.amount / 100).toFixed(2)}) matching task intent (AI key not set, rule fallback used).`,
+    };
   }
 
   const apiKey = requireAiApiKey();

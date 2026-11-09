@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { requireAiApiKey } from "@/lib/env";
+import { env, requireAiApiKey } from "@/lib/env";
 import type { SpendingReport } from "@/lib/analytics/report";
 
 const answerSchema = z.object({
@@ -10,6 +10,15 @@ export async function analyzeSpending(
   question: string,
   report: SpendingReport,
 ) {
+  if (!env.AI_API_KEY) {
+    const totalCaptured =
+      report.summary.totals.find((t) => t.currency === "USD")?.capturedCents || 0;
+    const spentFormatted = `$${(totalCaptured / 100).toFixed(2)}`;
+    return {
+      answer: `Allopal spending report: Your active mandate is "${report.mandate?.name || "None"}" with a limit of $${((report.mandate?.weeklyLimit || 0) / 100).toFixed(2)}. Total captured spend is ${spentFormatted} across ${report.decisions.length} recorded policy decisions. (AI key not set, summary generated deterministically).`,
+      evidenceIds: ["summary"],
+    };
+  }
   const apiKey = requireAiApiKey();
   // No provider credentials, callback URLs, payer data, or action tools enter this boundary.
   const evidence = {

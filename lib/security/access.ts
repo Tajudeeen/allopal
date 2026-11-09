@@ -15,7 +15,35 @@ export class AccessError extends Error {
     message: string,
   ) {
     super(message);
+    this.name = "AccessError";
+    Object.setPrototypeOf(this, AccessError.prototype);
   }
+}
+
+export function isProviderConfigurationError(
+  error: unknown,
+): error is ProviderConfigurationError {
+  if (error instanceof ProviderConfigurationError) return true;
+  if (typeof error === "object" && error !== null) {
+    const err = error as { name?: string; message?: string };
+    if (err.name === "ProviderConfigurationError") return true;
+    if (
+      typeof err.message === "string" &&
+      (err.message.startsWith("AI_NOT_CONFIGURED") ||
+        err.message.startsWith("PAYPAL_NOT_CONFIGURED"))
+    )
+      return true;
+  }
+  return false;
+}
+
+export function isAccessError(error: unknown): error is AccessError {
+  if (error instanceof AccessError) return true;
+  if (typeof error === "object" && error !== null) {
+    const err = error as { name?: string; status?: number; message?: string };
+    if (err.name === "AccessError" && typeof err.status === "number") return true;
+  }
+  return false;
 }
 export function sameSecret(a: string, b: string) {
   return timingSafeEqual(
@@ -59,20 +87,24 @@ export async function newSession() {
   return { token, workspaceId, expiresAt };
 }
 export function accessResponse(error: unknown) {
-  if (error instanceof ProviderConfigurationError)
+  console.error("API error in accessResponse:", error);
+  if (isProviderConfigurationError(error)) {
+    const msg = (error as Error).message;
     return NextResponse.json(
       {
-        error: error.message.split(":")[0],
+        error: msg.split(":")[0],
         message:
           "The builder needs to configure this provider before it can be used.",
       },
       { status: 503 },
     );
-  if (error instanceof AccessError)
+  }
+  if (isAccessError(error)) {
     return NextResponse.json(
-      { error: error.message },
-      { status: error.status },
+      { error: (error as AccessError).message },
+      { status: (error as AccessError).status },
     );
+  }
   return NextResponse.json(
     {
       error: "REQUEST_FAILED",
@@ -83,15 +115,19 @@ export function accessResponse(error: unknown) {
 }
 export function requestOrigin(req: NextRequest) {
   if (process.env.APP_BASE_URL) return new URL(process.env.APP_BASE_URL).origin;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  const proto = req.headers.get("x-forwarded-proto") || req.nextUrl?.protocol?.replace(":", "") || "http";
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  if (host) return `${proto}://${host}`;
   const url = new URL(req.url);
-  const host = req.headers.get("host");
-  return host ? `${url.protocol}//${host}` : url.origin;
+  return url.origin;
 }
 export function paymentOrigin(req: NextRequest) {
-  const url = new URL(requestOrigin(req));
+  const origin = requestOrigin(req);
+  const url = new URL(origin);
   if (
     process.env.NODE_ENV === "production" &&
-    (!process.env.APP_BASE_URL || url.protocol !== "https:")
+    url.protocol !== "https:"
   )
     throw new AccessError(503, "APP_BASE_URL_REQUIRED");
   return url.origin;

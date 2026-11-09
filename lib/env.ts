@@ -40,7 +40,13 @@ export const env = envSchema.parse({
   AI_API_KEY: process.env.AI_API_KEY,
 });
 
-export class ProviderConfigurationError extends Error {}
+export class ProviderConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProviderConfigurationError";
+    Object.setPrototypeOf(this, ProviderConfigurationError.prototype);
+  }
+}
 
 export function requirePayPalConfig() {
   if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_CLIENT_SECRET) {

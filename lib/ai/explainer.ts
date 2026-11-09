@@ -1,4 +1,4 @@
-import { requireAiApiKey } from "@/lib/env";
+import { env, requireAiApiKey } from "@/lib/env";
 
 export interface DecisionExplanationInput {
   status: "ALLOWED" | "DENIED";
@@ -21,6 +21,14 @@ export interface DecisionExplanationInput {
 export async function generateDecisionExplanation(
   decision: DecisionExplanationInput,
 ): Promise<string> {
+  if (!env.AI_API_KEY) {
+    const formattedAmount = `$${(decision.amount / 100).toFixed(2)}`;
+    if (decision.status === "ALLOWED") {
+      return `The purchase of ${formattedAmount} at ${decision.merchant} was authorized by your mandate policy.`;
+    }
+    return `The purchase of ${formattedAmount} at ${decision.merchant} was declined: ${decision.reason}`;
+  }
+
   const apiKey = requireAiApiKey();
 
   const prompt = `

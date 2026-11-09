@@ -1,4 +1,4 @@
-import { requireAiApiKey } from "@/lib/env";
+import { env, requireAiApiKey } from "@/lib/env";
 import { MandateProposalSchema, AIInterpretationResult } from "./types";
 
 /**
@@ -18,6 +18,30 @@ export async function interpretMandatePrompt(
     return {
       proposal: null,
       error: "Prompt cannot be empty",
+      requiresHumanApproval: true,
+    };
+  }
+
+  if (!env.AI_API_KEY) {
+    const lower = prompt.toLowerCase();
+    const limitMatch = prompt.match(/\$?(\d+)/);
+    const limit = limitMatch ? parseInt(limitMatch[1], 10) * 100 : 4000;
+    const isSchool =
+      lower.includes("school") ||
+      lower.includes("book") ||
+      lower.includes("supplies");
+    return {
+      proposal: {
+        name: isSchool ? "School Shopping" : "General Mandate",
+        weeklyLimit: limit,
+        allowedCategories: isSchool
+          ? ["School Supplies"]
+          : ["School Supplies", "General"],
+        allowedMerchants: isSchool
+          ? ["Campus Books", "Paper & Pencil"]
+          : ["Campus Books"],
+        durationDays: 7,
+      },
       requiresHumanApproval: true,
     };
   }

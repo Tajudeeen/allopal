@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { GET } from "@/app/api/metrics/route";
 import { NextRequest } from "next/server";
 import { seed } from "@/prisma/seed";

@@ -3,10 +3,6 @@ on:
   push:
     branches:
       - repair/lock-and-verify
-    paths:
-      - package.json
-      - package-lock.json
-      - .github/workflows/repair-lock-and-verify.yml
   workflow_dispatch:
 permissions:
   contents: write

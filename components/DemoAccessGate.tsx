@@ -41,6 +41,18 @@ async function ensureDemoSession() {
   }
 }
 
+let sessionInitialization: Promise<void> | null = null;
+
+function ensureDemoSessionOnce() {
+  if (!sessionInitialization) {
+    sessionInitialization = ensureDemoSession().catch((error: unknown) => {
+      sessionInitialization = null;
+      throw error;
+    });
+  }
+  return sessionInitialization;
+}
+
 export function DemoAccessGate({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +60,7 @@ export function DemoAccessGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    ensureDemoSession()
+    ensureDemoSessionOnce()
       .then(() => {
         if (active) {
           setError(null);

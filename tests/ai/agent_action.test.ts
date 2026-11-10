@@ -26,10 +26,9 @@ describe("Allopal guarded AI agent action", () => {
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, init) => {
       const payload = JSON.parse(String(init?.body ?? "{}"));
-      const body =
-        payload.contents?.[0]?.parts?.[0]?.text?.split(
-          "Server-authoritative catalog:",
-        )[0] ?? "";
+      const body = payload.messages?.[1]?.content?.split(
+        "Server-authoritative catalog:",
+      )[0] ?? "";
       const isGaming = body.toLowerCase().includes("gaming headset");
       const selection = {
         cartId: isGaming ? "cart-case-b" : "cart-case-a",
@@ -37,11 +36,7 @@ describe("Allopal guarded AI agent action", () => {
           "Selected a server-authoritative catalog cart that best matches the request.",
       };
       return new Response(
-        JSON.stringify({
-          candidates: [
-            { content: { parts: [{ text: JSON.stringify(selection) }] } },
-          ],
-        }),
+        JSON.stringify({ choices: [{ message: { content: JSON.stringify(selection) } }] }),
         { status: 200 },
       );
     });
@@ -92,11 +87,11 @@ describe("Allopal guarded AI agent action", () => {
     const selection = selectCartDeterministically(
       "find school supplies under $20",
       catalog,
-      "Gemini unavailable (HTTP 400)",
+      "Groq unavailable",
     );
 
     expect(selection.cartId).toBe("cart-case-a");
-    expect(selection.reason).toContain("Gemini unavailable");
+    expect(selection.reason).toContain("Groq unavailable");
     expect(() =>
       selectCartDeterministically("find me something unusual", catalog),
     ).toThrow("AGENT_NO_CATALOG_MATCH");

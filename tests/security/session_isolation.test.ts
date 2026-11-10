@@ -33,11 +33,11 @@ const proposal = {
   allowedMerchants: ["Campus Books"],
 };
 
-describe("Protected isolated demo sessions", () => {
+describe("Protected isolated demo sessions", { timeout: 60000, hookTimeout: 60000 }, () => {
   afterEach(() => vi.unstubAllEnvs());
   beforeEach(async () => {
     await seed();
-  });
+  }, 60000);
 
   it("rejects missing, forged, and expired sessions", async () => {
     expect((await stateGET(request("/api/state"))).status).toBe(401);

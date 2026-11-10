@@ -114,13 +114,20 @@ export function accessResponse(error: unknown) {
   );
 }
 export function requestOrigin(req: NextRequest) {
+  // Validate against the public host that received this request. VERCEL_URL
+  // points at a deployment-specific hostname and can differ from the public
+  // alias (for example, allopal.vercel.app).
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const host = (forwardedHost || req.headers.get("host"))?.split(",")[0]?.trim();
+  if (host) {
+    const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const proto = forwardedProto || new URL(req.url).protocol.replace(":", "");
+    return `${proto}://${host}`;
+  }
+
   if (process.env.APP_BASE_URL) return new URL(process.env.APP_BASE_URL).origin;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  const proto = req.headers.get("x-forwarded-proto") || req.nextUrl?.protocol?.replace(":", "") || "http";
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
-  if (host) return `${proto}://${host}`;
-  const url = new URL(req.url);
-  return url.origin;
+  return new URL(req.url).origin;
 }
 export function paymentOrigin(req: NextRequest) {
   const origin = requestOrigin(req);

@@ -16,7 +16,7 @@ function createExplainRequest(body: unknown): NextRequest {
 describe("Step 9: AI Payment Decision Explanations Specification", () => {
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
-      const prompt = JSON.parse(String(init?.body)).contents[0].parts[0].text as string;
+      const prompt = JSON.parse(String(init?.body)).messages[1].content as string;
       const text = prompt.includes("Payment Status: Policy-only") && prompt.includes("Decision: ALLOWED")
         ? "In dry-run mode policy passed. PayPal was not called."
         : prompt.includes("Payment Status: CREATED")
@@ -24,7 +24,7 @@ describe("Step 9: AI Payment Decision Explanations Specification", () => {
         : prompt.includes("Decision: ALLOWED")
         ? "The $18.00 payment was approved and captured via PayPal."
         : "The Electronics purchase is blocked. The $25.00 request exceeds the $22.00 budget. The mandate was revoked.";
-      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }), { status: 200 });
+      return new Response(JSON.stringify({ choices: [{ message: { content: text } }] }), { status: 200 });
     });
   });
 

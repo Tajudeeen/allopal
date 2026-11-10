@@ -41,13 +41,8 @@ export async function selectCartForAgent(
   task: string,
   catalog: AgentCatalogItem[],
 ): Promise<AgentSelection> {
-  if (!task.trim()) {
-    throw new Error("AGENT_TASK_REQUIRED");
-  }
-
-  if (catalog.length === 0) {
-    throw new Error("AGENT_CATALOG_EMPTY");
-  }
+  if (!task.trim()) throw new Error("AGENT_TASK_REQUIRED");
+  if (catalog.length === 0) throw new Error("AGENT_CATALOG_EMPTY");
 
   if (!env.AI_API_KEY) {
     const lower = task.toLowerCase();
@@ -69,63 +64,48 @@ export async function selectCartForAgent(
   }
 
   const apiKey = requireAiApiKey();
-
   const catalogText = catalog
-    .map(
-      (item) =>
-        `- cartId: ${item.cartId}; product: ${item.productName}; amountCents: ${item.amount}; merchant: ${item.merchant}; category: ${item.category}`,
-    )
+    .map((item) => `- cartId: ${item.cartId}; product: ${item.productName}; amountCents: ${item.amount}; merchant: ${item.merchant}; category: ${item.category}`)
     .join("\n");
 
+  // Gemini 2.5 Flash is being restricted for new API users. Use the supported
+  // Flash-Lite model so the agent continues working with current API keys.
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
     {
       signal: AbortSignal.timeout(15000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: `User request:
+        contents: [{ role: "user", parts: [{ text: `User request:
 ${task}
 
 Server-authoritative catalog:
-${catalogText}`,
-              },
-            ],
-          },
-        ],
-        systemInstruction: {
-          parts: [{ text: SYSTEM_INSTRUCTION }],
-        },
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.1,
-        },
+${catalogText}` }] }],
+        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+        generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
       }),
     },
   );
 
   if (!response.ok) {
+    const errorBody = (await response.text()).slice(0, 1200);
+    // Keep the provider diagnostic in server logs, never return the API key
+    // or raw provider response to the browser.
+    console.error("Gemini agent request failed", {
+      status: response.status,
+      body: errorBody,
+    });
     throw new Error(`Gemini agent error: ${response.status}`);
   }
 
   const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const output = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (typeof output !== "string") throw new Error("Gemini agent returned an empty response.");
 
-  if (typeof text !== "string") {
-    throw new Error("Gemini agent returned an empty response.");
-  }
-
-  const selection = AgentSelectionSchema.parse(JSON.parse(text));
-  const selected = catalog.find((item) => item.cartId === selection.cartId);
-
-  if (!selected) {
+  const selection = AgentSelectionSchema.parse(JSON.parse(output));
+  if (!catalog.some((item) => item.cartId === selection.cartId)) {
     throw new Error("AGENT_SELECTED_UNKNOWN_CART");
   }
-
   return selection;
 }

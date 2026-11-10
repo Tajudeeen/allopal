@@ -51,25 +51,17 @@ export function sameSecret(a: string, b: string) {
     createHash("sha256").update(b).digest(),
   );
 }
-export function assertSameOrigin(
-  req: NextRequest,
-  options: { allowMissingOrigin?: boolean } = {},
-) {
+export function assertSameOrigin(req: NextRequest) {
   const origin = req.headers.get("origin");
   const expected = requestOrigin(req);
+  // Reject explicit cross-site requests and mismatched browser origins.
+  // Some browser runtimes omit Origin on same-origin fetches. Those requests
+  // still need the HttpOnly, host-only, SameSite=Lax session cookie checked
+  // by requireWorkspace before any protected operation can run.
   if (req.headers.get("sec-fetch-site") === "cross-site")
     throw new AccessError(403, "ORIGIN_REJECTED");
   if (origin && origin !== new URL(expected).origin)
     throw new AccessError(403, "ORIGIN_REJECTED");
-  // The anonymous demo bootstrap creates an isolated workspace and may be
-  // called by browser contexts that omit Origin. Explicit cross-site requests
-  // remain blocked above. All other state-changing routes require Origin.
-  if (
-    process.env.NODE_ENV === "production" &&
-    !origin &&
-    !options.allowMissingOrigin
-  )
-    throw new AccessError(403, "ORIGIN_REQUIRED");
 }
 export async function requireWorkspace(req?: NextRequest) {
   if (!req) throw new AccessError(401, "SESSION_REQUIRED");

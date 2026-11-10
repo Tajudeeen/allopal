@@ -171,6 +171,34 @@ describe("Protected isolated demo sessions", () => {
     expect((await sessionPOST(crossSite)).status).toBe(403);
   });
 
+  it("accepts originless same-origin actions with a valid session but rejects cross-site fetches", async () => {
+    const session = await newSession();
+    await seed(session.workspaceId);
+
+    const originless = new NextRequest(origin + "/api/mandates/lock", {
+      method: "POST",
+      headers: {
+        host: "localhost:3000",
+        cookie: `${SESSION_COOKIE}=${session.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(proposal),
+    });
+    expect((await lockPOST(originless)).status).toBe(200);
+
+    const crossSite = new NextRequest(origin + "/api/mandates/lock", {
+      method: "POST",
+      headers: {
+        host: "localhost:3000",
+        cookie: `${SESSION_COOKIE}=${session.token}`,
+        "sec-fetch-site": "cross-site",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(proposal),
+    });
+    expect((await lockPOST(crossSite)).status).toBe(403);
+  });
+
   it("requires a configured strong access key on production deployments", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("ALLOPAL_DEMO_ACCESS_KEY", "");

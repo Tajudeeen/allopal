@@ -119,6 +119,29 @@ describe("Protected isolated demo sessions", () => {
     expect((await lockPOST(req)).status).toBe(200);
   });
 
+  it("creates sessions on the public Vercel alias when VERCEL_URL is deployment-specific", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL", "1");
+    vi.stubEnv("VERCEL_URL", "allopal-preview-deployment.vercel.app");
+    vi.stubEnv("APP_BASE_URL", "");
+
+    const publicOrigin = "https://allopal.vercel.app";
+    const req = new NextRequest(publicOrigin + "/api/demo/session", {
+      method: "POST",
+      headers: {
+        host: "allopal.vercel.app",
+        origin: publicOrigin,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const response = await sessionPOST(req);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie")).toContain("allopal_demo_session=");
+    expect(response.headers.get("set-cookie")).toContain("Secure");
+  });
+
   it("requires a configured strong access key on production deployments", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("ALLOPAL_DEMO_ACCESS_KEY", "");

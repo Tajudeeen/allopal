@@ -18,15 +18,13 @@ function createJsonRequest(url: string, body: unknown): NextRequest {
 describe("Step 8: AI Mandate Interpretation & Human Approval Specification", () => {
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({
-        candidates: [{ content: { parts: [{ text: JSON.stringify({
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
           name: "School Shopping",
           weeklyLimit: 4000,
           durationDays: 7,
           allowedCategories: ["School Supplies"],
           allowedMerchants: ["Campus Books"]
-        }) }] } }]
-      }), { status: 200 })
+        }) } }] }), { status: 200 })
     );
   });
 

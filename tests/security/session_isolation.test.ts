@@ -142,6 +142,35 @@ describe("Protected isolated demo sessions", () => {
     expect(response.headers.get("set-cookie")).toContain("Secure");
   });
 
+  it("allows originless anonymous demo bootstrap but rejects explicit cross-site requests", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL", "1");
+    vi.stubEnv("VERCEL_URL", "allopal-preview-deployment.vercel.app");
+    vi.stubEnv("APP_BASE_URL", "");
+
+    const publicOrigin = "https://allopal.vercel.app";
+    const originless = new NextRequest(publicOrigin + "/api/demo/session", {
+      method: "POST",
+      headers: {
+        host: "allopal.vercel.app",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    expect((await sessionPOST(originless)).status).toBe(200);
+
+    const crossSite = new NextRequest(publicOrigin + "/api/demo/session", {
+      method: "POST",
+      headers: {
+        host: "allopal.vercel.app",
+        "sec-fetch-site": "cross-site",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    expect((await sessionPOST(crossSite)).status).toBe(403);
+  });
+
   it("requires a configured strong access key on production deployments", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("ALLOPAL_DEMO_ACCESS_KEY", "");

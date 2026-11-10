@@ -23,7 +23,7 @@ This is a protected, session-isolated hackathon demo. It is not a production acc
 - Isolated demo workspaces, server-side ownership checks, protected reset, and same-origin mutation checks.
 - Ledger, verified payment notices, and sanitized evidence export.
 - Session-owned spending insights through AG Studio, including mandate health, policy visualization, interactive tables, and dashboard customization.
-- Read-only Gemini analysis grounded in workspace-owned records, with checked evidence references and no payment tools.
+- Read-only Groq analysis grounded in workspace-owned records, with checked evidence references and no payment tools.
 - An in-app judge guide at `/judge` and release configuration preflight via `npm run release:check`.
 
 Implementation is not the same as a live verification result. See [the evidence index](docs/evidence/README.md) and [claims ledger](docs/CLAIMS.md).
@@ -52,7 +52,8 @@ Configure these server variables for the external flows:
 | `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` | PayPal Sandbox application credentials |
 | `PAYPAL_API_BASE_URL` | Defaults to `https://api-m.sandbox.paypal.com` |
 | `PAYPAL_WEBHOOK_ID` | Registered webhook ID from the same PayPal app and environment |
-| `AI_API_KEY` | Gemini key for drafting, cart selection, and explanations |
+| `GROQ_API_KEY` | Server-side Groq API key for drafting, cart selection, analysis, and explanations |
+| `GROQ_MODEL` | Groq model ID, defaults to `openai/gpt-oss-120b` |
 | `RECONCILE_TOKEN` | Optional bearer secret for the HTTP scheduler endpoint |
 | `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` | Browser-visible AG Studio sponsor/commercial license, set before build |
 
@@ -192,6 +193,6 @@ Allopal's architecture cleanly separates the authorization gateway from storage 
 
 Sessions last 24 hours and use a shared builder-issued access key. This isolates demonstrations but does not establish real customer identity or production account recovery. The catalog is fixed. There is no fulfillment, tax/shipping calculation, refund initiation, subscription management, or automatic operator resolution of `REVIEW_REQUIRED` payments.
 
-Gemini structures intent and explains recorded outcomes. It never receives PayPal credentials or an authorization tool. Insights totals cover all records in the current workspace, separated by currency. Detail tables show the latest 500 records per type, while the analyst sees summary totals and the latest 50 of each type. AI answers are advisory text, and evidence IDs are checked rather than independently proving every claim. Production payment operations need a separate identity, compliance, operational, and fulfillment design.
+Groq structures intent, selects catalog candidates, and explains recorded outcomes. It never receives PayPal credentials or an authorization tool. Insights totals cover all records in the current workspace, separated by currency. Detail tables show the latest 500 records per type, while the analyst sees summary totals and the latest 50 of each type. AI answers are advisory text, and evidence IDs are checked rather than independently proving every claim. Production payment operations need a separate identity, compliance, operational, and fulfillment design.
 
 MIT licensed. Reporting details are in [SECURITY.md](SECURITY.md).

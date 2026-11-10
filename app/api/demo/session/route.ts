@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 }
 export async function POST(req: NextRequest) {
   try {
-    assertSameOrigin(req);
+    assertSameOrigin(req, { allowMissingOrigin: true });
     const publicDemo =
       process.env.ALLOPAL_PUBLIC_DEMO === "true" ||
       process.env.VERCEL === "1" ||

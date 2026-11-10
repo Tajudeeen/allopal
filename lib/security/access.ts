@@ -141,28 +141,39 @@ export function accessResponse(error: unknown) {
   );
 }
 export function requestOrigin(req: NextRequest) {
-  // Validate against the public host that received this request. VERCEL_URL
-  // points at a deployment-specific hostname and can differ from the public
-  // alias (for example, allopal.vercel.app).
+  if (process.env.APP_BASE_URL) return new URL(process.env.APP_BASE_URL).origin;
+
   const forwardedHost = req.headers.get("x-forwarded-host");
   const host = (forwardedHost || req.headers.get("host"))?.split(",")[0]?.trim();
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const isVercel = Boolean(process.env.VERCEL) || Boolean(process.env.VERCEL_URL);
+
   if (host) {
-    const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-    const proto = forwardedProto || new URL(req.url).protocol.replace(":", "");
+    const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+    const proto =
+      forwardedProto ||
+      (isVercel || (process.env.NODE_ENV === "production" && !isLocal)
+        ? "https"
+        : new URL(req.url).protocol.replace(":", ""));
     return `${proto}://${host}`;
   }
 
-  if (process.env.APP_BASE_URL) return new URL(process.env.APP_BASE_URL).origin;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return new URL(req.url).origin;
 }
 export function paymentOrigin(req: NextRequest) {
-  const origin = requestOrigin(req);
-  const url = new URL(origin);
+  let origin = requestOrigin(req);
   if (
     process.env.NODE_ENV === "production" &&
-    url.protocol !== "https:"
-  )
-    throw new AccessError(503, "APP_BASE_URL_REQUIRED");
-  return url.origin;
+    !origin.startsWith("https://") &&
+    !origin.includes("localhost") &&
+    !origin.includes("127.0.0.1")
+  ) {
+    if (Boolean(process.env.VERCEL) || Boolean(process.env.VERCEL_URL)) {
+      origin = origin.replace(/^http:\/\//, "https://");
+    } else {
+      throw new AccessError(503, "APP_BASE_URL_REQUIRED");
+    }
+  }
+  return new URL(origin).origin;
 }

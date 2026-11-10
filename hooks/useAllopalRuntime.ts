@@ -122,19 +122,10 @@ export function useAllopalRuntime() {
   const [agentRun, setAgentRun] = useState<AgentRunState | null>(null);
 
   const loadState = useCallback(async () => {
-    let res = await fetch("/api/state", { cache: "no-store" });
-    if (res.status === 401) {
-      try {
-        const init = await fetch("/api/demo/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-        if (init.ok) {
-          res = await fetch("/api/state", { cache: "no-store" });
-        }
-      } catch {}
-    }
+    const res = await fetch("/api/state", {
+      cache: "no-store",
+      credentials: "same-origin",
+    });
     if (!res.ok) {
       let errMsg = "Unable to load Allopal state.";
       try {
@@ -233,19 +224,38 @@ export function useAllopalRuntime() {
         const scope = `agent:${task.trim()}`;
         const idempotencyKey =
           mode === "EXECUTE" ? operationKey(scope) : undefined;
-        const res = await fetch("/api/agent/act", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
-          },
-          body: JSON.stringify({
-            task,
-            mode,
-          }),
-        });
+        const requestAgent = () =>
+          fetch("/api/agent/act", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+            },
+            body: JSON.stringify({ task, mode }),
+            credentials: "same-origin",
+          });
 
-        const data = await res.json();
+        let res = await requestAgent();
+        let data = await res.json();
+
+        // A long-open tab can outlive the 24-hour demo session. Renew only
+        // for explicit session failures, then retry the same idempotent action.
+        if (
+          res.status === 401 &&
+          ["SESSION_REQUIRED", "SESSION_EXPIRED"].includes(data.error)
+        ) {
+          const renewal = await fetch("/api/demo/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+            cache: "no-store",
+            credentials: "same-origin",
+          });
+          if (renewal.ok) {
+            res = await requestAgent();
+            data = await res.json();
+          }
+        }
 
         if (!res.ok && !data.agent) {
           throw new Error(

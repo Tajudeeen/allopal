@@ -18,10 +18,10 @@ const envSchema = z.object({
     .default("https://api-m.sandbox.paypal.com"),
   PAYPAL_WEBHOOK_ID: optionalSecret,
   RECONCILE_TOKEN: optionalSecret,
-  AI_API_KEY: optionalSecret,
+  GROQ_API_KEY: optionalSecret,
+  GROQ_MODEL: z.string().min(1).default("openai/gpt-oss-120b"),
 });
 
-// Load .env in non-Next.js environments (like Vitest or CLI scripts).
 if (!process.env.DATABASE_URL && typeof process.loadEnvFile === "function") {
   try {
     process.loadEnvFile();
@@ -37,7 +37,8 @@ export const env = envSchema.parse({
   PAYPAL_API_BASE_URL: process.env.PAYPAL_API_BASE_URL,
   PAYPAL_WEBHOOK_ID: process.env.PAYPAL_WEBHOOK_ID,
   RECONCILE_TOKEN: process.env.RECONCILE_TOKEN,
-  AI_API_KEY: process.env.AI_API_KEY,
+  GROQ_API_KEY: process.env.GROQ_API_KEY,
+  GROQ_MODEL: process.env.GROQ_MODEL,
 });
 
 export class ProviderConfigurationError extends Error {
@@ -62,14 +63,13 @@ export function requirePayPalConfig() {
   };
 }
 
-export function requireAiApiKey() {
-  if (!env.AI_API_KEY) {
+export function requireGroqApiKey() {
+  if (!env.GROQ_API_KEY) {
     throw new ProviderConfigurationError(
-      "AI_NOT_CONFIGURED: set AI_API_KEY to a real Gemini API key.",
+      "AI_NOT_CONFIGURED: set GROQ_API_KEY to a valid Groq API key.",
     );
   }
-
-  return env.AI_API_KEY;
+  return env.GROQ_API_KEY;
 }
 
 export function requireWebhookId() {

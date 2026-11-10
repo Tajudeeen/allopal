@@ -4,7 +4,7 @@ if (process.env.ALLOPAL_TEST_RUN !== "1")
 process.env.PAYPAL_CLIENT_ID ||= "ci-contract-client";
 process.env.PAYPAL_CLIENT_SECRET ||= "ci-contract-secret";
 process.env.PAYPAL_API_BASE_URL ||= "https://api-m.sandbox.paypal.com";
-process.env.AI_API_KEY ||= "ci-gemini-contract-key";
+process.env.GROQ_API_KEY ||= "ci-groq-contract-key";
 
 // No test may disclose data to a real provider. Each external call needs an explicit fixture.
 vi.stubGlobal(

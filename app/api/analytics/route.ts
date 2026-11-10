@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       {
         ...(await getSpendingReport(workspaceId)),
         availability: {
-          ai: Boolean(env.AI_API_KEY),
+          ai: Boolean(env.GROQ_API_KEY),
           paypal: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
           sandbox: env.PAYPAL_API_BASE_URL.includes("sandbox"),
           webhook: Boolean(process.env.PAYPAL_WEBHOOK_ID),

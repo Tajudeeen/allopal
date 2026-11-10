@@ -12,7 +12,7 @@ import { POST } from "@/app/api/agent/act/route";
 import { prisma } from "@/lib/db/prisma";
 import { seed } from "@/prisma/seed";
 import { payPalClient } from "@/lib/paypal/client";
-import { selectCartForAgent } from "@/lib/ai/agent";
+import { selectCartForAgent, selectCartDeterministically } from "@/lib/ai/agent";
 
 function createRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost:3000/api/agent/act", {
@@ -69,6 +69,37 @@ describe("Allopal guarded AI agent action", () => {
     );
 
     expect(selection.cartId).toBe("cart-case-b");
+  });
+
+  it("uses a bounded catalog fallback when Gemini is unavailable", () => {
+    const catalog = [
+      {
+        cartId: "cart-case-a",
+        productName: "Notebook Bundle",
+        amount: 1800,
+        merchant: "Campus Books",
+        category: "School Supplies",
+      },
+      {
+        cartId: "cart-case-b",
+        productName: "Gaming Headset",
+        amount: 9000,
+        merchant: "Campus Books",
+        category: "Electronics",
+      },
+    ];
+
+    const selection = selectCartDeterministically(
+      "find school supplies under $20",
+      catalog,
+      "Gemini unavailable (HTTP 400)",
+    );
+
+    expect(selection.cartId).toBe("cart-case-a");
+    expect(selection.reason).toContain("Gemini unavailable");
+    expect(() =>
+      selectCartDeterministically("find me something unusual", catalog),
+    ).toThrow("AGENT_NO_CATALOG_MATCH");
   });
 
   it("runs the selected cart through the deterministic policy boundary", async () => {

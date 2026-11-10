@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { env, requireAiApiKey } from "@/lib/env";
+import { groqChatCompletion } from "@/lib/ai/groq";
 
 export interface AgentCatalogItem {
   cartId: string;
@@ -25,12 +25,6 @@ You are NOT the authorization layer.
 You MUST NOT decide that a purchase is allowed.
 You MUST NOT override, reinterpret, weaken, or bypass the user's spending mandate.
 You may select a cart that later fails policy. The deterministic Allopal policy engine makes the final authorization decision.
-
-Return JSON only:
-{
-  "cartId": string,
-  "reason": string
-}
 
 Choose exactly one cart from the supplied catalog.
 Prefer the closest match to the user's requested item, category, merchant, and budget.
@@ -96,78 +90,46 @@ export async function selectCartForAgent(
   if (!task.trim()) throw new Error("AGENT_TASK_REQUIRED");
   if (catalog.length === 0) throw new Error("AGENT_CATALOG_EMPTY");
 
-  if (!env.AI_API_KEY) {
-    return selectCartDeterministically(task, catalog, "AI key is not configured");
-  }
-
-  const apiKey = requireAiApiKey();
   const catalogText = catalog
     .map((item) => `- cartId: ${item.cartId}; product: ${item.productName}; amountCents: ${item.amount}; merchant: ${item.merchant}; category: ${item.category}`)
     .join("\n");
 
   try {
-    // Gemini 2.5 Flash is being restricted for new API users. Use the supported
-    // Flash-Lite model so the agent continues working with current API keys.
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
+    const output = await groqChatCompletion(
+      [
+        { role: "system", content: SYSTEM_INSTRUCTION },
+        {
+          role: "user",
+          content: `User request:\n${task}\n\nServer-authoritative catalog:\n${catalogText}`,
+        },
+      ],
       {
-        signal: AbortSignal.timeout(15000),
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: `User request:
-${task}
-
-Server-authoritative catalog:
-${catalogText}` }] }],
-          systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-          generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
-        }),
+        type: "json_schema",
+        json_schema: {
+          name: "allopal_cart_selection",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              cartId: { type: "string" },
+              reason: { type: "string" },
+            },
+            required: ["cartId", "reason"],
+            additionalProperties: false,
+          },
+        },
       },
     );
 
-    if (!response.ok) {
-      const errorBody = (await response.text()).slice(0, 1200);
-      // Keep provider diagnostics server-side. Never expose the key or raw
-      // provider response to the browser.
-      console.error("Gemini agent request failed", {
-        status: response.status,
-        body: errorBody,
-      });
-      return selectCartDeterministically(
-        task,
-        catalog,
-        `Gemini unavailable (HTTP ${response.status})`,
-      );
-    }
-
-    const data = await response.json();
-    const output = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (typeof output !== "string") {
-      return selectCartDeterministically(
-        task,
-        catalog,
-        "Gemini returned an invalid response",
-      );
-    }
-
     const selection = AgentSelectionSchema.parse(JSON.parse(output));
     if (!catalog.some((item) => item.cartId === selection.cartId)) {
-      return selectCartDeterministically(
-        task,
-        catalog,
-        "Gemini selected an unknown cart",
-      );
+      return selectCartDeterministically(task, catalog, "Groq selected an unknown cart");
     }
     return selection;
   } catch (error) {
-    console.error("Gemini agent selection failed", {
+    console.error("Groq agent selection failed", {
       message: error instanceof Error ? error.message : "Unknown provider error",
     });
-    return selectCartDeterministically(
-      task,
-      catalog,
-      "Gemini request failed",
-    );
+    return selectCartDeterministically(task, catalog, "Groq unavailable");
   }
 }

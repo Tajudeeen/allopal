@@ -34,7 +34,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-                    for root in ["app", "components", "hooks", "lib", "tests", "prisma", "scripts"]:
+          for root in ["app", "components", "hooks", "lib", "tests", "prisma", "scripts"]:
               base = Path(root)
               if not base.exists():
                   continue
@@ -42,7 +42,7 @@ jobs:
                   if path.suffix not in {".ts", ".tsx", ".js", ".jsx"}:
                       continue
                   source = path.read_text()
-                  updated = source.replace('from \"zod\"', 'from \"zod/v3\"').replace(\"from 'zod'\", \"from 'zod/v3'\")
+                  updated = source.replace('from "zod"', 'from "zod/v3"').replace("from 'zod'", "from 'zod/v3'")
                   if updated != source:
                       path.write_text(updated)
           PY

@@ -33,7 +33,7 @@ const proposal = {
   allowedMerchants: ["Campus Books"],
 };
 
-describe("Protected isolated demo sessions", { timeout: 60000, hookTimeout: 60000 }, () => {
+describe("Protected isolated demo sessions", () => {
   afterEach(() => vi.unstubAllEnvs());
   beforeEach(async () => {
     await seed();

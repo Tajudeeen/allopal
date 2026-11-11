@@ -114,10 +114,10 @@ export default function JudgePage() {
                 {report.payments.filter((p) => p.captured).length}
               </li>
               <li>
-                AG Studio license setting:{" "}
+                AG Studio license:{" "}
                 {process.env.NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY
-                  ? "provided, confirm validity through judging"
-                  : "evaluation, release license required"}
+                  ? "key configured, confirm sponsor coverage through judging"
+                  : "no app key configured, AG Grid says hackathon judging is sponsor-covered"}
               </li>
             </ul>
           )}

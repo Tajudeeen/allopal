@@ -102,7 +102,7 @@ export default function JudgePage() {
                   ? "Sandbox"
                   : "live provider configured, use Sandbox for judging"}
               </li>
-              <li>Gemini: {availability.ai ? "configured" : "missing"}</li>
+              <li>Groq AI: {availability.ai ? "configured" : "missing"}</li>
               <li>
                 Webhook ID:{" "}
                 {availability.webhook

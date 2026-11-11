@@ -43,6 +43,9 @@ jobs:
       - name: Audit production dependencies (fail on high/critical)
         run: npm audit --omit=dev --audit-level=high
 
+      - name: Audit all dependencies (fail on high/critical)
+        run: npm audit --audit-level=high
+
       - name: Generate Prisma client
         run: npm run prisma:generate
 

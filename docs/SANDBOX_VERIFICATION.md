@@ -5,7 +5,7 @@ Status: external verification still required. Automated fixtures do not establis
 ## Configure
 
 1. Configure the server-side PayPal Sandbox credentials and Groq API key/model described in README.
-2. Set the public HTTPS `APP_BASE_URL` and a strong `ALLOPAL_DEMO_ACCESS_KEY`.
+2. Set the public HTTPS `APP_BASE_URL`. The public Vercel demo creates isolated sessions automatically. Configure `ALLOPAL_DEMO_ACCESS_KEY` only when running a private self-hosted deployment.
 3. Use durable SQLite storage, apply migrations, and start the web process and recovery worker.
 4. Register `/api/paypal/webhook` in the same Sandbox app. Set its real `PAYPAL_WEBHOOK_ID`.
 5. Open a private demo session in a browser. Use a Sandbox buyer account separate from the merchant app account.

@@ -54,7 +54,7 @@ The AI answer is advisory generated text. Evidence IDs are validated against the
 
 - PayPal Orders API and JavaScript SDK v6: Sandbox order creation, buyer approval, capture, and cancellation.
 - PayPal webhook verification API: authenticate events before re-reading provider state.
-- Gemini 2.5 Flash: mandate drafts, catalog cart selection, decision explanations, and read-only spending analysis. Live-provider verification remains pending until dated evidence is recorded.
+- Groq API with the configured `GROQ_MODEL` (currently `openai/gpt-oss-120b`): mandate drafts, catalog cart selection, decision explanations, and read-only spending analysis. Provider configuration is visible in the deployed judge guide, but live request and buyer-flow verification still need dated evidence.
 - AG Studio 3.0.0 and AG Studio React: spending dashboard, custom mandate widget, editable layout, and custom analyst runner. Sponsor license setup remains required.
 - Postman collection: reproducible API walkthrough with session, origin, and idempotency requirements.
 - ChatGPT/Codex: implementation assistance and test/documentation work. Review and amend this statement to include other tools actually used.

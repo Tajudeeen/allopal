@@ -44,7 +44,9 @@ jobs:
         run: npm ci
 
       - name: Verify test toolchain versions
-        run: npm ls vitest vite vite-tsconfig-paths --depth=0
+        run: |
+          npm ls vitest vite vite-tsconfig-paths --depth=0
+          npm exec vitest -- --version
 
       - name: Audit production dependencies (fail on high/critical)
         run: npm audit --omit=dev --audit-level=high

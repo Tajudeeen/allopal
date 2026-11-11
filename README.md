@@ -205,7 +205,7 @@ The deployed health endpoint currently confirms database connectivity. That resp
 
 ## Limits
 
-Sessions last 24 hours and use a shared builder-issued access key. This isolates demonstrations but does not establish real customer identity or production account recovery. The catalog is fixed. There is no fulfillment, tax/shipping calculation, refund initiation, subscription management, or automatic operator resolution of `REVIEW_REQUIRED` payments.
+Public Vercel demo sessions are created automatically and last 24 hours. Each browser gets an isolated workspace. This isolates demonstrations but does not establish real customer identity or production account recovery. The catalog is fixed. There is no fulfillment, tax/shipping calculation, refund initiation, subscription management, or automatic operator resolution of `REVIEW_REQUIRED` payments.
 
 Groq structures intent, selects catalog candidates, and explains recorded outcomes. It never receives PayPal credentials or an authorization tool. Insights totals cover all records in the current workspace, separated by currency. Detail tables show the latest 500 records per type, while the analyst sees summary totals and the latest 50 of each type. AI answers are advisory text, and evidence IDs are checked rather than independently proving every claim. Production payment operations need a separate identity, compliance, operational, and fulfillment design.
 

@@ -7,6 +7,9 @@ on:
       - package.json
       - package-lock.json
       - .github/workflows/ci.yml
+      - vitest.config.mts
+      - tests/**
+      - scripts/test.mjs
 permissions:
   contents: write
 jobs:

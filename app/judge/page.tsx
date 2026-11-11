@@ -160,10 +160,10 @@ export default function JudgePage() {
           </p>
         </section>
         <p className="text-sm leading-7 text-slate-600">
-          If you were given an access key, enter it on the demo entry screen.
-          Each session lasts 24 hours. Re-entering with the supplied key creates
-          a new isolated workspace. The builder must keep access working through
-          the judging period.
+          The public judging demo creates an isolated workspace automatically
+          for each browser. Sessions last 24 hours. After a session expires,
+          reload the app to start a fresh workspace. No shared access key is
+          needed for this public demo.
         </p>
       </div>
     </ProductShell>

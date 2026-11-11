@@ -199,7 +199,7 @@ The current hardening branch adds the following release controls:
 - Vercel sends `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, and `Permissions-Policy` on application responses.
 - The Content Security Policy is currently report-only. It must remain report-only until browser testing confirms PayPal checkout, Next.js scripts, and required external requests work under the policy.
 
-The dependency baseline is Next.js 15.5.29, Zod 4.6.7, and PostCSS 8.5.32. Existing Zod 3 schema behavior is retained through the `zod/v3` compatibility entrypoint while application schemas are migrated deliberately.
+The dependency baseline is Next.js 15.5.29, Zod 4.6.7, and PostCSS 8.5.32. The test toolchain uses Vitest 4.1.12, Vite 6.4.6, and vite-tsconfig-paths 6.1.1. CI pins npm 11.21.2. Existing Zod 3 schema behavior is retained through the `zod/v3` compatibility entrypoint while application schemas are migrated deliberately.
 
 The deployed health endpoint currently confirms database connectivity. That response does not prove durable storage across serverless instances or redeployments. The demo still uses SQLite. Treat PostgreSQL migration, data transfer, and production persistence as open release work until a separate database is provisioned and verified.
 

@@ -15,6 +15,17 @@ export async function GET(req: NextRequest) {
     await requireWorkspace(req);
     return NextResponse.json({ authenticated: true });
   } catch (error) {
+    // A missing/expired cookie is the expected first step before public
+    // demo-session creation. Return 401 without logging it as a server error.
+    if (error instanceof AccessError && error.status === 401) {
+      return NextResponse.json(
+        { error: error.message },
+        {
+          status: 401,
+          headers: { "Cache-Control": "private, no-store" },
+        },
+      );
+    }
     return accessResponse(error);
   }
 }

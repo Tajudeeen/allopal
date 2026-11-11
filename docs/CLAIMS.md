@@ -18,7 +18,7 @@
 | The deployed Groq and PayPal Sandbox configuration is available in a real buyer browser | Judge guide reports both providers configured; no verified buyer capture or webhook evidence yet | Configured, not live-verified |
 | The Docker web/worker stack has been run                                     | Docker unavailable in this workspace                             | Not execution-verified                                   |
 | Insights uses only the caller's workspace and separates payment states/currencies | `lib/analytics/report.ts`, analytics tests | Verification results tracked in the evidence index |
-| The analyst cannot modify money or authority | Dedicated read-only route, server-selected evidence, Studio runner without tools | Test-covered with explicit Gemini fixtures |
+| The analyst cannot modify money or authority | Dedicated read-only route, server-selected evidence, Studio runner without tools | Test-covered with Groq response fixtures |
 | AG Studio dashboard, custom widget, layout editing, and agent runner are integrated | `/insights`, `components/analytics/SpendingStudio.tsx`, `lib/analytics/studio-agent.ts` | Sponsor license and configured live Gemini evidence still required |
 
 Tests use synthetic provider responses and a disposable database. A green test is evidence of the tested behavior, not a production transaction. Promote external claims only after following `docs/SANDBOX_VERIFICATION.md`.

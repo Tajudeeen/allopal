@@ -151,8 +151,8 @@ Browser-facing APIs require the HttpOnly demo-session cookie. Mutating browser r
 | `/api/authorize` | POST | Policy-only evaluation, no PayPal call |
 | `/api/agent/act` | POST | AI cart selection, then dry-run or guarded execution |
 | `/api/payments/pay` | POST | Start/resume an idempotent payment operation |
-| `/api/payments/paypal/return` | GET | Validate session and callback state, then claim capture |
-| `/api/payments/paypal/cancel` | GET | Validate session/state and request cancellation |
+| `/api/payments/paypal/return` | GET | Validate per-order callback state, then claim capture |
+| `/api/payments/paypal/cancel` | GET | Validate per-order callback state and request cancellation |
 | `/api/payments/status?order=...` | GET | Verified stored payment state for its owner |
 | `/api/payments/reconcile` | POST | Refresh the caller's unresolved payments |
 | `/api/paypal/webhook` | POST | Verify a provider event and reconcile |
@@ -160,7 +160,7 @@ Browser-facing APIs require the HttpOnly demo-session cookie. Mutating browser r
 | `/api/decisions/explain` | POST | Read-only AI explanation |
 | `/api/evidence` | GET | Download sanitized session evidence |
 | `/api/analytics` | GET | Session-owned totals, capped detail records, provider availability |
-| `/api/analytics/ask` | POST | Read-only Gemini analysis grounded in server-selected records |
+| `/api/analytics/ask` | POST | Read-only Groq analysis grounded in server-selected records |
 | `/api/demo/reset` | POST | Reset only the caller's workspace, blocked by unresolved payments |
 | `/api/health` | GET | Database availability without internal error details |
 
@@ -188,6 +188,20 @@ Allopal's architecture cleanly separates the authorization gateway from storage 
 - **PostgreSQL & Horizontal Persistence**: Replace SQLite with PostgreSQL by switching Prisma's datasource provider (`provider = "postgresql"`). In production, state transitions (`beginPayment`, `claimCapture`, `recordAttempt`) run inside SERIALIZABLE or `SELECT FOR UPDATE` database transactions behind PgBouncer or Prisma Accelerate for zero-lock contention under heavy concurrent checkout loads. Read-heavy analytics (the `/insights` engine) point to read replicas, isolating operational payments from analytical queries.
 - **Per-Agent Identity & Machine Authentication**: Move from the shared demo access key to machine-to-machine identity using OAuth 2.0 Client Credentials (RFC 6749) with short-lived, cryptographically signed JWT tokens (RFC 9068) or mutual TLS (mTLS). Each autonomous agent receives a unique cryptographic principal (`agent_id`) mapped directly to its assigned mandate in the policy engine, enabling non-repudiable audit logging of every proposal and checkout attempt.
 - **Distributed Rate Limiting & Multi-Instance Lock Coordination**: Replace in-memory sliding-window maps with Redis-backed rate limiting (`rate-limiter-flexible` / Upstash Redis) keyed on `(agent_id, mandate_id, ip)`. High-throughput multi-region serverless instances use Redlock distributed primitives for millisecond-level atomic budget reservation and cross-instance webhook delivery deduplication.
+
+## Release Security Baseline
+
+The current hardening branch adds the following release controls:
+
+- Gitleaks runs before dependency installation and build steps.
+- CI blocks high and critical vulnerabilities in production dependencies.
+- Dependabot checks npm packages and GitHub Actions weekly.
+- Vercel sends `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, and `Permissions-Policy` on application responses.
+- The Content Security Policy is currently report-only. It must remain report-only until browser testing confirms PayPal checkout, Next.js scripts, and required external requests work under the policy.
+
+The dependency baseline is Next.js 15.5.29, Zod 4.6.7, and PostCSS 8.5.32. Existing Zod 3 schema behavior is retained through the `zod/v3` compatibility entrypoint while application schemas are migrated deliberately.
+
+The deployed health endpoint currently confirms database connectivity. That response does not prove durable storage across serverless instances or redeployments. The demo still uses SQLite. Treat PostgreSQL migration, data transfer, and production persistence as open release work until a separate database is provisioned and verified.
 
 ## Limits
 

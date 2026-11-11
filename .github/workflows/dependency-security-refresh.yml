@@ -1,0 +1,77 @@
+name: Dependency security refresh
+on:
+  push:
+    branches:
+      - hardening/dependency-security-patches
+permissions:
+  contents: read
+jobs:
+  refresh-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: file:./ci.db
+      PAYPAL_CLIENT_ID: ci-contract-client
+      PAYPAL_CLIENT_SECRET: ci-contract-secret
+      PAYPAL_API_BASE_URL: https://api-m.sandbox.paypal.com
+      AI_API_KEY: ci-gemini-contract-key
+      NEXTAUTH_SECRET: ci-nextauth-secret
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: hardening/dependency-security-patches
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Regenerate lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Preserve Zod v3 schema API on patched Zod 4
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for root in ["app", "components", "hooks", "lib", "tests", "prisma", "scripts"]:
+              base = Path(root)
+              if not base.exists():
+                  continue
+              for path in base.rglob("*"):
+                  if path.suffix not in {".ts", ".tsx", ".js", ".jsx"}:
+                      continue
+                  source = path.read_text()
+                  updated = re.sub(r'from (["\\'])zod\\1', r'from \\1zod/v3\\1', source)
+                  if updated != source:
+                      path.write_text(updated)
+          PY
+      - name: Clean install
+        run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Deploy disposable database
+        run: npm run db:deploy
+      - name: Tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: Upload verified dependency changes
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allopal-dependency-security-refresh
+          path: |
+            package-lock.json
+            app/
+            components/
+            hooks/
+            lib/
+            tests/
+            prisma/
+            scripts/
+          retention-days: 7

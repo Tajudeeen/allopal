@@ -38,7 +38,7 @@ Dashboard layout and Studio chat state are kept in memory for the current visit.
 
 The broad prize table accepts AG Grid tools, but the sponsor's detailed brief asks for polished AG Studio dashboards, custom widgets/theming/layout, and agent integration. This implementation addresses those areas. Eligibility and judging remain the organizers' decision.
 
-AG Studio is commercially licensed. Our application source remains MIT, while dependencies retain their own licenses. Obtain a sponsor trial through the official sponsor page, including coverage for the AI module, set `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` before building, and confirm its term covers judging. A missing key leaves the evaluation watermark visible. Do not suppress it or claim a license has been granted.
+AG Studio is commercially licensed. Our application source remains MIT, while dependencies retain their own licenses. AG Grid's 6 November PayPal hackathon blog says entries do not need a separate license and that AG Grid will cover the judging-period key. The current deployment has no `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` configured, so confirm sponsor coverage through the AG Grid team or PayPal Discord. A missing key may leave the evaluation watermark visible. Do not suppress it or claim a key is installed. See the [AG Studio hackathon guidance](https://www.ag-grid.com/blog/build-a-payments-dashboard-without-building-a-dashboard/) and [AG Grid sponsor page](https://paypalaihackathon.devpost.com/details/aggrid).
 
 Evidence to record:
 

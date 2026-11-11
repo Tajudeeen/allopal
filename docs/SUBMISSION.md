@@ -46,7 +46,7 @@ Evidence to record:
 2. Compare its captured/reserved totals against the ledger. Totals cover the workspace, tables show at most the latest 500 records each, and the latest mandate card can coexist with historical activity.
 3. Customize the dashboard layout and show that the financial records are unchanged.
 4. Ask why a purchase was denied. Inspect its cited source record. The server sends summary totals and the latest 50 records of each type, without provider credentials, payer payloads, or callback tokens.
-5. Demonstrate honest provider failure handling. No AI answer should appear if Gemini is unavailable.
+5. Demonstrate honest provider failure handling. No AI answer should appear if Groq is unavailable.
 
 The AI answer is advisory generated text. Evidence IDs are validated against the supplied records, but this does not independently prove every sentence true. Inspect the deterministic totals and source records. The per-workspace AI rate limiter is an in-memory single-host demo guard and resets on process restart.
 

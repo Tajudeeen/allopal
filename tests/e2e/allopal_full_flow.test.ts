@@ -25,20 +25,16 @@ describe("Step 12: Complete Allopal End-to-End Payment Flow Specification", () =
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [
-                  {
-                    text: JSON.stringify({
-                      name: "School Shopping",
-                      weeklyLimit: 4000,
-                      durationDays: 7,
-                      allowedCategories: ["School Supplies"],
-                      allowedMerchants: ["Campus Books"],
-                    }),
-                  },
-                ],
+              message: {
+                content: JSON.stringify({
+                  name: "School Shopping",
+                  weeklyLimit: 4000,
+                  durationDays: 7,
+                  allowedCategories: ["School Supplies"],
+                  allowedMerchants: ["Campus Books"],
+                }),
               },
             },
           ],

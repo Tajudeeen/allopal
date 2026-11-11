@@ -271,7 +271,7 @@ describe("Protected isolated demo sessions", { timeout: 60000, hookTimeout: 6000
           ),
         )
       ).status,
-    ).toBe(404);
+    ).toBe(403);
     expect(
       (
         await statusGET(

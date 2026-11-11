@@ -35,7 +35,7 @@ jobs:
           rm -f package-lock.json
           npm install --package-lock-only --ignore-scripts
       - name: Apply compatible transitive security fixes
-        run: npm audit fix
+        run: npm audit fix --audit-level=high
       - name: Clean install
         run: npm ci
       - name: Audit production dependencies

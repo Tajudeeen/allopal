@@ -4,7 +4,7 @@ Status: external verification still required. Automated fixtures do not establis
 
 ## Configure
 
-1. Configure the server-side PayPal Sandbox and Gemini credentials described in README.
+1. Configure the server-side PayPal Sandbox credentials and Groq API key/model described in README.
 2. Set the public HTTPS `APP_BASE_URL` and a strong `ALLOPAL_DEMO_ACCESS_KEY`.
 3. Use durable SQLite storage, apply migrations, and start the web process and recovery worker.
 4. Register `/api/paypal/webhook` in the same Sandbox app. Set its real `PAYPAL_WEBHOOK_ID`.

@@ -41,7 +41,7 @@ describe("Step 13: Dedicated Technical Security Audit", () => {
     const payText = await payRes.text();
 
     expect(payText).not.toContain(env.PAYPAL_CLIENT_SECRET);
-    expect(payText).not.toContain(env.AI_API_KEY);
+    expect(payText).not.toContain(env.GROQ_API_KEY);
   });
 
   it("Security Audit 2: Client price & category injection is strictly defeated", async () => {

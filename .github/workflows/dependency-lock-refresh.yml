@@ -29,7 +29,9 @@ jobs:
           node-version: 22
           cache: npm
       - name: Regenerate lockfile
-        run: npm install --package-lock-only --ignore-scripts
+        run: |
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts
       - name: Apply compatible transitive security fixes
         run: npm audit fix
       - name: Clean install

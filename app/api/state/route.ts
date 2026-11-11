@@ -47,7 +47,7 @@ export async function GET(req?: NextRequest) {
         paypalMode: env.PAYPAL_API_BASE_URL.includes("sandbox")
           ? "PAYPAL_SANDBOX"
           : "PAYPAL",
-        aiConfigured: Boolean(env.AI_API_KEY),
+        aiConfigured: Boolean(env.GROQ_API_KEY),
         paypalConfigured: Boolean(
           env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET,
         ),

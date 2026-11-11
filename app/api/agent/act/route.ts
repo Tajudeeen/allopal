@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "@/lib/db/prisma";
 import { selectCartForAgent } from "@/lib/ai/agent";
 import { evaluateMandate } from "@/lib/policy/engine";

@@ -4,7 +4,7 @@ import {
   AccessError,
 } from "@/lib/security/access";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "@/lib/db/prisma";
 import { evaluateMandate } from "@/lib/policy/engine";
 

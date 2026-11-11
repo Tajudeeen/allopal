@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { env } from "@/lib/env";
 import { groqChatCompletion } from "@/lib/ai/groq";
 import type { SpendingReport } from "@/lib/analytics/report";

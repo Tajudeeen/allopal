@@ -1,8 +1,5 @@
 name: Dependency security refresh
 on:
-  push:
-    branches:
-      - hardening/dependency-security-patches
   pull_request:
     branches:
       - main
@@ -57,13 +54,16 @@ jobs:
       - name: Tests
         run: npm test
       - name: Typecheck
+        if: always()
         run: npm run typecheck
       - name: Lint
+        if: always()
         run: npm run lint
       - name: Production build
+        if: always()
         run: npm run build
       - name: Upload verified dependency changes
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allopal-dependency-security-refresh

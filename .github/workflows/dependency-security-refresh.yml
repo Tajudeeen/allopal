@@ -4,7 +4,7 @@ on:
     branches:
       - main
 permissions:
-  contents: read
+  contents: write
 jobs:
   refresh-and-verify:
     runs-on: ubuntu-latest
@@ -14,7 +14,7 @@ jobs:
       PAYPAL_CLIENT_ID: ci-contract-client
       PAYPAL_CLIENT_SECRET: ci-contract-secret
       PAYPAL_API_BASE_URL: https://api-m.sandbox.paypal.com
-      AI_API_KEY: ci-gemini-contract-key
+      GROQ_API_KEY: ci-groq-contract-key
       NEXTAUTH_SECRET: ci-nextauth-secret
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +62,16 @@ jobs:
       - name: Production build
         if: always()
         run: npm run build
+      - name: Commit verified dependency changes
+        if: success()
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json app components hooks lib tests prisma scripts
+            git commit -m "fix: lock patched dependencies and preserve zod v3 APIs"
+            git push origin hardening/dependency-security-patches
+          fi
       - name: Upload verified dependency changes
         if: always()
         uses: actions/upload-artifact@v4

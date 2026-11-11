@@ -13,7 +13,7 @@ Deadline: 12 November 2026, 12:00 PST, which is 21:00 in Lagos. Judging access m
 - [ ] Show meaningful PayPal Sandbox and AI functionality in a working build.
 - [ ] Make the source repository public with the existing detectable MIT license. Audit the repository and its history for secrets before changing visibility. Never publish `.env` or provider secrets.
 - [ ] Provide either a hosted working demo or complete setup/run instructions. Hosting is optional under the rules.
-- [ ] Provide any demo entry key and Sandbox buyer access through the submission's judge testing instructions. Keep server provider secrets on the server. Do not make judges wait for a manual access request.
+- [ ] Provide clear demo and Sandbox buyer instructions. The public Vercel demo creates an isolated browser session automatically, so no shared entry key is required. Keep provider secrets on the server and do not make judges wait for a manual access request.
 - [ ] Identify the AI models/services and development tools actually used and explain their roles.
 - [ ] Upload a public YouTube video under 3 minutes showing the build functioning and include its link.
 - [ ] Keep access free and usable through judging. Confirm third-party trial licenses remain valid through that period.

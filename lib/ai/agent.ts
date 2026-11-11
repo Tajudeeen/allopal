@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { groqChatCompletion } from "@/lib/ai/groq";
 
 export interface AgentCatalogItem {

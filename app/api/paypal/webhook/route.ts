@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "@/lib/db/prisma";
 import { payPalClient } from "@/lib/paypal/client";
 import { reconcilePayment } from "@/lib/payments/lifecycle";

@@ -1,14 +1,14 @@
 # Sandbox verification and evidence
 
-Status: external verification still required. Automated fixtures do not establish that a PayPal account, webhook, or Gemini credential works.
+Status: external verification still required. Automated fixtures do not establish that a PayPal account, webhook, or Groq credential works.
 
 ## Configure
 
-1. Configure the server-side PayPal Sandbox and Gemini credentials described in README.
-2. Set the public HTTPS `APP_BASE_URL` and a strong `ALLOPAL_DEMO_ACCESS_KEY`.
-3. Use durable SQLite storage, apply migrations, and start the web process and recovery worker.
+1. Configure the server-side PayPal Sandbox credentials and Groq API key/model described in README.
+2. Set the public HTTPS `APP_BASE_URL`. The public Vercel demo creates isolated sessions automatically. Configure `ALLOPAL_DEMO_ACCESS_KEY` only when running a private self-hosted deployment.
+3. For self-hosting, use a durable SQLite volume, apply migrations, and run the web process and recovery worker against the same file. Vercel serverless needs an external PostgreSQL database for durable shared persistence. The current health check confirms connectivity, not persistence across redeployments.
 4. Register `/api/paypal/webhook` in the same Sandbox app. Set its real `PAYPAL_WEBHOOK_ID`.
-5. Open a private demo session in a browser. Use a Sandbox buyer account separate from the merchant app account.
+5. Open the public demo in a browser. It creates an isolated 24-hour session automatically. Use a Sandbox buyer account separate from the merchant app account.
 
 ## Record
 

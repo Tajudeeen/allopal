@@ -13,6 +13,7 @@ vi.stubGlobal(
 );
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.clearAllMocks();
   vi.useRealTimers();
 });
 

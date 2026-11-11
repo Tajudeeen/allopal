@@ -248,7 +248,7 @@ export default function InsightsPage() {
               </form>
               {!report.availability.ai && (
                 <p className="mt-3 text-sm text-amber-900">
-                  The builder needs to configure Gemini to enable analysis. Your
+                  The builder needs to configure Groq to enable AI analysis. Your
                   recorded totals remain available.
                 </p>
               )}

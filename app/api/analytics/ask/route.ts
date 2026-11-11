@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import {
   requireWorkspace,
   accessResponse,
@@ -61,6 +61,13 @@ export async function POST(req: NextRequest) {
       error instanceof ProviderConfigurationError
     )
       return accessResponse(error);
+    const diagnostic =
+      error instanceof Error && /^[A-Z0-9_]{1,80}$/.test(error.message)
+        ? error.message
+        : error instanceof Error
+          ? error.name
+          : "UNKNOWN";
+    console.error("ANALYSIS_UNAVAILABLE", { diagnostic });
     return NextResponse.json(
       {
         error: "ANALYSIS_UNAVAILABLE",

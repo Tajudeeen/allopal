@@ -5,7 +5,7 @@ import {
   AccessError,
 } from "@/lib/security/access";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { interpretMandatePrompt } from "@/lib/ai/interpreter";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/ratelimit";
 

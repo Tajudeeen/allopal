@@ -19,25 +19,66 @@ jobs:
       PAYPAL_CLIENT_ID: ci-contract-client
       PAYPAL_CLIENT_SECRET: ci-contract-secret
       PAYPAL_API_BASE_URL: https://api-m.sandbox.paypal.com
-      AI_API_KEY: ci-gemini-contract-key
+      GROQ_API_KEY: ci-groq-contract-key
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
+
+      - name: Pin npm CLI
+        run: npm install --global npm@11.21.2
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-        continue-on-error: true
+      - name: Verify test toolchain versions
+        run: |
+          npm ls vitest vite vite-tsconfig-paths --depth=0
+          npm exec vitest -- --version
+
+      - name: Audit production dependencies (fail on high/critical)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit all dependencies (fail on high/critical)
+        run: |
+          npm audit --json > npm-audit.json || true
+          node - <<'NODE'
+          const report = require("./npm-audit.json");
+          const vulnerabilities = Object.entries(report.vulnerabilities || {});
+          const blocking = vulnerabilities.filter(([, item]) =>
+            ["high", "critical"].includes(item.severity),
+          );
+          for (const [name, item] of blocking) {
+            console.log(
+              JSON.stringify({
+                package: name,
+                severity: item.severity,
+                direct: item.isDirect,
+                range: item.range,
+                fixAvailable: item.fixAvailable,
+                advisories: item.via
+                  .filter((entry) => typeof entry === "object")
+                  .map((entry) => entry.title),
+              }),
+            );
+          }
+          console.log(
+            `Audit summary: ${report.metadata?.vulnerabilities?.high || 0} high, ${report.metadata?.vulnerabilities?.critical || 0} critical`,
+          );
+          if (blocking.length) process.exit(1);
+          NODE
 
       - name: Generate Prisma client
         run: npm run prisma:generate
@@ -45,7 +86,7 @@ jobs:
       - name: Deploy disposable database
         run: npm run db:deploy
 
-      - name: Run tests
+      - name: Run isolated test suite (Vitest 4)
         run: npm test -- --run
 
       - name: Typecheck
@@ -69,9 +110,6 @@ jobs:
           retention-days: 7
           include-hidden-files: true
           if-no-files-found: warn
-
-      - name: Scan repository for secrets
-        uses: gitleaks/gitleaks-action@v2
 
   docker-smoke:
     name: docker-smoke

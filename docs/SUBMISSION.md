@@ -13,7 +13,7 @@ Deadline: 12 November 2026, 12:00 PST, which is 21:00 in Lagos. Judging access m
 - [ ] Show meaningful PayPal Sandbox and AI functionality in a working build.
 - [ ] Make the source repository public with the existing detectable MIT license. Audit the repository and its history for secrets before changing visibility. Never publish `.env` or provider secrets.
 - [ ] Provide either a hosted working demo or complete setup/run instructions. Hosting is optional under the rules.
-- [ ] Provide any demo entry key and Sandbox buyer access through the submission's judge testing instructions. Keep server provider secrets on the server. Do not make judges wait for a manual access request.
+- [ ] Provide clear demo and Sandbox buyer instructions. The public Vercel demo creates an isolated browser session automatically, so no shared entry key is required. Keep provider secrets on the server and do not make judges wait for a manual access request.
 - [ ] Identify the AI models/services and development tools actually used and explain their roles.
 - [ ] Upload a public YouTube video under 3 minutes showing the build functioning and include its link.
 - [ ] Keep access free and usable through judging. Confirm third-party trial licenses remain valid through that period.
@@ -38,7 +38,7 @@ Dashboard layout and Studio chat state are kept in memory for the current visit.
 
 The broad prize table accepts AG Grid tools, but the sponsor's detailed brief asks for polished AG Studio dashboards, custom widgets/theming/layout, and agent integration. This implementation addresses those areas. Eligibility and judging remain the organizers' decision.
 
-AG Studio is commercially licensed. Our application source remains MIT, while dependencies retain their own licenses. Obtain a sponsor trial through the official sponsor page, including coverage for the AI module, set `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` before building, and confirm its term covers judging. A missing key leaves the evaluation watermark visible. Do not suppress it or claim a license has been granted.
+AG Studio is commercially licensed. Our application source remains MIT, while dependencies retain their own licenses. AG Grid's 6 November PayPal hackathon blog says entries do not need a separate license and that AG Grid will cover the judging-period key. The current deployment has no `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` configured, so confirm sponsor coverage through the AG Grid team or PayPal Discord. A missing key may leave the evaluation watermark visible. Do not suppress it or claim a key is installed. See the [AG Studio hackathon guidance](https://www.ag-grid.com/blog/build-a-payments-dashboard-without-building-a-dashboard/) and [AG Grid sponsor page](https://paypalaihackathon.devpost.com/details/aggrid).
 
 Evidence to record:
 
@@ -46,7 +46,7 @@ Evidence to record:
 2. Compare its captured/reserved totals against the ledger. Totals cover the workspace, tables show at most the latest 500 records each, and the latest mandate card can coexist with historical activity.
 3. Customize the dashboard layout and show that the financial records are unchanged.
 4. Ask why a purchase was denied. Inspect its cited source record. The server sends summary totals and the latest 50 records of each type, without provider credentials, payer payloads, or callback tokens.
-5. Demonstrate honest provider failure handling. No AI answer should appear if Gemini is unavailable.
+5. Demonstrate honest provider failure handling. No AI answer should appear if Groq is unavailable.
 
 The AI answer is advisory generated text. Evidence IDs are validated against the supplied records, but this does not independently prove every sentence true. Inspect the deterministic totals and source records. The per-workspace AI rate limiter is an in-memory single-host demo guard and resets on process restart.
 
@@ -54,7 +54,7 @@ The AI answer is advisory generated text. Evidence IDs are validated against the
 
 - PayPal Orders API and JavaScript SDK v6: Sandbox order creation, buyer approval, capture, and cancellation.
 - PayPal webhook verification API: authenticate events before re-reading provider state.
-- Gemini 2.5 Flash: mandate drafts, catalog cart selection, decision explanations, and read-only spending analysis. Live-provider verification remains pending until dated evidence is recorded.
+- Groq API with the configured `GROQ_MODEL` (currently `openai/gpt-oss-120b`): mandate drafts, catalog cart selection, decision explanations, and read-only spending analysis. Provider configuration is visible in the deployed judge guide, but live request and buyer-flow verification still need dated evidence.
 - AG Studio 3.0.0 and AG Studio React: spending dashboard, custom mandate widget, editable layout, and custom analyst runner. Sponsor license setup remains required.
 - Postman collection: reproducible API walkthrough with session, origin, and idempotency requirements.
 - ChatGPT/Codex: implementation assistance and test/documentation work. Review and amend this statement to include other tools actually used.

@@ -97,7 +97,7 @@ PayPal credentials and AI keys must remain server-side.
 
 Never expose:
 - PAYPAL_CLIENT_SECRET
-- AI_API_KEY
+- GROQ_API_KEY and GROQ_MODEL
 - DATABASE_URL
 
 Create .env.example with placeholders only. Never commit secrets.

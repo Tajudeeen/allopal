@@ -9,10 +9,8 @@ export default defineConfig({
     globals: true,
     fileParallelism: false,
     maxConcurrency: 1,
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    pool: "forks",
+    maxWorkers: 1,
+    isolate: true,
   },
 });

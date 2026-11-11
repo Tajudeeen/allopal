@@ -105,7 +105,7 @@ describe("Step 14: Comprehensive Failure Recovery & Fail-Closed Invariants", () 
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          candidates: [{ content: { parts: [{ text: "{}" }] } }],
+          choices: [{ message: { content: "{}" } }],
         }),
         { status: 200 },
       ),

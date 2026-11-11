@@ -30,7 +30,7 @@ describe("Step 13: Dedicated Technical Security Audit", () => {
 
     // Verify secrets are NOT leaked in response payload
     expect(stateText).not.toContain(env.PAYPAL_CLIENT_SECRET);
-    expect(stateText).not.toContain(env.AI_API_KEY);
+    expect(stateText).not.toContain(env.GROQ_API_KEY);
     expect(stateText).not.toContain(env.DATABASE_URL);
 
     const payReq = createJsonRequest("http://localhost:3000/api/payments/pay", {
@@ -41,7 +41,7 @@ describe("Step 13: Dedicated Technical Security Audit", () => {
     const payText = await payRes.text();
 
     expect(payText).not.toContain(env.PAYPAL_CLIENT_SECRET);
-    expect(payText).not.toContain(env.AI_API_KEY);
+    expect(payText).not.toContain(env.GROQ_API_KEY);
   });
 
   it("Security Audit 2: Client price & category injection is strictly defeated", async () => {

@@ -175,18 +175,14 @@ describe("Read-only grounded analysis", () => {
       async () =>
         new Response(
           JSON.stringify({
-            candidates: [
+            choices: [
               {
-                content: {
-                  parts: [
-                    {
-                      text: JSON.stringify({
-                        answer:
-                          "The payment remains reserved while capture is uncertain.",
-                        evidenceIds: [`decision:${decision.id}`, "summary"],
-                      }),
-                    },
-                  ],
+                message: {
+                  content: JSON.stringify({
+                    answer:
+                      "The payment remains reserved while capture is uncertain.",
+                    evidenceIds: [`decision:${decision.id}`, "summary"],
+                  }),
                 },
               },
             ],
@@ -229,7 +225,7 @@ describe("Read-only grounded analysis", () => {
           async () =>
             new Response(
               JSON.stringify({
-                candidates: [{ content: { parts: [{ text }] } }],
+                choices: [{ message: { content: text } }],
               }),
             ),
         ),
@@ -259,17 +255,13 @@ describe("Read-only grounded analysis", () => {
       async () =>
         new Response(
           JSON.stringify({
-            candidates: [
+            choices: [
               {
-                content: {
-                  parts: [
-                    {
-                      text: JSON.stringify({
-                        answer: "There are no payment records.",
-                        evidenceIds: ["summary"],
-                      }),
-                    },
-                  ],
+                message: {
+                  content: JSON.stringify({
+                    answer: "There are no payment records.",
+                    evidenceIds: ["summary"],
+                  }),
                 },
               },
             ],

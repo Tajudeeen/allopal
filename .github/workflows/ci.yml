@@ -44,7 +44,33 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
       - name: Audit all dependencies (fail on high/critical)
-        run: npm audit --audit-level=high
+        run: |
+          npm audit --json > npm-audit.json || true
+          node - <<'NODE'
+          const report = require("./npm-audit.json");
+          const vulnerabilities = Object.entries(report.vulnerabilities || {});
+          const blocking = vulnerabilities.filter(([, item]) =>
+            ["high", "critical"].includes(item.severity),
+          );
+          for (const [name, item] of blocking) {
+            console.log(
+              JSON.stringify({
+                package: name,
+                severity: item.severity,
+                direct: item.isDirect,
+                range: item.range,
+                fixAvailable: item.fixAvailable,
+                advisories: item.via
+                  .filter((entry) => typeof entry === "object")
+                  .map((entry) => entry.title),
+              }),
+            );
+          }
+          console.log(
+            `Audit summary: ${report.metadata?.vulnerabilities?.high || 0} high, ${report.metadata?.vulnerabilities?.critical || 0} critical`,
+          );
+          if (blocking.length) process.exit(1);
+          NODE
 
       - name: Generate Prisma client
         run: npm run prisma:generate

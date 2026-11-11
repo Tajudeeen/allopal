@@ -14,7 +14,7 @@ const env = {
   PAYPAL_CLIENT_ID: "ci-contract-client",
   PAYPAL_CLIENT_SECRET: "ci-contract-secret",
   PAYPAL_API_BASE_URL: "https://api-m.sandbox.paypal.com",
-  AI_API_KEY: "ci-gemini-contract-key",
+  GROQ_API_KEY: "ci-groq-contract-key",
 };
 try {
   const migration = spawnSync(

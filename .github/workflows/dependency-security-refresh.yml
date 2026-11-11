@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - hardening/dependency-security-patches
+  pull_request:
+    branches:
+      - main
 permissions:
   contents: read
 jobs:
@@ -31,8 +34,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          for root in ["app", "components", "hooks", "lib", "tests", "prisma", "scripts"]:
+                    for root in ["app", "components", "hooks", "lib", "tests", "prisma", "scripts"]:
               base = Path(root)
               if not base.exists():
                   continue
@@ -40,7 +42,7 @@ jobs:
                   if path.suffix not in {".ts", ".tsx", ".js", ".jsx"}:
                       continue
                   source = path.read_text()
-                  updated = re.sub(r'from (["\\'])zod\\1', r'from \\1zod/v3\\1', source)
+                  updated = source.replace('from \"zod\"', 'from \"zod/v3\"').replace(\"from 'zod'\", \"from 'zod/v3'\")
                   if updated != source:
                       path.write_text(updated)
           PY

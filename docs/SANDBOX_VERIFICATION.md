@@ -1,6 +1,6 @@
 # Sandbox verification and evidence
 
-Status: external verification still required. Automated fixtures do not establish that a PayPal account, webhook, or Gemini credential works.
+Status: external verification still required. Automated fixtures do not establish that a PayPal account, webhook, or Groq credential works.
 
 ## Configure
 

@@ -86,7 +86,7 @@ jobs:
       - name: Deploy disposable database
         run: npm run db:deploy
 
-      - name: Run tests
+      - name: Run isolated test suite (Vitest 4)
         run: npm test -- --run
 
       - name: Typecheck
